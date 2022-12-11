@@ -13,6 +13,7 @@ import numpy as np
 from os import devnull
 import pandas as pd
 from pdb import set_trace
+import pkg_resources
 
 import plot
 ## import tikz_network as tikz
@@ -20,6 +21,7 @@ import plot
 FORMAT="%(levelname)s:%(funcName)s:%(message)s"
 
 def world():
+    stream = pkg_resources.resource_stream(__name__, '../data/world/ne_50m_admin_0_countries.shp')
     return gpd.GeoDataFrame.from_file('../data/world/ne_50m_admin_0_countries.shp')
 
 def contiguous_US():
