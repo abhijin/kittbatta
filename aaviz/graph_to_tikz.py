@@ -8,6 +8,9 @@ Pending:
     - labels outside
     - edge labels
     - pajek style edges
+    - multiple networks
+    - edge weights helper functions
+    - spring layout with edge weights
 '''
 
 import argparse
