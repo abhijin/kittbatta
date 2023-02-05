@@ -1,6 +1,9 @@
 # Changelog
 
 ## v0.2.0
+* added ``aautils/timer.py``
+
+## v0.2.0
 * added ``choropleth.py``.
 
 ## v0.1.0

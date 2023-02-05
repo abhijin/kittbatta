@@ -55,6 +55,7 @@ DEFAULT_NODE_STYLE = 'draw'
 DEFAULT_EDGE_STYLE = ''
 DEFAULT_NODE_LABEL = ''
 DEFAULT_EDGE_LABEL = ''
+DEFAULT_EDGE_LABEL_STYLE = ''
 
 LENS_THICKNESS_FACTOR = 20
 LENS_INNER_FACTOR = 10
@@ -65,10 +66,18 @@ LENS_NODE_DISP = .2
 # - set those individual node and edge styles which are difficult to set directly.
 # - set global styles
 class GraphToDraw:
-    def __init__(self, nodes, edges, directed=False, **kwargs):
+    def __init__(self, nodes, edges, **kwargs):
         self.nodes = nodes
+        if 'seed' in kwargs.keys():
+            seed(kwargs['seed'])
+            np.random.seed(kwargs['seed'])
+
         self.edges = edges
-        self.directed = directed
+        if 'directed' in kwargs.keys():
+            self.directed = kwargs['directed']
+        else:
+            self.directed = False
+
         if 'style' not in self.nodes.columns:
             self.nodes['style'] = DEFAULT_NODE_STYLE
         if 'style' not in self.edges.columns:
@@ -77,12 +86,15 @@ class GraphToDraw:
             self.nodes['label'] = DEFAULT_NODE_LABEL
         if 'label' not in self.edges.columns:
             self.edges['label'] = DEFAULT_EDGE_LABEL
+        if 'label_style' not in self.edges.columns:
+            self.edges['label_style'] = DEFAULT_EDGE_LABEL_STYLE
         if 'lens' not in self.edges.columns:
             self.edges['lens'] = False
         if 'weight' not in self.edges.columns:
             self.edges['weight'] = 1
         self.global_style = ''
         self.colors = ''
+        self.appendix = ''
         self.Gnx = None
 
     def __convert_to_networkx(self):
@@ -94,6 +106,11 @@ class GraphToDraw:
                 constructor = nx.Graph
             self.Gnx = nx.from_pandas_edgelist(self.edges, source='source', 
                     target='target', create_using=constructor)
+            # isolated nodes
+            isolated_nodes = list(set(self.nodes.name.tolist()).difference(
+                    set(self.Gnx.nodes)))
+            if isolated_nodes:
+                self.Gnx.add_nodes_from(isolated_nodes)
         return
 
     def layout(self, layout_type, **kwargs):
@@ -128,7 +145,8 @@ class GraphToDraw:
             logging.error('Unsupported layout type')
             raise
 
-    def layout_scale_round(self, minx, maxx, miny, maxy, round=2, padding=0):
+    def layout_scale_round(self, minx=None, maxx=None, 
+            miny=None, maxy=None, round=2, padding=0):
         ominx = self.nodes.x.min()
         omaxx = self.nodes.x.max()
         ominy = self.nodes.y.min()
@@ -145,10 +163,12 @@ class GraphToDraw:
         nodes = self.nodes[['name', 'x', 'y']]
         edges = edges.merge(nodes, left_on='source', right_on='name')
         edges = edges.rename(columns={'x': 'source_x', 'y': 'source_y'})
-        edges = edges.merge(nodes, left_on='target', right_on='name')
+        edges = edges.reset_index().merge(nodes, left_on='target', right_on='name'
+                ).set_index('index').sort_index()
         edges = edges.rename(columns={'x': 'target_x', 'y': 'target_y'})
 
-        coords = edges[['source_x', 'source_y', 'target_x', 'target_y']].to_numpy()
+        coords = edges[['source_x', 'source_y', 'target_x', 'target_y']
+                ].to_numpy()
         x1 = coords[:,0]
         y1 = coords[:,1]
         x2 = coords[:,2]
@@ -171,11 +191,19 @@ class GraphToDraw:
         return
 
     def append_node_attribute(self, prefix, values):
-        self.nodes['style'] += ',' + prefix + values
+        self.nodes['style'] = self.nodes['style'] + ',' + prefix + values
         return
 
     def append_edge_attribute(self, prefix, values):
-        self.edges['style'] += ',' + prefix + values
+        self.edges['style'] = self.edges['style'] + ',' + prefix + values
+        return
+
+    def append_edge_label_attribute(self, prefix, values):
+        self.edges['label_style'] = self.edges['label_style'] + ',' + prefix + \
+                values
+
+    def add_appendix(self, string):
+        self.appendix = string
         return
 
     def define_html_colors(self, names, codes):
@@ -212,7 +240,7 @@ def generate_lens_edge(edge, directed):
     return estring
 
 
-def draw(G, mode='segment'):
+def draw(G, mode='segment', outfile='out.tex'):
 
     # set global styles
     if G.global_style == '':
@@ -232,16 +260,32 @@ def draw(G, mode='segment'):
         directed = ',->'
 
     for id,edge in G.edges.iterrows():
-        if not edge.lens:
-            out += f'\\draw ({edge.source}) edge[{edge.style}{directed}] ({edge.target});\n'
-        else:
+        try:
+            if edge.directed == True:   # for mixed edges
+                directed = ',->'
+            else:
+                directed = ''
+        except:
+            pass
+
+        if edge.lens:
             out += generate_lens_edge(edge, directed)
+        elif edge.label != DEFAULT_EDGE_LABEL:
+            edge.label_style = 'inner sep=.5pt' + edge.label_style
+            out += f'\\draw ({edge.source}) edge[{edge.style}{directed}] node[{edge.label_style}] {{{edge.label}}} ({edge.target});\n'
+        else:
+            out += f'\\draw ({edge.source}) edge[{edge.style}{directed}] ({edge.target});\n'
 
 
     if mode == 'segment':
         return G.colors + out
     elif mode == 'standalone':
-        return PREAMBLE + G.colors + BEGIN_STATEMENT + out + END_STATEMENT
+        return PREAMBLE + G.colors + BEGIN_STATEMENT + out + G.appendix + \
+                END_STATEMENT
+    elif mode == 'file':
+        with open(outfile,'w') as f:
+            f.write(PREAMBLE + G.colors + BEGIN_STATEMENT + out + G.appendix + \
+                    END_STATEMENT)
     else:
         logging.error(f'Wrong mode {mode}')
         raise
@@ -272,11 +316,6 @@ def main():
     else:
        logging.basicConfig(level=logging.INFO,format=FORMAT)
 
-    # set random seed
-    if args.seed:
-        seed(args.seed)
-        np.random.seed(args.seed)
-
     # read node and edge files
     nodes = pd.DataFrame({'name': [0,1,2,3]})
     edges = pd.DataFrame({'source': [0,0,1,2,3], 'target': [1,2,2,3,0]})
@@ -292,7 +331,7 @@ def main():
 
     # find angles for curved edges (after scaling)
     G.compute_edge_angles()
-    G.displace_angles(10)
+    # G.displace_angles(10)
     G.append_edge_attribute('out=',G.edges.out_angle.astype(str))
     G.append_edge_attribute('in=',G.edges.in_angle.astype(str))
 
