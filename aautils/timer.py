@@ -6,7 +6,6 @@ AA
 
 from time import time
 
-FORMAT="%(levelname)s:%(filename)s:%(funcName)s:%(message)s"
 
 class timer:
     def __init__(self, unit='minutes', print_func=print, quiet=False):
