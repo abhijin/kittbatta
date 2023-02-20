@@ -3,6 +3,7 @@ By AA
 '''
 
 from itertools import product
+import logging
 import matplotlib.pyplot as plt
 from matplotlib import rc
 from matplotlib.ticker import AutoMinorLocator, FuncFormatter
@@ -12,37 +13,122 @@ from pdb import set_trace
 from re import sub
 import seaborn as sns
 
+COLORS = {
+        'mathematica': ['#5e82b5','#e09c24','#8fb030','#eb634f','#8778b3','#c46e1a','#5c9ec7','#fdbf6f'],
+        'grand_budapest': ['#5b1a18','#fd6467','#f1bb7b','#d67236']
+        }
+
+SNS_PARAMS = {
+        'style': 'whitegrid',
+        'palette': COLORS['mathematica']
+        }
+
 RC_PARAMS = {
         'font.family': 'serif',
         'font.serif': 'Computer Modern Roman',
         'legend.frameon': False,
         'xtick.labelsize': 'small',
-        'ytick.labelsize': 'small'
+        'ytick.labelsize': 'small',
+        'text.usetex': True
         }
 
 # latex fontsizes
-FONT_TABLE=pd.DataFrame({'9': {'miniscule': 4, 'tiny': 5, 'scriptsize': 6, 'footnotesize': 7, 'small': 8, 'normalsize': 9, 'large': 10, 'Large': 11, 'LARGE': 12, 'huge': 14, 'Huge': 17, 'HUGE': 20}, '10': {'miniscule': 5, 'tiny': 6, 'scriptsize': 7, 'footnotesize': 8, 'small': 9, 'normalsize': 10, 'large': 11, 'Large': 12, 'LARGE': 14, 'huge': 17, 'Huge': 20, 'HUGE': 25}, '11': {'miniscule': 6, 'tiny': 7, 'scriptsize': 8, 'footnotesize': 9, 'small': 10, 'normalsize': 11, 'large': 12, 'Large': 14, 'LARGE': 17, 'huge': 20, 'Huge': 25, 'HUGE': 30}, '12': {'miniscule': 7, 'tiny': 8, 'scriptsize': 9, 'footnotesize': 10, 'small': 11, 'normalsize': 12, 'large': 14, 'Large': 17, 'LARGE': 20, 'huge': 25, 'Huge': 30, 'HUGE': 36}, '14': {'miniscule': 8, 'tiny': 9, 'scriptsize': 10, 'footnotesize': 11, 'small': 12, 'normalsize': 14, 'large': 17, 'Large': 20, 'LARGE': 25, 'huge': 30, 'Huge': 36, 'HUGE': 48}, '17': {'miniscule': 9, 'tiny': 10, 'scriptsize': 11, 'footnotesize': 12, 'small': 14, 'normalsize': 17, 'large': 20, 'Large': 25, 'LARGE': 30, 'huge': 36, 'Huge': 48, 'HUGE': 60}, '20': {'miniscule': 10, 'tiny': 11, 'scriptsize': 12, 'footnotesize': 14, 'small': 17, 'normalsize': 20, 'large': 25, 'Large': 30, 'LARGE': 36, 'huge': 48, 'Huge': 60, 'HUGE': 72}, '25': {'miniscule': 11, 'tiny': 12, 'scriptsize': 14, 'footnotesize': 17, 'small': 20, 'normalsize': 25, 'large': 30, 'Large': 36, 'LARGE': 48, 'huge': 60, 'Huge': 72, 'HUGE': 84}, '30': {'miniscule': 12, 'tiny': 14, 'scriptsize': 17, 'footnotesize': 20, 'small': 25, 'normalsize': 30, 'large': 36, 'Large': 48, 'LARGE': 60, 'huge': 72, 'Huge': 84, 'HUGE': 96}, '36': {'miniscule': 14, 'tiny': 17, 'scriptsize': 20, 'footnotesize': 25, 'small': 30, 'normalsize': 36, 'large': 48, 'Large': 60, 'LARGE': 72, 'huge': 84, 'Huge': 96, 'HUGE': 108}, '48': {'miniscule': 17, 'tiny': 20, 'scriptsize': 25, 'footnotesize': 30, 'small': 36, 'normalsize': 48, 'large': 60, 'Large': 72, 'LARGE': 84, 'huge': 96, 'Huge': 108, 'HUGE': 120}, '60': {'miniscule': 20, 'tiny': 25, 'scriptsize': 30, 'footnotesize': 36, 'small': 48, 'normalsize': 60, 'large': 72, 'Large': 84, 'LARGE': 96, 'huge': 108, 'Huge': 120, 'HUGE': 132}})
+FONT_TABLE=pd.DataFrame({9: {'miniscule': 4, 'tiny': 5, 'scriptsize': 6, 'footnotesize': 7, 'small': 8, 'normalsize': 9, 'large': 10, 'Large': 11, 'LARGE': 12, 'huge': 14, 'Huge': 17, 'HUGE': 20}, 10: {'miniscule': 5, 'tiny': 6, 'scriptsize': 7, 'footnotesize': 8, 'small': 9, 'normalsize': 10, 'large': 11, 'Large': 12, 'LARGE': 14, 'huge': 17, 'Huge': 20, 'HUGE': 25}, 11: {'miniscule': 6, 'tiny': 7, 'scriptsize': 8, 'footnotesize': 9, 'small': 10, 'normalsize': 11, 'large': 12, 'Large': 14, 'LARGE': 17, 'huge': 20, 'Huge': 25, 'HUGE': 30}, 12: {'miniscule': 7, 'tiny': 8, 'scriptsize': 9, 'footnotesize': 10, 'small': 11, 'normalsize': 12, 'large': 14, 'Large': 17, 'LARGE': 20, 'huge': 25, 'Huge': 30, 'HUGE': 36}, 14: {'miniscule': 8, 'tiny': 9, 'scriptsize': 10, 'footnotesize': 11, 'small': 12, 'normalsize': 14, 'large': 17, 'Large': 20, 'LARGE': 25, 'huge': 30, 'Huge': 36, 'HUGE': 48}, 17: {'miniscule': 9, 'tiny': 10, 'scriptsize': 11, 'footnotesize': 12, 'small': 14, 'normalsize': 17, 'large': 20, 'Large': 25, 'LARGE': 30, 'huge': 36, 'Huge': 48, 'HUGE': 60}, 20: {'miniscule': 10, 'tiny': 11, 'scriptsize': 12, 'footnotesize': 14, 'small': 17, 'normalsize': 20, 'large': 25, 'Large': 30, 'LARGE': 36, 'huge': 48, 'Huge': 60, 'HUGE': 72}, 25: {'miniscule': 11, 'tiny': 12, 'scriptsize': 14, 'footnotesize': 17, 'small': 20, 'normalsize': 25, 'large': 30, 'Large': 36, 'LARGE': 48, 'huge': 60, 'Huge': 72, 'HUGE': 84}, 30: {'miniscule': 12, 'tiny': 14, 'scriptsize': 17, 'footnotesize': 20, 'small': 25, 'normalsize': 30, 'large': 36, 'Large': 48, 'LARGE': 60, 'huge': 72, 'Huge': 84, 'HUGE': 96}, 36: {'miniscule': 14, 'tiny': 17, 'scriptsize': 20, 'footnotesize': 25, 'small': 30, 'normalsize': 36, 'large': 48, 'Large': 60, 'LARGE': 72, 'huge': 84, 'Huge': 96, 'HUGE': 108}, 48: {'miniscule': 17, 'tiny': 20, 'scriptsize': 25, 'footnotesize': 30, 'small': 36, 'normalsize': 48, 'large': 60, 'Large': 72, 'LARGE': 84, 'huge': 96, 'Huge': 108, 'HUGE': 120}, 60: {'miniscule': 20, 'tiny': 25, 'scriptsize': 30, 'footnotesize': 36, 'small': 48, 'normalsize': 60, 'large': 72, 'Large': 84, 'LARGE': 96, 'huge': 108, 'Huge': 120, 'HUGE': 132}})
 
 AXES_COLOR='#888888'
 
 FIGSIZE=(15,8)
 LINESTYLES=['solid','dashed']
-MATHEMATICA=['#5e82b5','#e09c24','#8fb030','#eb634f','#8778b3','#c46e1a','#5c9ec7','#fdbf6f']
 LINEWIDTH=[1]
-GRAND_BUDAPEST=['#5b1a18','#fd6467','#f1bb7b','#d67236']
 MARKERS=['.','o','v','^','s']
-LINE_PROPS=pd.DataFrame(product(['solid','dashed'],MARKERS,MATHEMATICA[0:7],LINEWIDTH),columns=['style','marker','color','width'])
+# LINE_PROPS=pd.DataFrame(product(['solid','dashed'],MARKERS,MATHEMATICA[0:7],LINEWIDTH),columns=['style','marker','color','width'])
 
 pd.options.display.float_format = '{:.10g}'.format
-rc('text',usetex=True)
-rc('font',**{'family':'serif','serif':['Computer Modern Roman']})
 
-def initiate_plot(x,y):
+# The helper functions are arranged in the order in which they should be called
+#endThe helper functions are arranged in the order in which they should be called
+# BEFORE PLOT
+# sns.set_theme(**plot.SNS_PARAMS)
+# rc(plot.RC_PARAMS)
+
+def initiate_plot(x=FIGSIZE[0], y=FIGSIZE[1]):
     return plt.figure(figsize=[x,y])
 
-def subplot_grids(fig,cols,rows):
-    return fig.add_gridspec(rows,cols)
+def create_subplot_grids(fig, rows, cols):
+    return fig.add_gridspec(rows, cols)
     # Use: ax=fig.add_subplot(gs[0,0])
+
+# AFTER PLOT
+def set_theme(rc_params):
+    for k,v in RC_PARAMS.items():
+        rc_params[k] = v
+    return
+
+def set_axes_grid(figobj, axis_type='normal'):
+    if type(figobj) == plt.subplot:
+        if axis_type == 'normal':
+            figobj.spines['right'].set_visible(False)
+            figobj.spines['top'].set_visible(False)
+            figobj.spines['bottom'].set_color(AXES_COLOR)
+            figobj.spines['left'].set_color(AXES_COLOR)
+            figobj.grid(color='#cccccc',which='major',linewidth=1)
+            figobj.grid(True,color='#dddddd',which='minor',linewidth=.5)
+        elif axis_type == 'histy':
+            figobj.grid(axis='y')
+            figobj.spines[['left', 'right', 'top']].set_visible(False)
+            figobj.spines['bottom'].set_color(AXES_COLOR)
+            figobj.tick_params(axis='y', length=0)
+        elif axis_type == 'histx':
+            figobj.grid(axis='x')
+            figobj.spines[['bottom', 'right', 'top']].set_visible(False)
+            figobj.spines['left'].set_color(AXES_COLOR)
+            figobj.tick_params(axis='x', length=0)
+        else:
+            raise ValueError(f'Unsupported grid type "{axis_type}".')
+    elif type(figobj) == sns.axisgrid.FacetGrid:
+        if axis_type == 'normal':
+            pass
+        elif axis_type == 'histy':
+            figobj.despine(left=True)
+        else:
+            raise ValueError(f'Unsupported grid type "{axis_type}".')
+    return
+
+def set_labels(ax=None, title=None, xlabel=None, ylabel=None):
+    if title is not None:
+        ax.set_title(title)
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    if ylabel is not None:
+        ax.set_ylabel(ylabel)
+    return
+
+def set_fonts(ax=None, global_font_size=None, **kwargs):
+    font_set = FONT_TABLE[global_font_size]
+
+    if 'title' in kwargs.keys():
+        ax.set_title(ax.get_title(), fontsize=font_set[kwargs['title']])
+    else:
+        ax.set_title(ax.get_title(), fontsize=font_set['large'])
+    if 'xlabel' in kwargs.keys():
+        ax.set_xlabel(ax.get_xlabel(), fontsize=font_set[kwargs['xlabel']])
+    else:
+        ax.set_xlabel(ax.get_xlabel(), fontsize=font_set['normalsize'])
+    if 'ylabel' in kwargs.keys():
+        ax.set_ylabel(ax.get_ylabel(), fontsize=font_set[kwargs['ylabel']])
+    else:
+        ax.set_ylabel(ax.get_ylabel(), fontsize=font_set['normalsize'])
+    if 'xtick' in kwargs.keys():
+        ax.tick_params(axis='x', which='major', 
+                labelsize=font_set[kwargs['xtick']])
+    else:
+        ax.tick_params(axis='x', which='major', labelsize=font_set['small'])
+    if 'ytick' in kwargs.keys():
+        ax.tick_params(axis='y', which='major', 
+                labelsize=font_set[kwargs['ytick']])
+    else:
+        ax.tick_params(axis='y', which='major', labelsize=font_set['small'])
+    return
 
 def texify(string):
     string=sub('_','\_',string)
@@ -54,41 +140,10 @@ def set_plot_at_zero(axis):
     axis.spines['bottom'].set_position('zero')
     return
 
-def set_plot_theme(axis):
-    axis.spines['right'].set_visible(False)
-    axis.spines['top'].set_visible(False)
-    axis.spines['bottom'].set_color(AXES_COLOR)
-    axis.spines['left'].set_color(AXES_COLOR)
-    return
-
-def set_grid(axis,minor=True):
-    axis.grid(color='#cccccc',which='major',linewidth=1)
-    if minor:
-        axis.grid(True,color='#dddddd',which='minor',linewidth=.5)
-    axis.tick_params(colors=AXES_COLOR,labelcolor='black',direction='inout')
-    axis.set_axisbelow(True)
-    return
-
 def set_minor_tics(axis):
     axis.minorticks_on()
     axis.xaxis.set_minor_locator(AutoMinorLocator(2))
     axis.yaxis.set_minor_locator(AutoMinorLocator(2))
-    return
-
-def set_hist(axis, mode='horizontal'):
-    axis.spines['left'].set_visible(False)
-
-    if mode=='horizontal':
-        axis.grid(False,axis='x')
-        axis.grid(True,axis='y')
-    elif mode=='vertical':
-        axis.grid(True,axis='x')
-        axis.grid(False,axis='y')
-    else:
-        raise ValueError(f'Wrong mode {mode}.')
-
-    axis.tick_params(colors=AXES_COLOR,labelcolor='black',direction='inout')
-    axis.set_axisbelow(True)
     return
 
 def square_grid_cells_by_x(axis, num_cells_x, num_cells_y, 
@@ -139,4 +194,52 @@ def _scientific(x, pos):
     # pos: a position - ie. the index of the tick (from 0 to 9 in this example)
     return '%.1E' % x
 
+def main():
+    # parser
+    parser=argparse.ArgumentParser(description=DESC, 
+            formatter_class=argparse.RawTextHelpFormatter)
+    parser.add_argument('-i', '--properties_files', required=True,
+            nargs='*', help='Cascade property files in format specified by "--input_format".')
+    parser.add_argument('-f', '--input_format', default='parquet',
+            choices=['json', 'parquet'],
+            help='Input format.')
+    parser.add_argument('-p','--plot_request_file',
+            help=f'Plots to visualize will be specified through a JSON file with some mandatory and some optional fields. The structure is still evolving. Some template(s) or example(s) will be provided in the future.')
+    parser.add_argument('-d', '--debug', action='store_true')
+    parser.add_argument('-q', '--quiet', action='store_true')
+    args = parser.parse_args()
 
+    # set logger
+    if args.debug:
+       logging.basicConfig(level=logging.DEBUG,format=FORMAT)
+    elif args.quiet:
+       logging.basicConfig(level=logging.WARNING,format=FORMAT)
+    else:
+       logging.basicConfig(level=logging.INFO,format=FORMAT)
+
+    start = time()
+
+    # Reading plot request file
+    logging.info(f'Reading plot list file: {args.plot_request_file} ...')
+    with open(args.plot_request_file) as f:
+        plot_request = load(f)
+    data_request = plot_request['data']
+    del plot_request['data']
+
+    # Preparing data
+    logging.info(f'Reading {len(args.properties_files)} property file names ..')
+    cascade_props = data.CascadeProperties(args.properties_files,
+            data_request=data_request, input_format=args.input_format, 
+            argparse=vars(args))
+
+    # Start plotting
+    logging.info(f'Start plotting ...')
+    for k, item in plot_request.items():
+        logging.info(f'Plotting {k} ...')
+        plotter.plot(cascade_props, k, item)
+        
+    logging.info(f'Time taken: {(time()-start)//60}.')
+    logging.info('Done.')
+
+if __name__=='__main__':
+    main()
