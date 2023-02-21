@@ -1,3 +1,7 @@
+def create_subplot_grids(fig, rows, cols):
+    return fig.add_gridspec(rows, cols)
+    # Use: ax=fig.add_subplot(gs[0,0])
+
 class single:   # Seaborn single plot
     def __init__(self, **kwargs):
         self.fig = initiate_plot()
