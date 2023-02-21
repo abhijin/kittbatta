@@ -2,6 +2,7 @@ DESC='''plot functions
 By AA
 '''
 
+import geopandas as gpd
 from itertools import product
 import logging
 import matplotlib.pyplot as plt
@@ -12,10 +13,14 @@ import pandas as pd
 from pdb import set_trace
 from re import sub
 import seaborn as sns
+from shapely.geometry import Point
+
+# contextily EPSG 3857
 
 COLORS = {
         'mathematica': ['#5e82b5','#e09c24','#8fb030','#eb634f','#8778b3','#c46e1a','#5c9ec7','#fdbf6f'],
-        'grand_budapest': ['#5b1a18','#fd6467','#f1bb7b','#d67236']
+        'grand_budapest': ['#5b1a18','#fd6467','#f1bb7b','#d67236'],
+        'red_blue': ['#0060ad', '#dd181f']
         }
 
 NON_FUNC_PARAMS = ['fig', 'subplot', 'title', 'xlabel', 'ylabel', 'data']
@@ -83,16 +88,16 @@ def subplot(**kwargs):
     return rcParams
 
 def plot_func(**kwargs):
-    if kwargs['func'] == 'gpd.plot':
+    if kwargs['func'] in ['gpd.plot', 'gpd.boundary.plot']:
         return eval(f'kwargs["data"].plot')
     else:
-        print(f'Unsupported function type {kwargs["func"]}.')
+        raise ValueError(f'Unsupported function type {kwargs["func"]}.')
 
 # AFTER PLOT
 def subplot_axes_grid(**kwargs):
     if 'n_axis_type' in kwargs.keys():
         axis_type = kwargs['n_axis_type']
-    elif kwargs['func'] in ['gpd.plot']:
+    elif kwargs['func'] in ['gpd.plot', 'gpd.boundary.plot']:
         axis_type = 'none'
 
     ax = kwargs['ax']
@@ -162,10 +167,12 @@ def subplot_set_fonts(**kwargs):
                 labelsize=font_set[kwargs['n_ytick_font_size']])
     else:
         ax.tick_params(axis='y', which='major', labelsize=font_set['small'])
-    if 'n_legend_font_size' in kwargs.keys():
-        ax.legend(fontsize=font_set[kwargs['n_legend_font_size']])
-    else:
-        ax.legend(fontsize=font_set['normalsize'])
+    
+    if len(ax.get_legend_handles_labels()[0]):  # only if a legend is present
+        if 'n_legend_font_size' in kwargs.keys():
+            ax.legend(fontsize=font_set[kwargs['n_legend_font_size']])
+        else:
+            ax.legend(fontsize=font_set['normalsize'])
 
     # color bar
     if kwargs['func'] in ['gpd.plot']:
@@ -311,6 +318,12 @@ def _scientific(x, pos):
     # x:  tick value - ie. what you currently see in yticks
     # pos: a position - ie. the index of the tick (from 0 to 9 in this example)
     return '%.1E' % x
+
+def coords_to_geom(lat, lon, crs=None):
+    gdf = gpd.GeoDataFrame(geometry=[Point(xy) for xy in zip(lon, lat)])
+    gdf = gdf.set_crs(epsg=4326)
+    gdf = gdf.to_crs(**crs)
+    return gdf
 
 def main():
     # parser
