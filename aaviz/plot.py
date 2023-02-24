@@ -2,6 +2,7 @@ DESC='''plot functions
 By AA
 '''
 
+from cycler import cycler
 import geopandas as gpd
 from itertools import product
 import logging
@@ -11,7 +12,7 @@ from matplotlib.ticker import AutoMinorLocator, FuncFormatter
 import numpy as np
 import pandas as pd
 from pdb import set_trace
-from re import sub
+from re import sub, search, match
 import seaborn as sns
 from shapely.geometry import Point
 
@@ -22,13 +23,12 @@ COLORS = {
         'grand_budapest': ['#5b1a18','#fd6467','#f1bb7b','#d67236'],
         'red_blue': ['#0060ad', '#dd181f']
         }
+SNS_AXIS_PLOTS = ['sns.lineplot', 'sns.barplot', 'sns.histplot', 'sns.ecdfplot',
+        'sns.boxplot']
+AXIS_NORMAL = ['sns.lineplot']
+AXIS_HIST = ['sns.boxplot', 'sns.barplot']
 
 NON_FUNC_PARAMS = ['fig', 'subplot', 'title', 'xlabel', 'ylabel', 'data']
-
-SNS_PARAMS = {
-        'style': 'whitegrid',
-        'palette': COLORS['mathematica']
-        }
 
 RC_PARAMS = {
         'font.family': 'serif',
@@ -36,7 +36,8 @@ RC_PARAMS = {
         'legend.frameon': False,
         'xtick.labelsize': 'small',
         'ytick.labelsize': 'small',
-        'text.usetex': True
+        'text.usetex': True,
+        'axes.prop_cycle': cycler(color=COLORS['mathematica'])
         }
 
 # latex fontsizes
@@ -44,7 +45,7 @@ FONT_TABLE=pd.DataFrame({9: {'miniscule': 4, 'tiny': 5, 'scriptsize': 6, 'footno
 
 AXES_COLOR='#888888'
 
-FIGSIZE=(15,8)
+FIGSIZE=(8,6)
 LINESTYLES=['solid','dashed']
 LINEWIDTH=[1]
 MARKERS=['.','o','v','^','s']
@@ -57,48 +58,116 @@ MARKERS=['.','o','v','^','s']
 pd.options.display.float_format = '{:.10g}'.format
 
 # The helper functions are arranged in the order in which they should be called
-def initiate_figure(x=FIGSIZE[0], y=FIGSIZE[1], 
-        rows=1, cols=1, wspace=0.005, hspace=0.05):
-    fig = plt.figure(figsize=[x,y])
-    gs = fig.add_gridspec(rows, cols)
-    gs.update(wspace=wspace, hspace=hspace) # set the spacing between axes.
+def initiate_figure(**kwargs):
+    argval = {
+            'mode': 'figure',
+            'subplot_mode': 'subplots',
+            'x': FIGSIZE[0],
+            'y': FIGSIZE[1],
+            'gs_wspace': 0.005,
+            'gs_hspace': 0.005,
+            'sp_nrows': 1,
+            'sp_ncols': 1,
+            }
+
+    for k in kwargs.keys():
+        argval[k] = kwargs[k] 
+
+    # Setting font families and latex stuff
     for k,v in RC_PARAMS.items():
         rcParams[k] = v
-    return fig, gs
+
+    # Figure
+    if argval['mode'] == 'figure':
+        if argval['subplot_mode'] == 'gridspec':
+            fig = plt.figure(figsize=[argval['x'],argval['y']])
+            subplot_args = {k[3:]: v for k,v in argval.items() if k[0:3] == 'gs_'}
+            gs = fig.add_gridspec(subplot_args['nrows'], subplot_args['ncols'])
+            gs.update(wspace=subplot_args['wspace'], hspace=subplot_args['hspace']) # set the spacing between axes.
+            return fig, gs
+        elif argval['subplot_mode'] == 'subplots':
+            subplot_args = {k[3:]: v for k,v in argval.items() if k[0:3] == 'sp_'}
+            fig, ax = plt.subplots(**subplot_args, figsize=[argval['x'],argval['y']])
+            if type(ax) != np.ndarray:
+                return fig, [ax]
+            else:
+                return fig, ax
+    elif mode == 'facetgrid':
+        return  # currently, nothing to return
+
     # ax = fig.add_subplot(layout)
 
 # All non-plot-function variables will be prefixed by "n_"
 def subplot(**kwargs):
 
-    # Decide function
-    plot_kwargs = {'ax': kwargs['ax']}
-    funcobj = plot_func(**kwargs)
+    ax = kwargs['ax']
+    func = kwargs['func']
 
     # Collect all arguments that pertain to func
-    for k,v in kwargs.items():
-        if k[0:2] != 'n_' and k not in ['fig', 'ax', 'func', 'data']:
-            plot_kwargs[k] = v
+    for k in kwargs.keys():
+        if k in ['fig', 'ax', 'func', 'data']:
+            continue
+        pat = search('[^_]*_', k)[0]
+        if pat not in ['pf_', 'ag_', 'la_', 'fs_', 'xt_', 'yt_', 'lg_']:
+            raise ValueError(f'Unsupported input class "{k}".')
+    plot_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'pf_'}
+    axes_grid_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'ag_'}
+    label_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'la_'}
+    fontsize_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'fs_'}
+    xtick_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'xt_'}
+    ytick_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'yt_'}
+    legend_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'lg_'}
 
-    funcobj(**plot_kwargs)
+    # Decide function
+    plot_args['data'] = kwargs['data']
+    funcobj = subplot_func(plot_args=plot_args, **kwargs)
 
-    subplot_axes_grid(**kwargs)
-    subplot_set_labels(**kwargs)
-    subplot_set_fonts(**kwargs)
+    funcobj(**plot_args)
+
+    subplot_axes_grid(func=func, ax=ax, plot_args=plot_args, **axes_grid_args)
+    subplot_labels(ax=ax, **label_args)
+    subplot_fonts(ax=ax, func=func, **fontsize_args)
+    
+    if xtick_args:
+        ax.set_xticklabels(ax.get_xticklabels(), **xtick_args)
+    if ytick_args:
+        ax.set_yticklabels(ax.get_yticklabels(), **ytick_args)
+    # Only if a legend is present and there are some modifications to be made
+    if len(ax.get_legend_handles_labels()[0]) and legend_args:  
+        if 'visible' in legend_args.keys():
+            if not legend_args['visible']:
+                ax.legend().set_visible(False)
+            else:
+                legend_args.pop('visible')
+                ax.legend(**legend_args)
 
     return rcParams
 
-def plot_func(**kwargs):
+def subplot_func(**kwargs):
+    kwargs['plot_args']['data'] = kwargs['data']
     if kwargs['func'] in ['gpd.plot', 'gpd.boundary.plot']:
+        kwargs['plot_args'].pop('data')
         return eval(f'kwargs["data"].plot')
+    elif kwargs['func'] in SNS_AXIS_PLOTS:
+        return eval(kwargs["func"])
     else:
         raise ValueError(f'Unsupported function type {kwargs["func"]}.')
 
-# AFTER PLOT
 def subplot_axes_grid(**kwargs):
-    if 'n_axis_type' in kwargs.keys():
-        axis_type = kwargs['n_axis_type']
+    if 'type' in kwargs.keys():
+        axis_type = kwargs['axis_type']
     elif kwargs['func'] in ['gpd.plot', 'gpd.boundary.plot']:
         axis_type = 'none'
+    elif kwargs['func'] in AXIS_NORMAL:
+        axis_type = 'normal'
+    elif kwargs['func'] in AXIS_HIST:
+        if 'orient' in kwargs['plot_args']:
+            if kwargs['plot_args']['orient'] == 'h':
+                axis_type = 'histx'
+        else:
+            axis_type = 'histy'
+    else:
+        raise KeyError('Unable to assign axis_type. Check if plot is supported.')
 
     ax = kwargs['ax']
     if axis_type == 'normal':
@@ -108,71 +177,90 @@ def subplot_axes_grid(**kwargs):
         ax.spines['left'].set_color(AXES_COLOR)
         ax.grid(color='#cccccc',which='major',linewidth=1)
         ax.grid(True,color='#dddddd',which='minor',linewidth=.5)
+        set_minor_tics(ax)
     elif axis_type == 'histy':
         ax.grid(axis='y')
         ax.spines[['left', 'right', 'top']].set_visible(False)
         ax.spines['bottom'].set_color(AXES_COLOR)
         ax.tick_params(axis='y', length=0)
+        ax.set_xticks(ax.get_yticks(), minor=False)
     elif axis_type == 'histx':
         ax.grid(axis='x')
         ax.spines[['bottom', 'right', 'top']].set_visible(False)
         ax.spines['left'].set_color(AXES_COLOR)
         ax.tick_params(axis='x', length=0)
+        ax.set_xticks(ax.get_xticks(), minor=False)
     elif axis_type == 'none':
         ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
         ax.set_xticks([])
         ax.set_yticks([])
     else:
         raise ValueError(f'Unsupported grid type "{axis_type}".')
+    ax.set_axisbelow(True)
+
+    # Scale
+    if 'xscale' in kwargs.keys():
+        ax.set_xscale(kwargs['xscale'])
+    if 'yscale' in kwargs.keys():
+        ax.set_xscale(kwargs['yscale'])
+
+    # Axes limits
+    xmin, xmax = ax.get_xlim()
+    ymin, ymax = ax.get_ylim()
+    if 'xmin' in kwargs.keys():
+        xmin = kwargs['xmin']
+    if 'xmax' in kwargs.keys():
+        xmax = kwargs['xmax']
+    if 'ymin' in kwargs.keys():
+        ymin = kwargs['ymin']
+    if 'ymax' in kwargs.keys():
+        ymax = kwargs['ymax']
+    ax.set_xlim(xmin, xmax)
+    ax.set_ylim(ymin, ymax)
+
     return
 
-def subplot_set_labels(**kwargs):
+def subplot_labels(**kwargs):
     ax = kwargs['ax']
-    if 'n_title' in kwargs.keys():
-        ax.set_title(kwargs['n_title'])
-    if 'n_xlabel' in kwargs.keys():
-        ax.set_xlabel(kwargs['n_xlabel'])
-    if 'n_ylabel' in kwargs.keys():
-        ax.set_ylabel(kwargs['n_ylabel'])
+    if 'title' in kwargs.keys():
+        ax.set_title(kwargs['title'])
+    if 'xlabel' in kwargs.keys():
+        ax.set_xlabel(kwargs['xlabel'])
+    if 'ylabel' in kwargs.keys():
+        ax.set_ylabel(kwargs['ylabel'])
     return
 
-def subplot_set_fonts(**kwargs):
+def subplot_fonts(**kwargs):
     ax = kwargs['ax']
-    if 'n_global_font_size' in kwargs.keys():
-        font_set = FONT_TABLE[kwargs['n_global_font_size']]
-    else:
-        font_set = FONT_TABLE[12]
 
-    if 'n_title_font_size' in kwargs.keys():
-        ax.set_title(ax.get_title(), fontsize=font_set[kwargs['n_title_font_size']])
-    else:
-        ax.set_title(ax.get_title(), fontsize=font_set['large'])
-    if 'n_xlabel_font_size' in kwargs.keys():
-        ax.set_xlabel(ax.get_xlabel(), 
-                fontsize=font_set[kwargs['n_xlabel_font_size']])
-    else:
-        ax.set_xlabel(ax.get_xlabel(), fontsize=font_set['normalsize'])
-    if 'n_ylabel_font_size' in kwargs.keys():
-        ax.set_ylabel(ax.get_ylabel(), 
-                fontsize=font_set[kwargs['n_ylabel_font_size']])
-    else:
-        ax.set_ylabel(ax.get_ylabel(), fontsize=font_set['normalsize'])
-    if 'n_xtick_font_size' in kwargs.keys():
-        ax.tick_params(axis='x', which='major', 
-                labelsize=font_set[kwargs['n_xtick_font_size']])
-    else:
-        ax.tick_params(axis='x', which='major', labelsize=font_set['small'])
-    if 'n_ytick_font_size' in kwargs.keys():
-        ax.tick_params(axis='y', which='major', 
-                labelsize=font_set[kwargs['n_ytick_font_size']])
-    else:
-        ax.tick_params(axis='y', which='major', labelsize=font_set['small'])
-    
+    argvals = {
+            'fontsize': 17,
+            'title': 'large',
+            'xlabel': 'normalsize',
+            'ylabel': 'normalsize',
+            'xtick': 'small',
+            'ytick': 'small',
+            'legend': 'normalsize',
+            'colorbar': 'normalsize'
+            }
+
+    for k,v in kwargs.items():
+        argvals[k] = v
+
+    font_set = FONT_TABLE[argvals['fontsize']]
+
+    ax.set_title(ax.get_title(), fontsize=font_set[argvals['title']])
+    ax.set_xlabel(ax.get_xlabel(), 
+            fontsize=font_set[argvals['xlabel']])
+    ax.set_ylabel(ax.get_ylabel(), 
+            fontsize=font_set[argvals['ylabel']])
+    ax.tick_params(axis='x', which='major', 
+            labelsize=font_set[argvals['xtick']])
+    ax.tick_params(axis='y', which='major', 
+            labelsize=font_set[argvals['ytick']])
+
     if len(ax.get_legend_handles_labels()[0]):  # only if a legend is present
-        if 'n_legend_font_size' in kwargs.keys():
-            ax.legend(fontsize=font_set[kwargs['n_legend_font_size']])
-        else:
-            ax.legend(fontsize=font_set['normalsize'])
+        ax.legend(fontsize=font_set[argvals['legend']])
 
     # color bar
     if kwargs['func'] in ['gpd.plot']:
@@ -180,37 +268,22 @@ def subplot_set_fonts(**kwargs):
             # Note that axes is arranged the following way: 
             # (ax1, cbar1, ax2, cbar2, ...)
             cbar = ax.figure.axes[-1]
-            if 'n_colorbar_font_size' in kwargs.keys():
-                cbar.tick_params(labelsize=font_set[kwargs['n_colorbar_font_size']])
-            else:
-                cbar.tick_params(labelsize=font_set['normalsize'])
+            cbar.tick_params(labelsize=font_set[argvals['colorbar']])
         except Exception as err:
             logging.warning(f'Some error related to colorbar: {err}')
             pass
     return
 
+
+
+
+
+
+
+
+
 def set_axes_grid(figobj, axis_type='normal'):
-    if type(figobj) == plt.subplot:
-        if axis_type == 'normal':
-            figobj.spines['right'].set_visible(False)
-            figobj.spines['top'].set_visible(False)
-            figobj.spines['bottom'].set_color(AXES_COLOR)
-            figobj.spines['left'].set_color(AXES_COLOR)
-            figobj.grid(color='#cccccc',which='major',linewidth=1)
-            figobj.grid(True,color='#dddddd',which='minor',linewidth=.5)
-        elif axis_type == 'histy':
-            figobj.grid(axis='y')
-            figobj.spines[['left', 'right', 'top']].set_visible(False)
-            figobj.spines['bottom'].set_color(AXES_COLOR)
-            figobj.tick_params(axis='y', length=0)
-        elif axis_type == 'histx':
-            figobj.grid(axis='x')
-            figobj.spines[['bottom', 'right', 'top']].set_visible(False)
-            figobj.spines['left'].set_color(AXES_COLOR)
-            figobj.tick_params(axis='x', length=0)
-        else:
-            raise ValueError(f'Unsupported grid type "{axis_type}".')
-    elif type(figobj) == sns.axisgrid.FacetGrid:
+    if type(figobj) == sns.axisgrid.FacetGrid:
         if axis_type == 'normal':
             pass
         elif axis_type == 'histy':

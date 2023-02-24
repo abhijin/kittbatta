@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.0
+* Major rehaul of frontend. Removed classes. A uniform method to feed in
+  arguments. Geopandas support added.
+
 ## v0.2.0
 * added ``aautils/timer.py``
 

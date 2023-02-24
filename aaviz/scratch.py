@@ -1,3 +1,8 @@
+SNS_PARAMS = {
+        'style': 'whitegrid',
+        'palette': COLORS['mathematica']
+        }
+
 def create_subplot_grids(fig, rows, cols):
     return fig.add_gridspec(rows, cols)
     # Use: ax=fig.add_subplot(gs[0,0])
