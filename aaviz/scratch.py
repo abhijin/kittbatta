@@ -1,3 +1,119 @@
+def set_axes_grid(figobj, axis_type='normal'):
+    if type(figobj) == sns.axisgrid.FacetGrid:
+        if axis_type == 'normal':
+            pass
+        elif axis_type == 'histy':
+            figobj.despine(left=True)
+        else:
+            raise ValueError(f'Unsupported grid type "{axis_type}".')
+    return
+
+def set_labels(ax=None, title=None, xlabel=None, ylabel=None):
+    if title is not None:
+        ax.set_title(title)
+    if xlabel is not None:
+        ax.set_xlabel(xlabel)
+    if ylabel is not None:
+        ax.set_ylabel(ylabel)
+    return
+
+def set_fonts(ax=None, global_font_size=None, **kwargs):
+    font_set = FONT_TABLE[global_font_size]
+
+    if 'title' in kwargs.keys():
+        ax.set_title(ax.get_title(), fontsize=font_set[kwargs['title']])
+    else:
+        ax.set_title(ax.get_title(), fontsize=font_set['large'])
+    if 'xlabel' in kwargs.keys():
+        ax.set_xlabel(ax.get_xlabel(), fontsize=font_set[kwargs['xlabel']])
+    else:
+        ax.set_xlabel(ax.get_xlabel(), fontsize=font_set['normalsize'])
+    if 'ylabel' in kwargs.keys():
+        ax.set_ylabel(ax.get_ylabel(), fontsize=font_set[kwargs['ylabel']])
+    else:
+        ax.set_ylabel(ax.get_ylabel(), fontsize=font_set['normalsize'])
+    if 'xtick' in kwargs.keys():
+        ax.tick_params(axis='x', which='major', 
+                labelsize=font_set[kwargs['xtick']])
+    else:
+        ax.tick_params(axis='x', which='major', labelsize=font_set['small'])
+    if 'ytick' in kwargs.keys():
+        ax.tick_params(axis='y', which='major', 
+                labelsize=font_set[kwargs['ytick']])
+    else:
+        ax.tick_params(axis='y', which='major', labelsize=font_set['small'])
+    return
+
+def texify(string):
+    string=sub('_','\_',string)
+    string=sub('%','\%',string)
+    return string
+
+def set_plot_at_zero(axis):
+    #axis.set_facecolor('#eeeeee')
+    axis.spines['bottom'].set_position('zero')
+    return
+
+def set_minor_tics(axis):
+    axis.minorticks_on()
+    axis.xaxis.set_minor_locator(AutoMinorLocator(2))
+    axis.yaxis.set_minor_locator(AutoMinorLocator(2))
+    return
+
+def square_grid_cells_by_x(axis, num_cells_x, num_cells_y, 
+        labels_step_x, labels_step_y, type_x = None, type_y = None):
+
+    # set xticks
+    xmin, xmax = axis.get_xlim()
+    xticks = np.linspace(xmin, xmax, num=num_cells_x+1)
+    xtick_labels = [None] * len(xticks)
+
+    # check if all 
+    for i in range(0,len(xticks),labels_step_x):
+        if type_x:
+            xtick_labels[i] = type_x(xticks[i])
+        else:
+            xtick_labels[i] = xticks[i]
+    axis.set_xticks(xticks, labels=xtick_labels)
+
+    # set yticks
+    ymin, ymax = axis.get_ylim()
+    yticks = np.linspace(ymin, ymax, num=num_cells_y+1)
+    ytick_labels = [None] * len(yticks)
+    for i in range(0,len(yticks),labels_step_y):
+        if type_y:
+            ytick_labels[i] = type_y(yticks[i])
+        else:
+            ytick_labels[i] = yticks[i]
+    axis.set_yticks(yticks, labels=ytick_labels)
+
+    # set aspect
+    axis.set_aspect((xmax-xmin)/(ymax-ymin)*num_cells_y/num_cells_x)
+
+    # grid needs to be redrawn
+    axis.grid()
+
+    return
+    
+def set_scientific(axis, xy):
+    scientific_formatter = FuncFormatter(_scientific)
+    if xy == 'y':
+        axis.yaxis.set_major_formatter(scientific_formatter)
+    else:
+        axis.xaxis.set_major_formatter(scientific_formatter)
+    return
+
+def _scientific(x, pos):
+    # x:  tick value - ie. what you currently see in yticks
+    # pos: a position - ie. the index of the tick (from 0 to 9 in this example)
+    return '%.1E' % x
+
+def coords_to_geom(lat, lon, crs=None):
+    gdf = gpd.GeoDataFrame(geometry=[Point(xy) for xy in zip(lon, lat)])
+    gdf = gdf.set_crs(epsg=4326)
+    gdf = gdf.to_crs(**crs)
+    return gdf
+
 SNS_PARAMS = {
         'style': 'whitegrid',
         'palette': COLORS['mathematica']
