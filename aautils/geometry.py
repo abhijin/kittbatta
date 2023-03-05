@@ -11,6 +11,11 @@ DEFAULT_CRS = 'EPSG:4326'   # a geographic CRS for lat,lon
 EARTH_RADIUS = 6371     # in kms (6378 at equator and 6356 at poles)
 CELL_SIZE = 0.25        # degrees
 
+# To make flat maps
+AREA_CRS = {
+        'US': 'EPSG:3395'
+        }
+
 # AA: haven't made it to work, but promising for future
 def remove_accents(input_str):
     nfkd_form = unicodedata.normalize('NFKD', input_str)
@@ -236,6 +241,8 @@ def haversine(x1=None, y1=None, x2=None, y2=None, units='kilometers'):
     else:
         raise ValueError(f'Unsupported unit {units}')
 
+def latlon_to_geom(x,y):
+    return [Point(xy) for xy in zip(x,y)]
 
 # assign population to cells using landscan data
 def fill_population(data_grid_frame):

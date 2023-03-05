@@ -24,13 +24,15 @@ except:
 COLORS = {
         'mathematica': ['#5e82b5','#e09c24','#8fb030','#eb634f','#8778b3','#c46e1a','#5c9ec7','#fdbf6f'],
         'grand_budapest': ['#5b1a18','#fd6467','#f1bb7b','#d67236'],
-        'red_blue': ['#0060ad', '#dd181f']
+        'red_blue': ['#0060ad', '#dd181f'],
+        'datanovia': ["#FFDB6D", "#C4961A", "#F4EDCA", "#D16103", "#C3D7A4", 
+            "#52854C", "#4E84C4", "#293352"]
         }
 SNS_AXIS_PLOTS = ['sns.lineplot', 'sns.barplot', 'sns.histplot', 'sns.ecdfplot',
-        'sns.boxplot']
+        'sns.boxplot', 'sns.violinplot']
 AXIS_NORMAL = ['sns.lineplot']
 AXIS_HIST = ['sns.barplot', 'sns.histplot']
-AXIS_BOX = ['sns.boxplot']
+AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
 
 NON_FUNC_PARAMS = ['fig', 'subplot', 'title', 'xlabel', 'ylabel', 'data']
 HATCH = ['+', 'x', '\\', '*', 'o', '|', '.']
@@ -60,8 +62,12 @@ DEFAULT_FONTS = {
 # latex fontsizes
 FONT_TABLE=pd.DataFrame({9: {'miniscule': 4, 'tiny': 5, 'scriptsize': 6, 'footnotesize': 7, 'small': 8, 'normalsize': 9, 'large': 10, 'Large': 11, 'LARGE': 12, 'huge': 14, 'Huge': 17, 'HUGE': 20}, 10: {'miniscule': 5, 'tiny': 6, 'scriptsize': 7, 'footnotesize': 8, 'small': 9, 'normalsize': 10, 'large': 11, 'Large': 12, 'LARGE': 14, 'huge': 17, 'Huge': 20, 'HUGE': 25}, 11: {'miniscule': 6, 'tiny': 7, 'scriptsize': 8, 'footnotesize': 9, 'small': 10, 'normalsize': 11, 'large': 12, 'Large': 14, 'LARGE': 17, 'huge': 20, 'Huge': 25, 'HUGE': 30}, 12: {'miniscule': 7, 'tiny': 8, 'scriptsize': 9, 'footnotesize': 10, 'small': 11, 'normalsize': 12, 'large': 14, 'Large': 17, 'LARGE': 20, 'huge': 25, 'Huge': 30, 'HUGE': 36}, 14: {'miniscule': 8, 'tiny': 9, 'scriptsize': 10, 'footnotesize': 11, 'small': 12, 'normalsize': 14, 'large': 17, 'Large': 20, 'LARGE': 25, 'huge': 30, 'Huge': 36, 'HUGE': 48}, 17: {'miniscule': 9, 'tiny': 10, 'scriptsize': 11, 'footnotesize': 12, 'small': 14, 'normalsize': 17, 'large': 20, 'Large': 25, 'LARGE': 30, 'huge': 36, 'Huge': 48, 'HUGE': 60}, 20: {'miniscule': 10, 'tiny': 11, 'scriptsize': 12, 'footnotesize': 14, 'small': 17, 'normalsize': 20, 'large': 25, 'Large': 30, 'LARGE': 36, 'huge': 48, 'Huge': 60, 'HUGE': 72}, 25: {'miniscule': 11, 'tiny': 12, 'scriptsize': 14, 'footnotesize': 17, 'small': 20, 'normalsize': 25, 'large': 30, 'Large': 36, 'LARGE': 48, 'huge': 60, 'Huge': 72, 'HUGE': 84}, 30: {'miniscule': 12, 'tiny': 14, 'scriptsize': 17, 'footnotesize': 20, 'small': 25, 'normalsize': 30, 'large': 36, 'Large': 48, 'LARGE': 60, 'huge': 72, 'Huge': 84, 'HUGE': 96}, 36: {'miniscule': 14, 'tiny': 17, 'scriptsize': 20, 'footnotesize': 25, 'small': 30, 'normalsize': 36, 'large': 48, 'Large': 60, 'LARGE': 72, 'huge': 84, 'Huge': 96, 'HUGE': 108}, 48: {'miniscule': 17, 'tiny': 20, 'scriptsize': 25, 'footnotesize': 30, 'small': 36, 'normalsize': 48, 'large': 60, 'Large': 72, 'LARGE': 84, 'huge': 96, 'Huge': 108, 'HUGE': 120}, 60: {'miniscule': 20, 'tiny': 25, 'scriptsize': 30, 'footnotesize': 36, 'small': 48, 'normalsize': 60, 'large': 72, 'Large': 84, 'LARGE': 96, 'huge': 108, 'Huge': 120, 'HUGE': 132}})
 
-AXES_COLOR='#888888'
+AXES_COLOR='#999999'
+GRID_COLOR='#cccccc'
 TICKS_COLOR='#222222'
+
+MAJOR_TICK_LINEWIDTH = .75
+MINOR_TICK_LINEWIDTH = .25
 
 FIGSIZE=(8,6)
 LINESTYLES=['solid','dashed']
@@ -99,8 +105,9 @@ def initiate_figure(**kwargs):
 
     # Figure
     if argvals['mode'] == 'figure':
+        fig_args = {k[3:]: v for k,v in argvals.items() if k[0:3] == 'fg_'}
         if argvals['subplot_mode'] == 'gridspec':
-            fig = plt.figure(figsize=[argvals['x'],argvals['y']])
+            fig = plt.figure(figsize=[argvals['x'],argvals['y']], **fig_args)
             subplot_args = {k[3:]: v for k,v in argvals.items() if k[0:3] == 'gs_'}
             gs = fig.add_gridspec(subplot_args['nrows'], subplot_args['ncols'])
             gs.update(wspace=subplot_args['wspace'], hspace=subplot_args['hspace']) # set the spacing between axes.
@@ -117,11 +124,12 @@ def initiate_figure(**kwargs):
     elif mode == 'facetgrid':
         return  # currently, nothing to return
 
-    # ax = fig.add_subplot(layout)
-
 def subplot(**kwargs):
 
-    logging.info(kwargs['la_title'])
+    try:
+        logging.info(kwargs['la_title'])
+    except KeyError:
+        logging.info('Empty title')
 
     # Collect all arguments that pertain to func
     for k in kwargs.keys():
@@ -180,17 +188,19 @@ def subplot(**kwargs):
     try:
         legend_visible = legend_args['visible']
         legend_args.pop('visible')
-        ax.legend().set_visible(False)
     except KeyError:
         legend_visible = True
 
     legend_handles = ax.get_legend_handles_labels()[0]
-    if len(legend_handles) and legend_args and legend_visible:
-        legend_fontsize = FONT_TABLE[fontsizes['fontsize']][
-            fontsizes['legend']]
-        ax.legend(**legend_args, fontsize=legend_fontsize)
+    if len(legend_handles):
+        if legend_visible:
+            legend_fontsize = FONT_TABLE[fontsizes['fontsize']][
+                fontsizes['legend']]
+            ax.legend(**legend_args, fontsize=legend_fontsize)
+        else:
+            ax.legend().set_visible(False)
 
-    return rcParams
+    return ax
 
 def subplot_func(**kwargs):
     funcname = kwargs['func']
@@ -206,7 +216,7 @@ def subplot_func(**kwargs):
                     'alpha': 1,
                     'edgecolor': 'white'
                     }
-        if funcname in ['sns.boxplot']:
+        if funcname in AXIS_BOX:
             argvals = {
                     'boxprops': {'edgecolor': 'white'},
                     'whiskerprops': {'color': TICKS_COLOR},
@@ -268,29 +278,36 @@ def subplot_axes_grid(**kwargs):
         ax.spines['top'].set_visible(False)
         ax.spines['bottom'].set_color(AXES_COLOR)
         ax.spines['left'].set_color(AXES_COLOR)
-        ax.grid(color='#cccccc',which='major',linewidth=1)
-        ax.grid(True,color='#dddddd',which='minor',linewidth=.5)
+        ax.grid(color=GRID_COLOR, which='major', linewidth=1)
+        ax.grid(True,color='#dddddd',which='minor',
+                linewidth=MINOR_TICK_LINEWIDTH)
         set_minor_tics(ax)
     elif axis_type == 'boxy':
-        ax.grid(axis='y')
+        ax.grid(axis='y', color=GRID_COLOR, which='major', 
+                linewidth=MAJOR_TICK_LINEWIDTH)
         ax.spines[['left', 'bottom', 'right', 'top']].set_visible(False)
         ax.spines['bottom'].set_color(AXES_COLOR)
         ax.tick_params(axis='y', length=0)
+        ax.tick_params(axis='x', length=0)
         ax.set_yticks(ax.get_yticks(), minor=False, colors=AXES_COLOR)
     elif axis_type == 'boxx':
-        ax.grid(axis='x')
+        ax.grid(axis='x', color=GRID_COLOR, which='major', 
+                linewidth=MAJOR_TICK_LINEWIDTH)
         ax.spines[['left', 'bottom', 'right', 'top']].set_visible(False)
         ax.spines['left'].set_color(AXES_COLOR)
+        ax.tick_params(axis='y', length=0)
         ax.tick_params(axis='x', length=0)
         ax.set_xticks(ax.get_xticks(), minor=False, colors=AXES_COLOR)
     elif axis_type == 'histy':
-        ax.grid(axis='y')
+        ax.grid(axis='y', color=GRID_COLOR, which='major', 
+                linewidth=MAJOR_TICK_LINEWIDTH)
         ax.spines[['left', 'right', 'top']].set_visible(False)
         ax.spines['bottom'].set_color(AXES_COLOR)
         ax.tick_params(axis='y', length=0)
         ax.set_yticks(ax.get_yticks(), minor=False, colors=AXES_COLOR)
     elif axis_type == 'histx':
-        ax.grid(axis='x')
+        ax.grid(axis='x', color=GRID_COLOR, which='major', 
+                linewidth=MAJOR_TICK_LINEWIDTH)
         ax.spines[['bottom', 'right', 'top']].set_visible(False)
         ax.spines['left'].set_color(AXES_COLOR)
         ax.tick_params(axis='x', length=0)
@@ -343,7 +360,8 @@ def subplot_labels(**kwargs):
     return
 
 def savefig(filename, **kwargs):
-    plt.savefig(filename, bbox_inches='tight', **kwargs)
+    # use pad_inches=0 to completely remove white space
+    plt.savefig(filename, bbox_inches='tight', pad_inches=0, **kwargs)
     return
 
 def subplot_fonts(**kwargs):
@@ -380,6 +398,36 @@ def subplot_fonts(**kwargs):
             pass
     return argvals
 
+# Get actual coordinates of points in pixels w.r.t. (0,0).
+# Helps in downstream tikz tasks.
+# Tip: Use pad_inches=0 during plot.savefig()
+def get_real_coordinates(fig, ax, units='cm', x=None, y=None):
+    # Shift coordinates by making them relative to (0,0)
+    xmin, xmax = ax.get_xlim()
+    ymin, ymax = ax.get_ylim()
+    xc = x - xmin
+    yc = y - ymin
+
+    # Set units
+    if units == 'px':
+        units_ratio = fig.dpi
+    elif units == 'cm':
+        units_ratio = 2.54 # 1 inch = 2.54cm
+    elif units == 'in':
+        units_ratio = 1
+
+    # Get ratio to scale
+    coord_width = xmax - xmin
+    coord_height = ymax - ymin
+    bbox = ax.get_window_extent().transformed(fig.dpi_scale_trans.inverted())
+    real_width = bbox.width * units_ratio
+    real_height = bbox.height * units_ratio
+    x_ratio = real_width / coord_width
+    y_ratio = real_height / coord_height
+
+    return xc*x_ratio, yc*y_ratio, real_width, real_height
+
+# This will return the ith color for now
 def get_style(k, i):
     j = 0
     for d in rcParams['axes.prop_cycle']():

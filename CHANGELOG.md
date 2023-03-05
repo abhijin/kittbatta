@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.4.0
+* graph_to_tikz and geometry updates. Hatching provided.
+
 ## v0.3.0
 * Major rehaul of frontend. Removed classes. A uniform method to feed in
   arguments. Geopandas support added.

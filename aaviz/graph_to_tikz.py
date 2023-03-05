@@ -53,6 +53,7 @@ END_STATEMENT = r'''
 
 DEFAULT_NODE_STYLE = 'draw'
 DEFAULT_EDGE_STYLE = ''
+DEFAULT_EDGE_DRAW = ''
 DEFAULT_NODE_LABEL = ''
 DEFAULT_EDGE_LABEL = ''
 DEFAULT_EDGE_LABEL_STYLE = ''
@@ -82,6 +83,8 @@ class GraphToDraw:
             self.nodes['style'] = DEFAULT_NODE_STYLE
         if 'style' not in self.edges.columns:
             self.edges['style'] = DEFAULT_EDGE_STYLE
+        if 'draw' not in self.edges.columns:
+            self.edges['draw'] = DEFAULT_EDGE_DRAW
         if 'label' not in self.nodes.columns:
             self.nodes['label'] = DEFAULT_NODE_LABEL
         if 'label' not in self.edges.columns:
@@ -179,9 +182,14 @@ class GraphToDraw:
         
         return
 
-    def displace_angles(self,displacement):
+    def displace_angles(self,displacement,mode='random'):
         # displacement for curved lines
-        disp = np.random.choice([-1,1],self.edges.shape[0]) * displacement
+        if mode == 'random':
+            disp = np.random.choice([-1,1],self.edges.shape[0]) * displacement
+        elif mode == 'fixed':
+            disp = displacement
+        else:
+            raise ValueError(f'Invalid mode "{mode}".')
         self.edges['out_angle'] = self.edges.source_angle - disp
         self.edges['in_angle'] = self.edges.target_angle + disp
 
@@ -194,8 +202,14 @@ class GraphToDraw:
         self.nodes['style'] = self.nodes['style'] + ',' + prefix + values
         return
 
-    def append_edge_attribute(self, prefix, values):
-        self.edges['style'] = self.edges['style'] + ',' + prefix + values
+    def append_edge_attribute(self, prefix, values, mode='edge'):
+        if mode == 'edge':
+            # Note that "style" is overloaded as it is also used in pandas
+            self.edges['style'] = self.edges['style'] + ',' + prefix + values
+        elif mode == 'draw':
+            self.edges.draw = self.edges.draw + ',' + prefix + values
+        else:
+            raise ValueError(f'Wrong mode {mode}.')
         return
 
     def append_edge_label_attribute(self, prefix, values):
@@ -272,9 +286,9 @@ def draw(G, mode='segment', outfile='out.tex'):
             out += generate_lens_edge(edge, directed)
         elif edge.label != DEFAULT_EDGE_LABEL:
             edge.label_style = 'inner sep=.5pt' + edge.label_style
-            out += f'\\draw ({edge.source}) edge[{edge.style}{directed}] node[{edge.label_style}] {{{edge.label}}} ({edge.target});\n'
+            out += f'\\draw[{edge.draw}] ({edge.source}) edge[{edge.style}{directed}] node[{edge.label_style}] {{{edge.label}}} ({edge.target});\n'
         else:
-            out += f'\\draw ({edge.source}) edge[{edge.style}{directed}] ({edge.target});\n'
+            out += f'\\draw[{edge.draw}] ({edge.source}) edge[{edge.style}{directed}] ({edge.target});\n'
 
 
     if mode == 'segment':
