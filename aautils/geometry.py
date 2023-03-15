@@ -1,3 +1,4 @@
+import contextily as ctx
 import geopandas as gpd
 import logging
 import numpy as np
@@ -12,8 +13,9 @@ EARTH_RADIUS = 6371     # in kms (6378 at equator and 6356 at poles)
 CELL_SIZE = 0.25        # degrees
 
 # To make flat maps
-AREA_CRS = {
-        'US': 'EPSG:3395'
+CRS = {
+        'latlon': 'EPSG:4326',
+        'area US': 'EPSG:3395'
         }
 
 # AA: haven't made it to work, but promising for future
@@ -241,8 +243,11 @@ def haversine(x1=None, y1=None, x2=None, y2=None, units='kilometers'):
     else:
         raise ValueError(f'Unsupported unit {units}')
 
-def latlon_to_geom(x,y):
-    return [Point(xy) for xy in zip(x,y)]
+def coords_to_geom(x, y, from_crs=None, to_crs=None):
+    gdf = gpd.GeoDataFrame(geometry=[Point(xy) for xy in zip(x, y)])
+    gdf = gdf.set_crs(from_crs)
+    gdf = gdf.to_crs(to_crs)
+    return gdf
 
 # assign population to cells using landscan data
 def fill_population(data_grid_frame):

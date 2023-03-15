@@ -108,12 +108,6 @@ def _scientific(x, pos):
     # pos: a position - ie. the index of the tick (from 0 to 9 in this example)
     return '%.1E' % x
 
-def coords_to_geom(lat, lon, crs=None):
-    gdf = gpd.GeoDataFrame(geometry=[Point(xy) for xy in zip(lon, lat)])
-    gdf = gdf.set_crs(epsg=4326)
-    gdf = gdf.to_crs(**crs)
-    return gdf
-
 SNS_PARAMS = {
         'style': 'whitegrid',
         'palette': COLORS['mathematica']

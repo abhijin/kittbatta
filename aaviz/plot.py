@@ -35,7 +35,7 @@ AXIS_HIST = ['sns.barplot', 'sns.histplot']
 AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
 
 NON_FUNC_PARAMS = ['fig', 'subplot', 'title', 'xlabel', 'ylabel', 'data']
-HATCH = ['+', 'x', '\\', '*', 'o', '|', '.']
+HATCH = ['+', 'x', '\\', '.', 'o', '|', '*']
 
 RC_PARAMS = {
         'font.family': 'serif',
@@ -150,16 +150,17 @@ def subplot(**kwargs):
     fig = kwargs['fig']
     func = kwargs['func']
 
-    # Create subplot
-    axis_list = fig.axes
-    
-    if 'sharex' in subplot_args.keys():
-        subplot_args['sharex'] = axis_list[subplot_args['sharex']]
-    if 'sharey' in subplot_args.keys():
-        subplot_args['sharey'] = axis_list[subplot_args['sharey']]
-    ax = fig.add_subplot(kwargs['grid'], **subplot_args)
-
-    kwargs['ax'] = ax
+    # Create subplot if not exists
+    if 'ax' in kwargs.keys():   # axis given
+        ax = kwargs['ax']
+    else:
+        axis_list = fig.axes
+        if 'sharex' in subplot_args.keys():
+            subplot_args['sharex'] = axis_list[subplot_args['sharex']]
+        if 'sharey' in subplot_args.keys():
+            subplot_args['sharey'] = axis_list[subplot_args['sharey']]
+        ax = fig.add_subplot(kwargs['grid'], **subplot_args)
+        kwargs['ax'] = ax
 
     # Decide function
     plot_args['data'] = kwargs['data']
