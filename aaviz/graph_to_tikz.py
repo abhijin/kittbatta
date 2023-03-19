@@ -182,7 +182,7 @@ class GraphToDraw:
         
         return
 
-    def displace_angles(self,displacement,mode='random'):
+    def displace_angles(self, displacement, mode='random'):
         # displacement for curved lines
         if mode == 'random':
             disp = np.random.choice([-1,1],self.edges.shape[0]) * displacement
@@ -190,6 +190,7 @@ class GraphToDraw:
             disp = displacement
         else:
             raise ValueError(f'Invalid mode "{mode}".')
+        self.edges['displacement'] = disp
         self.edges['out_angle'] = self.edges.source_angle - disp
         self.edges['in_angle'] = self.edges.target_angle + disp
 
@@ -198,8 +199,13 @@ class GraphToDraw:
         self.global_style = style_string
         return
 
-    def append_node_attribute(self, prefix, values):
-        self.nodes['style'] = self.nodes['style'] + ',' + prefix + values
+    def append_node_attribute(self, prefix, values, nodes=None):
+        if nodes:
+            self.nodes.loc[self.nodes.name.isin(nodes), 'style'] = \
+                    self.nodes[self.nodes.name.isin(nodes)]['style'] + ',' + \
+                    prefix + values
+        else:
+            self.nodes['style'] = self.nodes['style'] + ',' + prefix + values
         return
 
     def append_edge_attribute(self, prefix, values, mode='edge'):
@@ -370,7 +376,7 @@ def main():
 
     # set styles
     G.set_global_style('''
-every node/.style={circle},
+every node/.style={circle, opacity=.8},
 square/.style={rectangle, minimum width=4mm, minimum height=4mm},
 every edge/.style={draw,dashed,looseness=1,>=latex}''')
 
