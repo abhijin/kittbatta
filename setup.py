@@ -1,11 +1,13 @@
 import setuptools
 
 setuptools.setup(name='kittbatta',
-version='0.4',
-description="AA's helper functions",
-url='#',
-author='max',
-install_requires=['opencv-python'],
-author_email='',
-packages=setuptools.find_packages(),
-zip_safe=False)
+        version='0.5',
+        description="AA's helper functions",
+        url='#',
+        author='Abhijin Adiga',
+        install_requires=['opencv-python'],
+        author_email='',
+        packages=setuptools.find_packages(),
+        zip_safe=False,
+        include_package_data=True,
+        package_data={'': ['aadata/datasets/usa/*', 'aadata/datasets/world/*']})

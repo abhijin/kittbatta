@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.5.0
+* Datasets initiated and tests. graph_to_tikz minor updates
+
 ## v0.4.0
 * graph_to_tikz and geometry updates. Hatching provided.
 
