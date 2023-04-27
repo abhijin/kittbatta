@@ -23,7 +23,10 @@ import pandas as pd
 from pdb import set_trace
 from random import seed
 from re import sub
+from scipy.spatial import ConvexHull
 from subprocess import check_call
+
+GRAPH_COUNT = 1
 
 FORMAT = "[%(filename)s] [%(levelname)s]: %(message)s"
 PREAMBLE = r'''
@@ -39,10 +42,17 @@ PREAMBLE = r'''
 \newcommand{\lensarrow}[7]{ % ux,uy,vx,vy,in,out,arrowwidth
 \draw[-{Latex[width=#7},out=#5,in=#6] (#1,#2) -- (#3,#4);
 }
+
+\pgfdeclarelayer{nl}
+\pgfdeclarelayer{el}
+\pgfdeclarelayer{bg}
+\pgfdeclarelayer{fg}
+\pgfsetlayers{bg,el,main,nl,fg}
 '''
 
 BEGIN_STATEMENT = r'''
 \begin{document}
+\tikzset{>=latex, shorten >=.5pt, shorten <=.5pt}
 \begin{tikzpicture}
 '''
 
@@ -57,6 +67,7 @@ DEFAULT_EDGE_DRAW = ''
 DEFAULT_NODE_LABEL = ''
 DEFAULT_EDGE_LABEL = ''
 DEFAULT_EDGE_LABEL_STYLE = ''
+DEFAULT_COMMUNITY_STYLE = 'draw'
 
 LENS_THICKNESS_FACTOR = 20
 LENS_INNER_FACTOR = 10
@@ -64,14 +75,18 @@ LENS_NODE_DISP = .2
 
 # The GraphToDraw class contains properties and methods to
 # - generate coordinates for each node
-# - set those individual node and edge styles which are difficult to set directly.
+# - set those individual node and edge styles which are difficult to set 
+#   directly.
 # - set global styles
 class GraphToDraw:
     def __init__(self, nodes, edges, **kwargs):
+        global GRAPH_COUNT
+        if 'name' in kwargs.keys():
+            self.name = kwargs['name']
+        else:
+            self.name = f'{GRAPH_COUNT}'
+        GRAPH_COUNT += 1
         self.nodes = nodes
-        if 'seed' in kwargs.keys():
-            seed(kwargs['seed'])
-            np.random.seed(kwargs['seed'])
 
         self.edges = edges
         if 'directed' in kwargs.keys():
@@ -95,10 +110,11 @@ class GraphToDraw:
             self.edges['lens'] = False
         if 'weight' not in self.edges.columns:
             self.edges['weight'] = 1
-        self.global_style = ''
-        self.colors = ''
-        self.appendix = ''
         self.Gnx = None
+        self.scope_x = 0
+        self.scope_y = 0
+        self.communities = None
+        self.appendix = ''
 
     def __convert_to_networkx(self):
         if self.Gnx is None:
@@ -107,8 +123,14 @@ class GraphToDraw:
                 constructor = nx.DiGraph
             else:
                 constructor = nx.Graph
-            self.Gnx = nx.from_pandas_edgelist(self.edges, source='source', 
-                    target='target', create_using=constructor)
+            if 'weight' in self.edges.columns:
+                self.Gnx = nx.from_pandas_edgelist(self.edges, source='source', 
+                        target='target', 
+                        edge_attr='weight',
+                        create_using=constructor)
+            else:
+                self.Gnx = nx.from_pandas_edgelist(self.edges, source='source', 
+                        target='target', create_using=constructor)
             # isolated nodes
             isolated_nodes = list(set(self.nodes.name.tolist()).difference(
                     set(self.Gnx.nodes)))
@@ -194,11 +216,6 @@ class GraphToDraw:
         self.edges['out_angle'] = self.edges.source_angle - disp
         self.edges['in_angle'] = self.edges.target_angle + disp
 
-    def set_global_style(self, style_string):
-        logging.info('Setting global style ...')
-        self.global_style = style_string
-        return
-
     def append_node_attribute(self, prefix, values, nodes=None):
         if nodes:
             self.nodes.loc[self.nodes.name.isin(nodes), 'style'] = \
@@ -207,6 +224,9 @@ class GraphToDraw:
         else:
             self.nodes['style'] = self.nodes['style'] + ',' + prefix + values
         return
+
+    def reset_node_style(self):
+        self.nodes.style = DEFAULT_NODE_STYLE
 
     def append_edge_attribute(self, prefix, values, mode='edge'):
         if mode == 'edge':
@@ -218,19 +238,107 @@ class GraphToDraw:
             raise ValueError(f'Wrong mode {mode}.')
         return
 
+    def reset_edge_style(self):
+        self.edges.style = DEFAULT_EDGE_STYLE
+
     def append_edge_label_attribute(self, prefix, values):
         self.edges['label_style'] = self.edges['label_style'] + ',' + prefix + \
                 values
 
-    def add_appendix(self, string):
-        self.appendix = string
-        return
+    # Identifying communities
+    def community(self, column=None, label=False, stretch=.4, 
+            rounded_corners='1pt'):
+        self.communities = self.nodes.groupby(column).apply(
+                self._find_convex_hull, stretch=stretch).reset_index().rename(
+                        columns={column: 'name'})
+            
+        if label:
+            self.communities['label'] = self.communities.name
+        else:
+            self.communities['label'] = ''
+        self.communities['style'] = DEFAULT_COMMUNITY_STYLE + \
+                ', rounded corners=' + rounded_corners
 
-    def define_html_colors(self, names, codes):
-        color_string = '\n% custom colors\n'
-        for name, code in zip(names,codes):
-            color_string += f'\\definecolor{{{name}}}{{HTML}}{{{code}}}\n'
-        self.colors = color_string
+    def _find_convex_hull(self, com, stretch=.5):
+        NUM_PTS_CIRCUM = 10
+        points = zip(com.x.to_numpy(), com.y.to_numpy())
+        augmented_points = []
+        for p in points:
+            augmented_points += [\
+                    np.round((p[0] + np.cos(2*np.pi/NUM_PTS_CIRCUM*x)*stretch,
+                        p[1] + np.sin(2*np.pi/NUM_PTS_CIRCUM*x)*stretch), 2) \
+                                for x in range(0,NUM_PTS_CIRCUM+1)]
+        points = np.array(augmented_points)
+        con_points = points[ConvexHull(points).vertices]
+
+        return pd.Series({'community': com['name'].tolist(), 'convex_hull': con_points})
+
+    def append_community_attribute(self, prefix, values):
+        try:
+            if self.communities == None:
+                raise ValueError('No communities detected.')
+        except:
+            pass
+
+        self.communities['style'] = self.communities['style'] + \
+                ',' + prefix + values
+
+    def draw(self):
+    
+        # set global styles
+        out = f'\\begin{{scope}}[xshift={self.scope_x}cm,yshift={self.scope_y}cm]\n'
+    
+        out += '% Nodes\n\\begin{pgfonlayer}{nl}\n'
+    
+        for id,node in self.nodes.iterrows():
+            out += f"\\node[{node.style}] ({node['name']}) at ({node.x},{node.y}) {{{node.label}}};\n"
+    
+        out += '\\end{pgfonlayer}\n\n% Edges\n\\begin{pgfonlayer}{el}\n'
+    
+        directed = ''
+        if self.directed:
+            directed = ',->'
+    
+        for id,edge in self.edges.iterrows():
+            try:
+                if edge.directed == True:   # for mixed edges
+                    directed = ',->'
+                else:
+                    directed = ''
+            except:
+                pass
+    
+            if edge.lens:
+                out += generate_lens_edge(edge, directed)
+            elif edge.label != DEFAULT_EDGE_LABEL:
+                edge.label_style = 'inner sep=.5pt' + edge.label_style
+                out += f'\\draw[{edge.draw}] ({edge.source}) edge[{edge.style}{directed}] node[{edge.label_style}] {{{edge.label}}} ({edge.target});\n'
+            else:
+                out += f'\\draw[{edge.draw}] ({edge.source}) edge[{edge.style}{directed}] ({edge.target});\n'
+        out += '\\end{pgfonlayer}\n'
+
+        # Communities
+        out += '\n% Communities\n\\begin{pgfonlayer}{bg}'
+        for id,com in self.communities.iterrows():
+            com_str = '--'.join([f'({x[0]},{x[1]})' for x in com.convex_hull])
+            com_str = f'\\draw[{com.style}] {com_str}--cycle; %{com["name"]}\n'
+            ## if com.label != '':
+            ##     com_str = com_str + f'label={com.label}'
+            ## com_str = com_str + com.style + '] {};\n'
+            out += com_str
+            fp = com.convex_hull[0]
+            out += f'\\node at ({fp[0]},{fp[1]}) {{{com.label}}};\n'
+
+        out += '\\end{pgfonlayer}\n\n'
+
+        # Appendix
+        out += '\n% Appendix\n\\begin{pgfonlayer}{fg}'
+        out += self.appendix
+        out += '\\end{pgfonlayer}\n\n'
+
+        out += '\n\\end{scope}'
+                
+        return out
 
 def generate_lens_edge(edge, directed):
     outer_out_angle = np.round(edge.out_angle - 
@@ -260,52 +368,37 @@ def generate_lens_edge(edge, directed):
     return estring
 
 
-def draw(G, mode='segment', outfile='out.tex'):
+def define_html_colors(color_dict):
+    colors_string = '\n% custom colors\n'
+    for name, code in color_dict.items():
+        colors_string += f'\\definecolor{{{name}}}{{HTML}}{{{code}}}\n'
+    return colors_string
+
+def to_tikz(G_list, colors=None, global_style='', appendix='', 
+        mode='segment', outfile='out.tex'):
 
     # set global styles
-    if G.global_style == '':
-        out = ''
-    else:
-        out = '[' + G.global_style + ']\n\n'
+    out = ''
+    if global_style != '':
+        out = '[' + global_style + ']\n\n'
 
-    out += '% Nodes\n'
+    for G in G_list:
+        out += G.draw()
+        out += '\n\n'
 
-    for id,node in G.nodes.iterrows():
-        out += f"\\node[{node.style}] ({node['name']}) at ({node.x},{node.y}) {{{node.label}}};\n"
-
-    out += '\n% Edges\n'
-
-    directed = ''
-    if G.directed:
-        directed = ',->'
-
-    for id,edge in G.edges.iterrows():
-        try:
-            if edge.directed == True:   # for mixed edges
-                directed = ',->'
-            else:
-                directed = ''
-        except:
-            pass
-
-        if edge.lens:
-            out += generate_lens_edge(edge, directed)
-        elif edge.label != DEFAULT_EDGE_LABEL:
-            edge.label_style = 'inner sep=.5pt' + edge.label_style
-            out += f'\\draw[{edge.draw}] ({edge.source}) edge[{edge.style}{directed}] node[{edge.label_style}] {{{edge.label}}} ({edge.target});\n'
-        else:
-            out += f'\\draw[{edge.draw}] ({edge.source}) edge[{edge.style}{directed}] ({edge.target});\n'
-
+    colors_string = ''
+    if colors:
+        colors_string = define_html_colors(colors)
 
     if mode == 'segment':
-        return G.colors + out
+        return colors_string + out
     elif mode == 'standalone':
-        return PREAMBLE + G.colors + BEGIN_STATEMENT + out + G.appendix + \
+        return PREAMBLE + colors_string + BEGIN_STATEMENT + out + appendix + \
                 END_STATEMENT
     elif mode == 'file':
-        with open(outfile,'w') as f:
-            f.write(PREAMBLE + G.colors + BEGIN_STATEMENT + out + G.appendix + \
-                    END_STATEMENT)
+        with open(outfile, 'w') as f:
+            f.write(PREAMBLE + colors_string + BEGIN_STATEMENT + out + \
+                    appendix + END_STATEMENT)
     else:
         logging.error(f'Wrong mode {mode}')
         raise
@@ -392,6 +485,20 @@ every edge/.style={draw,dashed,looseness=1,>=latex}''')
     logging.info('Written to out.tex.')
 
     compile('out.tex')
+
+def load_color(name):
+    if name == 'red_blue':
+        return {'Blue': '0060AD', 'Red': 'DD181F'}
+    elif name == 'cb_set3':
+        return {'Teal': '8DD3C7',
+                'Yellow': 'FFFFB3',
+                'Purple': 'BEBADA',
+                'Red': 'FB8072',
+                'Blue': '80B1D3',
+                'Orange': 'FDB462',
+                'Green': 'B3DE69'}
+    else:
+        raise ValueError(f'Wrong color set "{name}".')
 
 if __name__ == "__main__":
     main()

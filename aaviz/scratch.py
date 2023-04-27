@@ -1,3 +1,17 @@
+    # Identifying communities
+    def community(self, column=None, label=False):
+        self.communities = self.nodes.groupby(column).apply(
+                lambda x: x['name'].tolist()).reset_index().rename(columns={
+                    column: 'name',
+                    0: 'community'})
+        if label:
+            self.communities['label'] = self.communities.name
+        else:
+            self.communities['label'] = ''
+        self.communities['style'] = DEFAULT_COMMUNITY_STYLE
+
+
+
 def set_axes_grid(figobj, axis_type='normal'):
     if type(figobj) == sns.axisgrid.FacetGrid:
         if axis_type == 'normal':
