@@ -55,6 +55,7 @@ DEFAULT_FONTS = {
         'xtick': 'small',
         'ytick': 'small',
         'legend': 'normalsize',
+        'legend_title': 'normalsize',
         'colorbar': 'normalsize'
         }
 
@@ -185,6 +186,12 @@ def subplot(**kwargs):
     if ytick_args:
         ax.set_yticklabels(ax.get_yticklabels(), **ytick_args)
 
+    set_legend(ax, legend_args, FONT_TABLE[fontsizes['fontsize']], 
+            fontsize_args)
+
+    return ax
+
+def set_legend(ax, legend_args, fonts, fontsize_args):
     # Only if a legend is present and there are some modifications to be made
     try:
         legend_visible = legend_args['visible']
@@ -195,14 +202,10 @@ def subplot(**kwargs):
     legend_handles = ax.get_legend_handles_labels()[0]
     if len(legend_handles):
         if legend_visible:
-            legend_fontsize = FONT_TABLE[fontsizes['fontsize']][
-                fontsizes['legend']]
-            ax.legend(**legend_args, fontsize=legend_fontsize)
+            ax.legend(**legend_args, fontsize=fonts[fontsize_args['legend']], 
+                    title_fontsize=fonts[fontsize_args['legend_title']])
         else:
             ax.legend().set_visible(False)
-
-    return ax
-
 def subplot_func(**kwargs):
     funcname = kwargs['func']
     plot_args = kwargs['plot_args']
@@ -217,11 +220,16 @@ def subplot_func(**kwargs):
                     'alpha': 1,
                     'edgecolor': 'white'
                     }
-        if funcname in AXIS_BOX:
+        elif funcname in AXIS_BOX:
             argvals = {
                     'boxprops': {'edgecolor': 'white'},
                     'whiskerprops': {'color': TICKS_COLOR},
                     }
+        elif funcname in AXIS_NORMAL:
+            argvals = {}
+        else:
+            raise(f'The plot "{func_name}" is not supported.')
+
         for k,v in argvals.items():
             if k not in plot_args.keys():
                 plot_args[k] = v
@@ -282,7 +290,8 @@ def subplot_axes_grid(**kwargs):
         ax.grid(color=GRID_COLOR, which='major', linewidth=1)
         ax.grid(True,color='#dddddd',which='minor',
                 linewidth=MINOR_TICK_LINEWIDTH)
-        set_minor_tics(ax)
+        ax.xaxis.set_minor_locator(AutoMinorLocator(2))
+        ax.yaxis.set_minor_locator(AutoMinorLocator(2))
     elif axis_type == 'boxy':
         ax.grid(axis='y', color=GRID_COLOR, which='major', 
                 linewidth=MAJOR_TICK_LINEWIDTH)
@@ -384,9 +393,6 @@ def subplot_fonts(**kwargs):
     ax.tick_params(axis='y', which='major', 
             labelsize=font_set[argvals['ytick']])
 
-    if len(ax.get_legend_handles_labels()[0]):  # only if a legend is present
-        ax.legend(fontsize=font_set[argvals['legend']])
-
     # color bar
     if kwargs['func'] in ['gpd.plot']:
         try:
@@ -428,6 +434,46 @@ def get_real_coordinates(fig, ax, units='cm', x=None, y=None):
 
     return xc*x_ratio, yc*y_ratio, real_width, real_height
 
+# For fancy square grids
+def square_grid_cells(axis=None, num_cells_x=None, num_cells_y=None, 
+        labels_step_x=1, labels_step_y=1, type_x=None, type_y=None):
+
+    # Set xticks
+    # We are setting minor ticks due to an offset issue. Hence, reducing the 
+    # number of cells by half.
+    xmin, xmax = axis.get_xlim()
+    xticks = np.linspace(xmin, xmax, num=int(np.floor(num_cells_x/2))+1)
+    xtick_labels = [None] * len(xticks)
+
+    # check if all 
+    for i in range(0,len(xticks),labels_step_x):
+        if type_x:
+            xtick_labels[i] = type_x(xticks[i])
+        else:
+            xtick_labels[i] = xticks[i]
+    axis.set_xticks(xticks, labels=xtick_labels)
+
+    # set yticks
+    ymin, ymax = axis.get_ylim()
+    yticks = np.linspace(ymin, ymax, num=int(np.floor(num_cells_y/2))+1)
+    ytick_labels = [None] * len(yticks)
+    for i in range(0,len(yticks),labels_step_y):
+        if type_y:
+            ytick_labels[i] = type_y(yticks[i])
+        else:
+            ytick_labels[i] = yticks[i]
+    axis.set_yticks(yticks, labels=ytick_labels)
+
+    # set aspect
+    axis.set_aspect((xmax-xmin)/(ymax-ymin)*num_cells_y/num_cells_x)
+
+    # grid needs to be redrawn
+    axis.tick_params(axis='both', which='minor', labelleft=False, 
+            labelbottom=False)
+    axis.grid(color=GRID_COLOR, which='both', linewidth=.5)
+
+    return
+
 # This will return the ith color for now
 def get_style(k, i):
     j = 0
@@ -435,6 +481,21 @@ def get_style(k, i):
         if i == j:
             return d[k]
         j += 1
+
+# Mandatory dictionary fields: x, y, text for each list element
+def text(ax=None, text=None, **kwargs):
+    if type(text) == pd.DataFrame:
+        text = text.to_dict('records')
+
+    for t in text:
+        ax.text(t['x'], t['y'], t['text'], **kwargs)
+
+def vlines(ax=None, lines=None, **kwargs):
+    if type(lines) == pd.DataFrame:
+        lines = lines.to_dict('records')
+
+    for l in lines:
+        ax.vlines(l['x'], l['ymin'], l['ymax'], **kwargs)
 
 def main():
     # parser
