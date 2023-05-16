@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.6.0
+* Font and legend reorganization. Added munging.py.
+
 ## v0.5.0
 * Datasets initiated and tests. graph_to_tikz minor updates
 
