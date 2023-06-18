@@ -85,8 +85,8 @@ def initiate_figure(**kwargs):
             'subplot_mode': 'gridspec',
             'x': FIGSIZE[0],
             'y': FIGSIZE[1],
-            'gs_wspace': 0.005,
-            'gs_hspace': 0.005,
+            'gs_wspace': 0.2,
+            'gs_hspace': 0.2,
             'gs_nrows': 1,
             'gs_ncols': 1,
             }
@@ -191,7 +191,7 @@ def subplot(**kwargs):
 
     return ax
 
-def set_legend(ax, legend_args, fonts, fontsize_args):
+def set_legend(ax, legend_args, fonts_table, fontsize_args):
     # Only if a legend is present and there are some modifications to be made
     try:
         legend_visible = legend_args['visible']
@@ -199,13 +199,23 @@ def set_legend(ax, legend_args, fonts, fontsize_args):
     except KeyError:
         legend_visible = True
 
+    # set fonts
+    legend_fonts = {}
+    for type in ['legend', 'legend_title']:
+        if type in fontsize_args.keys():
+            legend_fonts[type] = fontsize_args[type]
+        else:
+            legend_fonts[type] = DEFAULT_FONTS[type]
+
     legend_handles = ax.get_legend_handles_labels()[0]
     if len(legend_handles):
         if legend_visible:
-            ax.legend(**legend_args, fontsize=fonts[fontsize_args['legend']], 
-                    title_fontsize=fonts[fontsize_args['legend_title']])
+            ax.legend(**legend_args, 
+                    fontsize=fonts_table[legend_fonts['legend']], 
+                    title_fontsize=fonts_table[legend_fonts['legend_title']])
         else:
             ax.legend().set_visible(False)
+
 def subplot_func(**kwargs):
     funcname = kwargs['func']
     plot_args = kwargs['plot_args']

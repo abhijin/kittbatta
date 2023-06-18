@@ -1,6 +1,9 @@
 # Changelog
 
 ## v0.6.0
+* Font bug.
+
+## v0.6.0
 * Font and legend reorganization. Added munging.py.
 
 ## v0.5.0

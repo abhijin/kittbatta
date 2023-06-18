@@ -247,11 +247,12 @@ class GraphToDraw:
 
     # Identifying communities
     def community(self, column=None, label=False, stretch=.4, 
-            rounded_corners='1pt'):
-        self.communities = self.nodes.groupby(column).apply(
-                self._find_convex_hull, stretch=stretch).reset_index().rename(
+            rounded_corners='1pt', smoothness=10):
+        self.communities = self.nodes[~self.nodes[column].isnull()].groupby(
+                column).apply(self._find_convex_hull, stretch=stretch,
+                        smoothness=smoothness).reset_index().rename(
                         columns={column: 'name'})
-            
+
         if label:
             self.communities['label'] = self.communities.name
         else:
@@ -259,15 +260,16 @@ class GraphToDraw:
         self.communities['style'] = DEFAULT_COMMUNITY_STYLE + \
                 ', rounded corners=' + rounded_corners
 
-    def _find_convex_hull(self, com, stretch=.5):
-        NUM_PTS_CIRCUM = 10
+    # smoothness is an integer that decides number of points in the
+    # circumference.
+    def _find_convex_hull(self, com, stretch=.5, smoothness=None):
         points = zip(com.x.to_numpy(), com.y.to_numpy())
         augmented_points = []
         for p in points:
             augmented_points += [\
-                    np.round((p[0] + np.cos(2*np.pi/NUM_PTS_CIRCUM*x)*stretch,
-                        p[1] + np.sin(2*np.pi/NUM_PTS_CIRCUM*x)*stretch), 2) \
-                                for x in range(0,NUM_PTS_CIRCUM+1)]
+                    np.round((p[0] + np.cos(2*np.pi/smoothness*x)*stretch,
+                        p[1] + np.sin(2*np.pi/smoothness*x)*stretch), 2) \
+                                for x in range(0,smoothness+1)]
         points = np.array(augmented_points)
         con_points = points[ConvexHull(points).vertices]
 
@@ -284,6 +286,10 @@ class GraphToDraw:
                 ',' + prefix + values
 
     def draw(self):
+        if self.nodes.isnull().sum().sum():
+            logging.warning('Found some Nans in nodes ...')
+        if self.edges.isnull().sum().sum():
+            logging.warning('Found some Nans in edges ...')
     
         # set global styles
         out = f'\\begin{{scope}}[xshift={self.scope_x}cm,yshift={self.scope_y}cm]\n'
@@ -319,15 +325,18 @@ class GraphToDraw:
 
         # Communities
         out += '\n% Communities\n\\begin{pgfonlayer}{bg}'
-        for id,com in self.communities.iterrows():
-            com_str = '--'.join([f'({x[0]},{x[1]})' for x in com.convex_hull])
-            com_str = f'\\draw[{com.style}] {com_str}--cycle; %{com["name"]}\n'
-            ## if com.label != '':
-            ##     com_str = com_str + f'label={com.label}'
-            ## com_str = com_str + com.style + '] {};\n'
-            out += com_str
-            fp = com.convex_hull[0]
-            out += f'\\node at ({fp[0]},{fp[1]}) {{{com.label}}};\n'
+        try:
+            for id,com in self.communities.iterrows():
+                com_str = '--'.join([f'({x[0]},{x[1]})' for x in com.convex_hull])
+                com_str = f'\\draw[{com.style}] {com_str}--cycle; %{com["name"]}\n'
+                ## if com.label != '':
+                ##     com_str = com_str + f'label={com.label}'
+                ## com_str = com_str + com.style + '] {};\n'
+                out += com_str
+                fp = com.convex_hull[0]
+                out += f'\\node at ({fp[0]},{fp[1]}) {{{com.label}}};\n'
+        except AttributeError:
+            logging.warning('Did not find any communities, ignoring ...')
 
         out += '\\end{pgfonlayer}\n\n'
 
@@ -409,96 +418,3 @@ def compile(texfile):
                 ['pdflatex','-interaction','nonstopmode','-halt-on-error',texfile],
                 stdout=fnull)
 
-def main():
-    # Parser
-    parser=argparse.ArgumentParser(description=DESC,
-            formatter_class=argparse.RawTextHelpFormatter)
-    parser.add_argument("-s", "--seed", type=int, help="Random seed for layouts.")
-    parser.add_argument("--directed", action='store_true',
-            help="Directed or undirected.")
-    
-    parser.add_argument("-d", "--debug", action="store_true")
-    parser.add_argument("-q", "--quiet", action="store_true")
-    args = parser.parse_args()
-    
-    # set logger
-    if args.debug:
-       logging.basicConfig(level=logging.DEBUG,format=FORMAT)
-    elif args.quiet:
-       logging.basicConfig(level=logging.WARNING,format=FORMAT)
-    else:
-       logging.basicConfig(level=logging.INFO,format=FORMAT)
-
-    # read node and edge files
-    nodes = pd.DataFrame({'name': [0,1,2,3]})
-    edges = pd.DataFrame({'source': [0,0,1,2,3], 'target': [1,2,2,3,0]})
-
-    # initiate graph for drawing
-    G = GraphToDraw(nodes,edges,directed=args.directed)
-
-    # layout
-    G.layout('spring')
-
-    # scale
-    G.layout_scale_round(0,5,0,5)
-
-    # find angles for curved edges (after scaling)
-    G.compute_edge_angles()
-    # G.displace_angles(10)
-    G.append_edge_attribute('out=',G.edges.out_angle.astype(str))
-    G.append_edge_attribute('in=',G.edges.in_angle.astype(str))
-
-    # lens edges
-    G.edges.loc[1, 'lens'] = True
-    G.edges['color'] = 'black!20'
-
-    # color
-    colors = ['blue', 'green']
-    html = ['CBD5E8', 'B3E2CD']
-    G.define_html_colors(colors,html)
-    node_color = pd.Series(['blue'] * G.nodes.shape[0])
-    node_color[0] = 'purple!50'
-    node_color[2] = 'green'
-    node_color[3] = 'red!60'
-    G.append_node_attribute('fill=',node_color)
-
-    # shape
-    node_shape = pd.Series(['circle'] * G.nodes.shape[0])
-    node_shape[1] = 'square'
-    G.append_node_attribute('',node_shape)
-
-    # set styles
-    G.set_global_style('''
-every node/.style={circle, opacity=.8},
-square/.style={rectangle, minimum width=4mm, minimum height=4mm},
-every edge/.style={draw,dashed,looseness=1,>=latex}''')
-
-    # label
-    G.nodes['label'] = G.nodes.name
-
-    # draw
-    out = draw(G, mode='standalone')
-
-    # output graph
-    with open('out.tex','w') as f:
-        f.write(out)
-    logging.info('Written to out.tex.')
-
-    compile('out.tex')
-
-def load_color(name):
-    if name == 'red_blue':
-        return {'Blue': '0060AD', 'Red': 'DD181F'}
-    elif name == 'cb_set3':
-        return {'Teal': '8DD3C7',
-                'Yellow': 'FFFFB3',
-                'Purple': 'BEBADA',
-                'Red': 'FB8072',
-                'Blue': '80B1D3',
-                'Orange': 'FDB462',
-                'Green': 'B3DE69'}
-    else:
-        raise ValueError(f'Wrong color set "{name}".')
-
-if __name__ == "__main__":
-    main()
