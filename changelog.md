@@ -1,6 +1,9 @@
 # Changelog
 
-## v0.6.0
+## v0.8.0
+* heatmap added
+
+## v0.7.0
 * Font bug.
 
 ## v0.6.0

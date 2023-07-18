@@ -29,10 +29,12 @@ COLORS = {
             "#52854C", "#4E84C4", "#293352"]
         }
 SNS_AXIS_PLOTS = ['sns.lineplot', 'sns.barplot', 'sns.histplot', 'sns.ecdfplot',
-        'sns.boxplot', 'sns.violinplot']
+        'sns.boxplot', 'sns.violinplot', 'sns.heatmap']
 AXIS_NORMAL = ['sns.lineplot']
+AXIS_HEAT = ['sns.heatmap']
 AXIS_HIST = ['sns.barplot', 'sns.histplot']
 AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
+AXIS_NONE = ['gpd.plot', 'gpd.boundary.plot']
 
 NON_FUNC_PARAMS = ['fig', 'subplot', 'title', 'xlabel', 'ylabel', 'data']
 HATCH = ['+', 'x', '\\', '.', 'o', '|', '*']
@@ -44,6 +46,7 @@ RC_PARAMS = {
         'xtick.labelsize': 'small',
         'ytick.labelsize': 'small',
         'text.usetex': True,
+        'text.latex.preamble': '',
         'axes.prop_cycle': cycler(color=COLORS['mathematica']) 
         }
 
@@ -56,7 +59,7 @@ DEFAULT_FONTS = {
         'ytick': 'small',
         'legend': 'normalsize',
         'legend_title': 'normalsize',
-        'colorbar': 'normalsize'
+        'colorbar': 'normalsize',
         }
 
 
@@ -89,6 +92,8 @@ def initiate_figure(**kwargs):
             'gs_hspace': 0.2,
             'gs_nrows': 1,
             'gs_ncols': 1,
+            'st_y': 0.9,
+            'st_fontsize': 'large'
             }
 
     for k in kwargs.keys():
@@ -111,7 +116,15 @@ def initiate_figure(**kwargs):
             fig = plt.figure(figsize=[argvals['x'],argvals['y']], **fig_args)
             subplot_args = {k[3:]: v for k,v in argvals.items() if k[0:3] == 'gs_'}
             gs = fig.add_gridspec(subplot_args['nrows'], subplot_args['ncols'])
-            gs.update(wspace=subplot_args['wspace'], hspace=subplot_args['hspace']) # set the spacing between axes.
+            gs.update(wspace=subplot_args['wspace'], 
+                    hspace=subplot_args['hspace']) # set the spacing between axes.
+
+            if 'suptitle' in kwargs.keys():
+                suptitle_args = {k[3:]: v for k,v in argvals.items() if k[0:3] == 'st_'}
+                suptitle_args['fontsize'] = FONT_TABLE[DEFAULT_FONTS[
+                    'fontsize']][suptitle_args['fontsize']]
+                fig.suptitle(kwargs['suptitle'], **suptitle_args)
+
             return fig, gs
         # AA: not used currently
         elif argvals['subplot_mode'] == 'subplots':
@@ -164,7 +177,10 @@ def subplot(**kwargs):
         kwargs['ax'] = ax
 
     # Decide function
-    plot_args['data'] = kwargs['data']
+    try:
+        plot_args['data'] = kwargs['data']
+    except KeyError:
+        print('WARNING: "data" field absent.')
     funcobj = subplot_func(plot_args=plot_args, **kwargs)
 
     funcobj(ax=ax, **plot_args)
@@ -216,11 +232,36 @@ def set_legend(ax, legend_args, fonts_table, fontsize_args):
         else:
             ax.legend().set_visible(False)
 
+def set_legend_invisible(ax):
+    ax.saved_legend_handles = ax.get_legend_handles_labels()
+    ax.legend().set_visible(False)
+    return
+
+def separate_legend(fig=None, axes=None, labels=None, **kwargs):
+    handles = []
+    derived_labels = []
+    for ax in axes:
+        ax_handles, ax_labels = ax.saved_legend_handles
+        handles = handles + ax_handles
+        derived_labels = derived_labels + ax_labels
+
+    if labels == None:
+        labels = derived_labels
+
+    if 'fontsize' in kwargs.keys():
+        kwargs['fontsize'] = FONT_TABLE[DEFAULT_FONTS['fontsize']][
+                kwargs['fontsize']]
+
+    fig.legend(handles, labels, **kwargs)
+
 def subplot_func(**kwargs):
     funcname = kwargs['func']
     plot_args = kwargs['plot_args']
     ax = kwargs['ax']
-    plot_args['data'] = kwargs['data']
+    try:
+        plot_args['data'] = kwargs['data']
+    except KeyError:
+        pass
     if funcname in ['gpd.plot', 'gpd.boundary.plot']:
         plot_args.pop('data')
         func = eval(f'kwargs["data"].plot')
@@ -236,6 +277,10 @@ def subplot_func(**kwargs):
                     'whiskerprops': {'color': TICKS_COLOR},
                     }
         elif funcname in AXIS_NORMAL:
+            argvals = {}
+        elif funcname in AXIS_HEAT:
+            argvals = {}
+        elif funcname in AXIS_NONE:
             argvals = {}
         else:
             raise(f'The plot "{func_name}" is not supported.')
@@ -273,8 +318,10 @@ def subplot_hatch(**kwargs):
 def subplot_axes_grid(**kwargs):
     if 'axis_type' in kwargs.keys():
         axis_type = kwargs['axis_type']
-    elif kwargs['func'] in ['gpd.plot', 'gpd.boundary.plot']:
+    elif kwargs['func'] in AXIS_NONE:
         axis_type = 'none'
+    elif kwargs['func'] in AXIS_HEAT:
+        axis_type = 'heat'
     elif kwargs['func'] in AXIS_NORMAL:
         axis_type = 'normal'
     elif kwargs['func'] in AXIS_HIST:
@@ -287,6 +334,8 @@ def subplot_axes_grid(**kwargs):
         if 'orient' in kwargs['plot_args']:
             if kwargs['plot_args']['orient'] == 'h':
                 axis_type = 'boxx'
+            else:
+                axis_type = 'boxy'
         else:
             axis_type = 'boxy'
     else:
@@ -302,6 +351,10 @@ def subplot_axes_grid(**kwargs):
                 linewidth=MINOR_TICK_LINEWIDTH)
         ax.xaxis.set_minor_locator(AutoMinorLocator(2))
         ax.yaxis.set_minor_locator(AutoMinorLocator(2))
+    elif axis_type == 'heat':
+        ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
+        ax.tick_params(axis='y', length=0)
+        ax.tick_params(axis='x', length=0)
     elif axis_type == 'boxy':
         ax.grid(axis='y', color=GRID_COLOR, which='major', 
                 linewidth=MAJOR_TICK_LINEWIDTH)
@@ -344,8 +397,12 @@ def subplot_axes_grid(**kwargs):
     # Scale
     if 'xscale' in kwargs.keys():
         ax.set_xscale(kwargs['xscale'])
+        if kwargs['xscale'] == 'log':
+            ax.minorticks_off()
     if 'yscale' in kwargs.keys():
-        ax.set_xscale(kwargs['yscale'])
+        ax.set_yscale(kwargs['yscale'])
+        if kwargs['yscale'] == 'log':
+            ax.minorticks_off()
 
     # Axes limits
     xmin, xmax = ax.get_xlim()
@@ -379,9 +436,9 @@ def subplot_labels(**kwargs):
         ax.set_ylabel(kwargs['ylabel'])
     return
 
-def savefig(filename, **kwargs):
+def savefig(filename, pad_inches=0.05, **kwargs):
     # use pad_inches=0 to completely remove white space
-    plt.savefig(filename, bbox_inches='tight', pad_inches=0, **kwargs)
+    plt.savefig(filename, bbox_inches='tight', **kwargs)
     return
 
 def subplot_fonts(**kwargs):
@@ -414,6 +471,13 @@ def subplot_fonts(**kwargs):
             logging.warning(f'Some error related to colorbar: {err}')
             pass
     return argvals
+
+def update_rc_params(field=None, mode='replace', value=None):
+    if mode == 'append':
+        rcParams[field] = rcParams[field] + value
+    elif mode == 'replace':
+        rcParams[field] = value
+    return
 
 # Get actual coordinates of points in pixels w.r.t. (0,0).
 # Helps in downstream tikz tasks.
