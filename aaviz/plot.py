@@ -188,7 +188,7 @@ def subplot(**kwargs):
     # Hatching
     try:
         if kwargs['hatch']:
-            subplot_hatch(ax=ax, func=func)
+            ax = subplot_hatch(ax=ax, func=func)
     except KeyError:
         pass
 
@@ -314,6 +314,19 @@ def subplot_hatch(**kwargs):
             col = patch.get_facecolor()
             hue = hues[hues == col].dropna().index[0]
             patch.set_hatch(HATCH[hue])
+            edgecol = patch.get_edgecolor() # assumes same edgecolor for all
+
+        # Update legend
+        handles, labels = ax.get_legend_handles_labels()
+        for patch in handles:
+            col = patch.get_facecolor()
+            hue = hues[hues == col].dropna().index[0]
+            patch.set_edgecolor(edgecol)
+            patch.set_hatch(HATCH[hue])
+
+        #ax.legend(handles=for_legend)
+
+    return ax
 
 def subplot_axes_grid(**kwargs):
     if 'axis_type' in kwargs.keys():
@@ -395,6 +408,7 @@ def subplot_axes_grid(**kwargs):
     ax.tick_params(color=AXES_COLOR, labelcolor=TICKS_COLOR, which='both')
 
     # Scale
+    # logscale: sp
     if 'xscale' in kwargs.keys():
         ax.set_xscale(kwargs['xscale'])
         if kwargs['xscale'] == 'log':

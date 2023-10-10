@@ -1,7 +1,7 @@
 import setuptools
 
 setuptools.setup(name='kittbatta',
-        version='0.8',
+        version='0.9',
         description="AA's helper functions",
         url='#',
         author='Abhijin Adiga',

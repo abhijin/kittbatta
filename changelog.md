@@ -1,5 +1,8 @@
 # Changelog
 
+## v0.9.0
+* Hatching for boxplot, legend
+
 ## v0.8.0
 * heatmap added
 
