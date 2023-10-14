@@ -37,12 +37,16 @@ AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
 AXIS_NONE = ['gpd.plot', 'gpd.boundary.plot']
 
 NON_FUNC_PARAMS = ['fig', 'subplot', 'title', 'xlabel', 'ylabel', 'data']
-HATCH = ['+', 'x', '\\', '.', 'o', '|', '*']
+HATCH = ['++', 'xx', '\\', '.', 'o', '|', '*']
 
 RC_PARAMS = {
         'font.family': 'serif',
         'font.serif': 'Computer Modern Roman',
-        'legend.frameon': False,
+        'legend.frameon': True,
+        'legend.framealpha': .7,
+        'legend.facecolor': 'white',
+        'legend.edgecolor': 'white',
+        'legend.borderpad': .1,
         'xtick.labelsize': 'small',
         'ytick.labelsize': 'small',
         'text.usetex': True,
