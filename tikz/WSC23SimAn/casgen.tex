@@ -1,0 +1,132 @@
+% tags: [[blockDiagram]] dvipsnames usenames
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz, border=10pt]{standalone}
+
+\usepackage{verbatim}
+\usepackage{amsmath}
+
+\tikzset{>=stealth}
+\tikzstyle{every node}=[align=center]
+\usetikzlibrary{spy,shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+\newcommand{\windowsize}{k_{\text{w}}}
+\newcommand{\bands}{n_b}
+\newcommand{\VT}{\mathcal{V}}
+\newcommand{\ET}{\mathcal{E}}
+\newcommand{\cgcon}{c_{\text{CG}}}
+\newcommand{\meascon}{c_{\text{CP}}}
+\newcommand{\pncon}{c_{\text{PN}}}
+
+% colors
+\definecolor{}{HTML}{D8392B}
+\definecolor{DarkRed}{HTML}{D8392B}
+\definecolor{DarkBlue}{HTML}{558B92}
+\definecolor{DarkBrown}{HTML}{62524F}
+\definecolor{DarkGreen}{HTML}{A18F6A}
+\definecolor{Red}{HTML}{E65942}
+\definecolor{Blue}{HTML}{78A4AC}
+\definecolor{Brown}{HTML}{7B6663}
+\definecolor{Green}{HTML}{C4AE87}
+\definecolor{Grey}{HTML}{D3D3D3}
+
+\newcommand{\incfig}[1]
+{\includegraphics[trim=1cm 1cm 1cm 1cm,clip,width=.5cm,height=.5cm]{#1}}
+\newcommand{\cascades}[5]{
+\node[draw=black,fill=white,inner sep=2pt] at (#1,#2) (#3) {\incfig{#4}};
+\node[draw=black,fill=white,xshift=-.2cm,yshift=-.2cm,inner sep=2pt] at (#3)
+{\incfig{#4}};
+\node[draw=black,fill=white,xshift=-.4cm,yshift=-.4cm,inner
+sep=2pt,label=above left:{\small #5}] at (#3) 
+{\incfig{#4}};
+}
+
+\newcommand{\user}{\includegraphics[width=1cm]{user_darkbrown.png}}
+\newcommand{\config}{\includegraphics[width=1.5cm]{document_darkred.png}}
+
+\begin{document}
+\pgfdeclarelayer{bg}
+\pgfdeclarelayer{fg}
+\pgfsetlayers{bg,main,fg}
+\begin{tikzpicture}
+[
+blk/.style={font=\bfseries,inner sep=2pt,fill=Blue!70,rounded corners,text width=2cm,minimum height=2.5cm},
+extblk/.style={font=\bfseries,inner sep=2pt,fill=white,rounded corners,text
+width=2cm,minimum height=2.5cm,draw=black!50,dashed},
+ioedge/.style={>=latex, shorten >=2pt, shorten <=2pt,draw=black!50,line
+width=1.5mm},
+blkedge/.style={draw=black!40,>=latex, shorten >=2pt, shorten <=2pt, line
+width=2pt},
+uedge/.style={draw=DarkBrown,>=latex, shorten >=2pt, shorten <=2pt, line
+width=2pt},
+desc/.style={inner sep=1pt,text width=2.5cm,font=\normalsize},
+%%
+outblk/.style={fill=white,draw=Orange,circle,text width=1.5cm,minimum
+width=1.5cm,inner sep=1pt},
+every node/.style={inner sep=5pt,align=center},
+expedge/.style={>=latex, shorten >=0pt, shorten <=0pt,draw=black!50},
+node distance=3cm]
+
+\node[extblk] (study) {Study \\ and \\ Simulator};
+\cascades{3.5}{1.5}{c1}{tt1.pdf}{Cell 1}
+\cascades{3.5}{0}{c2}{tt2.pdf}{Cell 2}
+\cascades{3.5}{-1.7}{c3}{tt3.pdf}{Cell $k$}
+\node at (3,-1) {\large $\vdots$};
+\draw[ioedge,->] (study) -- +(2,0);
+
+\node[blk, fill=Brown, text=black!7, right of=study, text width=2cm, xshift=3cm] (ne)
+{Extract (node,t) \\\& \\(edge,t)};
+\node[blk, fill=Brown, text=black!7, right of=ne, text width=2cm, xshift=0cm] (boundary) 
+{Add boundary subgraph};
+\node[blk, fill=Green, right of=boundary, text width=2cm, xshift=0cm] (nf) 
+{Network features (nodes \& edges)};
+\node[blk, fill=Green, right of=nf, text width=2cm, xshift=0cm] (sf) 
+{Simulation features (nodes \& edges)};
+\node[blk, fill=Grey, right of=sf, text width=2cm, xshift=0cm] (opt) 
+{Convert to different formats};
+\node[right of=opt, xshift=0cm] (cas) 
+{\includegraphics[width=2cm]{table_red.png}};
+\node[xshift=.4cm,yshift=-.4cm] at (cas) 
+{\includegraphics[width=2cm]{table_darkblue.png}};
+\node[xshift=0cm,yshift=-2cm, text width=3cm, above of=cas, yshift=.5cm]
+{Cascade tables in various formats};
+\node[xshift=-.4cm,yshift=.6cm, below of=cas, yshift=.5cm] (formats)
+{
+\includegraphics[width=.8cm]{database.png}
+\includegraphics[width=.8cm]{csv.png}
+\includegraphics[width=.8cm]{pyarrow.png}
+};
+\node[xshift=.3cm] at (formats.east) {SNAP};
+
+\node[blk, below right of=boundary, text width=4cm, yshift=-1cm, xshift=-.5cm,
+minimum height=2cm] (pnsub)
+{Population network \\ attributes and properties};
+
+\node[desc,below of=sf, xshift=0cm, yshift=0cm] (map) {User provides mapping
+functions};
+
+\node[below of=study, xshift=0cm, yshift=-.5cm, label=center:$\cgcon$] (con) {\config};
+\node[desc,right of=con, xshift=-1cm, yshift=0cm, text width=3cm] (con) {User specifications for
+this pipeline};
+
+\node[below of=opt,label=center:$\meascon$] (mc) {\config};
+
+\draw[ioedge,->] ($(study.east) + (3,0)$) -- (ne);
+\draw[blkedge,->] ($(ne.east)+(0,.5)$) -- +(.9,0) node[above,
+label=left:$\VT$]{};
+\draw[blkedge,->] ($(ne.east)+(0,-.5)$) -- +(.9,0) node[below,
+label=left:$\ET$]{};
+\draw[blkedge,->] ($(boundary.east)+(0,.5)$) -- +(.9,0) node[above,
+label=left:$\VT$]{};
+\draw[blkedge,->] ($(boundary.east)+(0,-.5)$) -- +(.9,0) node[below,
+label=left:$\ET$]{};
+\draw[blkedge,->] ($(nf.east)+(0,.5)$) -- +(.9,0) node[above,
+label=left:$\VT$]{};
+\draw[blkedge,->] ($(nf.east)+(0,-.5)$) -- +(.9,0) node[below,
+label=left:$\ET$]{};
+\draw[blkedge,->] (sf) -- (opt);
+\draw[ioedge,->] (opt) -- (cas.west);
+\draw[blkedge,->] (pnsub.north-|boundary) -- (boundary);
+\draw[blkedge,->] (pnsub.north-|nf) -- (nf);
+\draw[uedge,->] (map.north-|sf) -- (sf);
+\draw[uedge,->] (mc.north) -- (opt);
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,138 @@
+% tags: [[blockDiagram]] dvipsnames usenames
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz, border=10pt]{standalone}
+
+\usepackage{verbatim}
+\usepackage{amsmath}
+
+\tikzset{>=stealth}
+\tikzstyle{every node}=[align=center]
+\usetikzlibrary{spy,shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+\newcommand{\windowsize}{k_{\text{w}}}
+\newcommand{\bands}{n_b}
+\newcommand{\VT}{\mathcal{V}}
+\newcommand{\ET}{\mathcal{E}}
+\newcommand{\cgcon}{c_{\text{CG}}}
+\newcommand{\meascon}{c_{\text{CP}}}
+\newcommand{\pncon}{c_{\text{PN}}}
+
+% colors
+\definecolor{}{HTML}{D8392B}
+\definecolor{DarkRed}{HTML}{D8392B}
+\definecolor{DarkBlue}{HTML}{558B92}
+\definecolor{DarkBrown}{HTML}{62524F}
+\definecolor{DarkGreen}{HTML}{A18F6A}
+\definecolor{Red}{HTML}{E65942}
+\definecolor{Blue}{HTML}{78A4AC}
+\definecolor{Brown}{HTML}{7B6663}
+\definecolor{Green}{HTML}{C4AE87}
+\definecolor{Grey}{HTML}{D3D3D3}
+
+\newcommand{\incfig}[1]
+{\includegraphics[trim=1cm 1cm 1cm 1cm,clip,width=.5cm,height=.5cm]{#1}}
+\newcommand{\cascades}[5]{
+\node[draw=black,fill=white,inner sep=2pt] at (#1,#2) (#3) {\incfig{#4}};
+\node[draw=black,fill=white,xshift=-.2cm,yshift=-.2cm,inner sep=2pt] at (#3)
+{\incfig{#4}};
+\node[draw=black,fill=white,xshift=-.4cm,yshift=-.4cm,inner
+sep=2pt,label=above left:{\small #5}] at (#3) 
+{\incfig{#4}};
+}
+
+\newcommand{\user}{\includegraphics[width=1cm]{user_darkbrown.png}}
+\newcommand{\config}{\includegraphics[width=1.5cm]{document_darkred.png}}
+
+\begin{document}
+\pgfdeclarelayer{bg}
+\pgfdeclarelayer{fg}
+\pgfsetlayers{bg,main,fg}
+\begin{tikzpicture}
+[
+blk/.style={font=\bfseries,inner sep=2pt,fill=Blue!70,rounded corners,text width=2cm,minimum height=2.5cm},
+extblk/.style={font=\bfseries,inner sep=2pt,fill=white,rounded corners,text
+width=2cm,minimum height=2.5cm,draw=black!50,dashed},
+ioedge/.style={>=latex, shorten >=2pt, shorten <=2pt,draw=black!50,line
+width=1.5mm},
+blkedge/.style={draw=black!40,>=latex, shorten >=2pt, shorten <=2pt, line
+width=2pt},
+uedge/.style={draw=DarkBrown,>=latex, shorten >=2pt, shorten <=2pt, line
+width=2pt},
+desc/.style={inner sep=1pt,text width=2.5cm,font=\normalsize},
+%%
+outblk/.style={fill=white,draw=Orange,circle,text width=1.5cm,minimum
+width=1.5cm,inner sep=1pt},
+every node/.style={inner sep=5pt,align=center},
+expedge/.style={>=latex, shorten >=0pt, shorten <=0pt,draw=black!50},
+node distance=3cm]
+
+\node[xshift=0cm, yshift=-.5cm, label=center:$\meascon$] (con) {\config};
+\node[desc,below of=con, xshift=0cm, yshift=1.5cm, text width=2cm] 
+{Specifies properties to be computed};
+\node[blk, fill=Green, right of=con, text width=2.5cm,
+xshift=.5cm] (cp) {Command processor\\\smallskip Time-space optimization};
+\node[blk, fill=Grey, right of=cp, text width=2cm, xshift=1.5cm, minimum
+height=1.5cm] (ld)
+{Load data};
+\node[blk, fill=Grey, right of=ld, text width=2cm, xshift=.5cm, minimum
+height=1.5cm] (td)
+{Transform data};
+\node[above of=ld, yshift=-.4cm] (cas) 
+{\includegraphics[width=1.5cm]{table_red.png}};
+\node[xshift=.4cm,yshift=-.4cm] at (cas) 
+{\includegraphics[width=1.5cm]{table_darkblue.png}};
+\node[desc, xshift=1cm, text width=1.8cm,left of=cas, yshift=0cm]
+{Cascade tables};
+\node[xshift=-.4cm,yshift=0cm, right of=cas] (formats)
+{
+\includegraphics[width=.6cm]{database.png}
+\includegraphics[width=.6cm]{csv.png}
+\includegraphics[width=.6cm]{pyarrow.png}
+};
+\node[xshift=.3cm] at (formats.east) {SNAP};
+\node[blk, fill=DarkBrown, text=black!5, right of=td, text width=2cm, xshift=.5cm, minimum
+height=1.5cm] (prop) {Compute property};
+\node[blk, fill=Grey, below right of=td, text width=2.5cm, xshift=-.5cm,
+minimum height=1.5cm] (int) {Manage \\intermediate files};
+
+\node[right of=prop, yshift=.6cm] (tt) 
+{\includegraphics[width=1.5cm]{table_darkblue.png}};
+\node[xshift=.3cm,yshift=-.3cm] at (tt) (tt)
+{\includegraphics[width=1.5cm]{table_darkblue.png}};
+\node[xshift=.3cm,yshift=-.3cm] at (tt) (tt)
+{\includegraphics[width=1.5cm]{table_darkblue.png}};
+\node[xshift=.3cm,yshift=-.3cm] at (tt) 
+{\includegraphics[width=1.5cm]{table_darkblue.png}};
+\node[desc, below of=tt, yshift=.8cm] {Tables of properties to be aggregated across
+cascades};
+
+\node[xshift=0cm, yshift=-.5cm, above of=prop, label=center:$\meascon$]
+(con2) {\config};
+
+\node[fit=(ld) (td), draw, dashed, DarkBrown] (dat) {};
+\node[desc, text width=2.8cm, below right of=cp] (exe) {Execution
+order, series-parallel decisions};
+\draw[blkedge, ->] (cp.south) -- +(0,-1.8cm) -| (dat); 
+\node[desc, text width=2.8cm, below left of=dat, xshift=1cm] (reuse) {Generate or reuse
+data};
+
+\draw[ioedge,->] (con) -- (cp);
+\draw[blkedge,->] (cp) -- (ld);
+\draw[blkedge,->] (ld) -- (td);
+\draw[ioedge,->] (cas) -- (ld);
+\draw[blkedge,->] (td) -- (prop);
+\draw[ioedge,->] (prop) -- (tt);
+
+\draw[blkedge] (cp.east) -- ++(1,1.5) -- +(.5,0) node[xshift=.5cm] {$\cdots$};
+\draw[blkedge] (cp.east) -- ++(1,-1.5) -- +(.5,0) node[xshift=.5cm] {$\cdots$};
+\draw[blkedge] (cp.east) -- ++(1,-.8) -- +(.5,0);
+\draw[blkedge] (cp.east) -- ++(1,.8) -- +(.5,0);
+\draw[ioedge,->] (con2) -- (prop);
+\node[right of=cp, xshift=-.5cm, yshift=.5cm] {$\vdots$};
+\node[right of=cp, xshift=-.5cm, yshift=-.3cm] {$\vdots$};
+\draw[blkedge,<-] (int) -| (prop);
+\draw[blkedge,->] ($(int.west)+(0,.25)$) -| (td);
+\node at ($(int.west)+(.25,-.25)$) (anc) {};
+\draw[blkedge,<-] (anc) -- (dat|-anc.center);
+\end{tikzpicture}
+\end{document}
+
