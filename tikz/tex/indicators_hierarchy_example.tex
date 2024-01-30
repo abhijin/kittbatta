@@ -1,0 +1,84 @@
+\documentclass[tikz, border=5pt, multi]{standalone}
+\tikzset{
+  font={\fontsize{9pt}{12}\selectfont}}
+\usepackage{forest}
+\usetikzlibrary{shadows,arrows}
+
+\tikzset{
+  my colour/.style={draw=#1, fill=#1},
+  my leaf/.style={my colour=black!10,  rectangle,  rounded corners, text width=6.0em, align=center, text centered, minimum height=1.0em, drop shadow},
+  my tree/.style={my colour=black!10, rectangle,  rounded corners, text width=6.0em, align=center, text centered, minimum height=1.0em, drop shadow},
+}
+\forestset{
+  every leaf node/.style={
+    if n children=0{#1}{}
+  },
+  every tree node/.style={
+    if n children=0{}{#1}
+  },
+}
+\begin{document}
+\begin{forest}
+  for tree={
+    edge={draw, thick, color=black!50},
+    edge path={
+    \noexpand\path [draw, \forestoption{edge}] (!u.parent anchor) -- +(4mm,0) |- (.child anchor)\forestoption{edge label};
+  },
+   %edge path={\noexpand\path[\forestoption{edge}] (\forestOve{\forestove{@parent}}{name}.parent anchor) -- +(0,-12pt)-| (\forestove{name}.child anchor)\forestoption{edge label};},
+    grow=east,
+    l sep=5mm,
+    every leaf node={my leaf},
+    every tree node={my tree},
+    parent anchor=east,
+    child anchor=west
+  }
+  [Indicator, node options={rotate=90}, for tree={parent anchor=south, child anchor=west},
+    [Individual, node options={rotate=90}, for tree={child anchor=west}
+      [Behaviour, for tree={parent anchor=east},
+        [Uses Malaria Nets]
+      ]
+      [Opinion, for tree={parent anchor=east},
+        [CorruptionLevel]
+      ]
+      [Diagnosed, for tree={parent anchor=east},
+        [HIV]
+        [Malaria]
+      ]
+      [Ownership]
+      [Child]
+      [Female, for tree={parent anchor=east},
+        [Maternal]
+      ]
+      [Male]
+    ]
+    [Household, node options={rotate=90}, for tree={parent anchor=south, child anchor=west}
+      [Ownership]
+      [Precaution]
+    ]
+    [Facility,node options={rotate=90},for tree={parent anchor=south, child anchor=west}
+    [Precautions, for tree={parent anchor=east}
+    [Sterilization]
+    [Disposal Infectious Waste]
+    [Incubator]
+    ]
+    [Diagnostics,for tree={parent anchor=east}
+    [Malaria]
+    [HIV]
+    [Haemoglobin]
+    ]
+    [Medicine, for tree={parent anchor=east}
+    [Antiretrovirals]
+    ]
+    [Training]
+    ]
+    [Region,node options={rotate=90},for tree={parent anchor=south, child anchor=west}
+    [Country]
+    [Urban]
+    [Rural]
+    ]
+  ]
+\end{forest}
+
+\end{document}
+
+

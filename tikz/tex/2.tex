@@ -1,0 +1,122 @@
+\documentclass[tikz,border=2]{standalone}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define the layers to draw the diagram
+\pgfdeclarelayer{bg}
+\pgfsetlayers{bg,main}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% colors
+\definecolor{myBlue}{HTML}{0060AD}
+\definecolor{myRed}{HTML}{DD181F}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tikzpicture}
+[node distance=1cm,
+bend angle=15,
+subdue/.style={draw=black!30},
+vertex/.style={shape=circle,inner sep=2pt,draw=black,fill=white},
+root/.style={shape=circle,inner sep=2pt,draw=myBlue,fill=myBlue,double=white,double distance=1pt},
+accepting/.append style={draw=myBlue,fill=myBlue},
+treevertex/.style={shape=circle,inner sep=2pt,draw=black},
+infected/.style={shape=circle,draw=black,inner sep=2pt,fill=brown},
+%
+myedge/.style={thick},
+dedge/.style={dashed,>=latex', shorten >=.0pt, black!90, shorten <=.0pt}]
+%
+%
+\node (v1) [vertex,label=above:$v_1$] at (0,0) {};
+\node (v2) [vertex,above right=of v1,shift={(1,0)},label=above:$v_2$] {};
+\node (v3) [vertex,accepting,below right=of v2,label=above:$v_3$] {};
+\node (v4) [vertex,below=of v3,label=below:$v_4$] {};
+\node (v5) [vertex,below left=of v4,shift={(-.5,0)},label=below:$v_5$] {};
+\node (v6) [vertex,above left=of v5,shift={(-.5,0)},label=below:$v_6$] {};
+\node (v7) [vertex,accepting,below left=of v1,label=below:$v_7$] {};
+\node [above left=of v1] {$G$};
+%
+\draw[myedge] (v1) -- (v2);
+\draw[myedge] (v1) -- (v6);
+\draw[myedge] (v1) -- (v7);
+%
+\draw[myedge] (v2) -- (v3);
+%
+\draw[myedge] (v3) -- (v4);
+\draw[myedge] (v3) -- (v5);
+\draw[myedge] (v3) -- (v6);
+%
+\draw[myedge] (v4) -- (v5);
+%
+\draw[myedge] (v5) -- (v6);
+%
+\draw[myedge] (v6) -- (v7);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{pgfonlayer}{bg}
+\draw [fill=black!15,opacity=.7] plot [smooth cycle, tension=1] coordinates
+{([shift={(0.2,.5)}] v2)
+([shift={(.3,0.2)}] v3)
+([shift={(-.3,0.4)}] v4)
+([shift={(.3,0)}] v4)
+([shift={(-.4,-1)}] v4)
+([shift={(-.35,-.5)}] v5)
+([shift={(-1,0)}] v4)
+([shift={(-.5,0)}] v3)
+([shift={(-.25,0)}] v2)};
+%\node[fill=black!20,rounded corners,fit=(v2)(v3)(v4)(v5)]{};
+\end{pgfonlayer}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{pgfonlayer}{bg}
+\draw [fill=black!15,opacity=.7] plot [smooth cycle, tension=1] coordinates{
+($(v7)+(-.25,0)$)
+($(v1)+(0,.6)$)
+($(v2)+(.1,.2)$)
+($(v2)+(0,-.5)$)
+($(v1)+(.2,-.2)$)
+($(v7)+(.3,.1)$)
+($(v6)+(.2,.2)$)
+($(v6)+(.0,-.75)$)
+};
+%\node[fill=black!20,rounded corners,fit=(v2)(v3)(v4)(v5)]{};
+\end{pgfonlayer}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Tree
+\node (b) [vertex,accepting,label=right:$b$,right=of v2,shift={(2,0)}] {};
+\node (a) [vertex,label=left:$a$,below left=of b,shift={(.5,0)}] {};
+\node (c) [vertex,label=right:$c$,below right=of b,shift={(-.5,0)}] {};
+\node (d) [vertex,label=right:$d$,below right=of c,shift={(-.5,0)}] {};
+\node [above left=of b,shift={(0.5,-0.7)}] {$T$};
+%
+\draw[myedge] (b) -- (a);
+\draw[myedge] (b) -- (c);
+\draw[myedge] (c) -- (d);
+%
+\draw[dedge,->] (b) edge[out=180,in=0,looseness=.8] (v3);
+\draw[dedge,->] (a) edge[out=150,in=0,looseness=1.2] (v2);
+\draw[dedge,->] (c) edge[out=210,in=0,looseness=1] (v5);
+\draw[dedge,->] (d) edge[out=180,in=0,looseness=1.2] (v4);
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% % Tree decomposition
+%% \node (b) [treevertex,label=right:$b$,above right=of b,shift={(2,0)}] {};
+%% \node (a) [treevertex,label=left:$a$,below left=of b,shift={(.5,0)}] {};
+%% \node (c) [treevertex,label=right:$c$,below right=of b,shift={(-.5,0)}] {};
+%% \node (d) [treevertex,label=right:$d$,below right=of c,shift={(-.5,0)}] {};
+%% \node [above left=of b,shift={(0.5,-0.7)}] {$T$};
+%% %
+%% \draw[myedge] (b) -- (a);
+%% \draw[myedge] (b) -- (c) node[midway] (ref) {};
+%% \draw[myedge] (c) -- (d);
+%% %
+%% \draw[myRed,thick] (ref.north east) edge[out=180,in=0,looseness=1] (ref.south west);
+%% %
+%% \draw [>=latex', shorten >=.0pt, black!50, shorten <=.0pt, thick,->] ([shift={(0,-1.5)}] b.south) -- ++(0,-.5);
+%% % subtrees
+%% \node (b) [treevertex,label=left:$b$,below=of b,shift={(-.35,-1.5)}] {};
+%% \node (a) [treevertex,label=left:$a$,below left=of b,shift={(.5,0)}] {};
+%% \node (c) [treevertex,label=right:$c$,right=of b,shift={(-.5,0)}] {};
+%% \node (d) [treevertex,label=right:$d$,below right=of c,shift={(-.5,0)}] {};
+%% %
+%% \draw[myedge] (b) -- (a) node[midway,label=left:$T_1$] {};
+%% \draw[myedge] (c) -- (d) node[midway,label=right:$T_2$] {};
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{tikzpicture}
+{}
+\end{document}

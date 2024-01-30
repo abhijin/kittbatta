@@ -1,0 +1,53 @@
+\documentclass[tikz,border=2]{standalone}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define the layers to draw the diagram
+\pgfdeclarelayer{bg}
+\pgfsetlayers{bg,main}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% colors
+\definecolor{myBlue}{HTML}{0060AD}
+\definecolor{myRed}{HTML}{DD181F}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{tikzpicture}
+[node distance=1cm,
+bend angle=15,
+subdue/.style={draw=black!30},
+vertex/.style={shape=circle,inner sep=2pt},
+treevertex/.style={shape=circle,inner sep=2pt,draw=black},
+infected/.style={shape=circle,draw=black,inner sep=2pt,fill=brown},
+%
+myedge/.style={thick},
+dedge/.style={dashed,>=latex', shorten >=.0pt, black!90, shorten <=.0pt}]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Tree decomposition
+\node (b) at (0,0) [treevertex,label=right:$b$,accepting] {};
+\node (a) [treevertex,label=left:$a$,below left=of b,shift={(.5,0)}] {};
+\node (c) [treevertex,label=right:$c$,below right=of b,shift={(-.5,0)}] {};
+\node (d) [treevertex,label=right:$d$,below right=of c,shift={(-.5,0)}] {};
+\node [above left=of b,shift={(0.5,-0.7)}] {$T$};
+%
+\draw[myedge] (b) -- (a) node[midway] (ref1) {};
+\draw[myedge] (b) -- (c) node[midway] (ref2) {};
+\draw[myedge] (c) -- (d);
+%
+\draw[myRed,thick] (ref1.north west) edge[out=-90,in=90,looseness=1]
+(ref1.south east);
+\draw[myRed,thick] (ref2.north east) edge[out=180,in=0,looseness=1] (ref2.south west);
+%
+\draw [>=latex', shorten >=.0pt, black!50, shorten <=.0pt, thick,->] ([shift={(0,-1.5)}] b.south) -- ++(0,-.5);
+% subtrees
+\node (a) [treevertex,label=left:$a$,below=of
+b,shift={(-.35,-1.25)},accepting] {};
+\node (c) [treevertex,label=right:$c$,right=of a,shift={(-.5,0)},accepting] {};
+\node (d) [treevertex,label=right:$d$,below right=of c,shift={(-.5,0)}] {};
+%
+\node[below left of=a,xshift=.25cm,yshift=.25cm] {$T_1$};
+\draw[myedge] (c) -- (d) node[midway,label=right:$T_2$] {};
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{tikzpicture}
+{}
+\end{document}
+

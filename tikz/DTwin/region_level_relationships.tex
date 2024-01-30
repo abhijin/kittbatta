@@ -1,0 +1,188 @@
+\documentclass[tikz,border=2]{standalone}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit}
+\newcommand{\vanish}[1]{}
+\usepackage{colortbl}
+\usepackage{array}
+\usepackage{amssymb}
+\usepackage{multirow}
+\newcommand{\shaded}[1]{\cellcolor{black!20}{#1}}
+\newcommand{\calc}[1]{\mbox{$\mathcal{C}_{#1}$}}
+\pdfpageattr {/Group << /S /Transparency /I true /CS /DeviceRGB>>}
+\newcommand{\mathtttt}{}
+
+% grid
+\def \sn {7}
+\def \snm {6}
+\def \sng {3}
+\def \sngm {2}
+\def \qot {4}
+
+\newcommand{\grid}{
+\foreach \x in {1,...,\sn}
+\foreach \y in {1,...,\sn}
+\node [inner sep=0] at (\x,\y) (\x,\y) {};
+
+\foreach \x in {1,...,\sn}
+\foreach \y in {1,...,\sn}
+\node [inner sep=0] at (\x,\y) (\x,\y) {};
+
+\foreach \x in {1,...,\sn}
+\foreach \y in {1,...,\snm}
+\draw[grid] (\x,\y)--(\x,\y+1);
+
+\foreach \y in {1,...,\sn}
+\foreach \x in {1,...,\snm}
+\draw[grid] (\x,\y)--(\x+1,\y);
+}
+
+% Define the layers to draw the diagram
+%
+\begin{document}
+%% \pgfdeclarelayer{bg}
+%% \pgfdeclarelayer{fg}
+%% \pgfsetlayers{bg,main,fg}
+\newcommand{\ttbig}{\mathtt{big}}
+\newcommand{\ttsmall}{\mathtt{small}}
+\newcommand{\ttwifi}{\mathtt{wifi}}
+\newcommand{\ttcab}{\mathtt{cab}}
+%
+\pgfdeclarelayer{bg}
+\pgfdeclarelayer{fg}
+\pgfsetlayers{bg,main,fg}
+%
+\definecolor{pink}{HTML}{FBB4AE}
+\definecolor{blue}{HTML}{CBD5E8}
+\definecolor{green}{HTML}{B3E2CD}
+\definecolor{purple}{HTML}{F4CAE4}
+\definecolor{orange}{HTML}{FDCDAC}
+%
+\def\labx{8.8}
+%
+\begin{tikzpicture}
+[scale=2,auto,node distance=.5cm, transform shape,
+    gridagent/.style={draw,thick,circle,inner sep=1pt,black!40},
+grid/.style={black!60},
+gridedge/.style={-latex,black!60,shorten >=2mm, shorten
+<=2mm, line width=1mm,looseness=.5},
+locn/.style={draw=none,inner sep=1pt},
+agent/.style={circle,black!60,inner sep=3pt},
+lab/.style={font=\small,text width=2.5cm},
+labedge/.style={thick,>=latex,shorten >= 0pt, shorten <= 1pt}
+]
+%%%%%%%%%%
+%% region
+\begin{scope}[local bounding box=region,shift={(0,0)}]
+\grid
+% locns
+\begin{pgfonlayer}{bg}
+    \draw [locn,fill=orange] (1,4) rectangle (3,7);
+    \draw [locn,fill=green] (1,1) rectangle (4,4);
+    \draw [locn,fill=blue] (3,5) rectangle (7,7);
+    \draw [locn,fill=blue] (3,4) rectangle (4,5);
+    \draw [locn,fill=pink] (4,3) rectangle (7,5);
+    \draw [locn,fill=purple] (4,1) rectangle (7,3);
+
+% Nodes
+\node[draw,agent] (1) at (1.57,5.62) {};
+\node[draw,agent] (2) at (2.18,4.5) {};
+\node[draw,agent] (3) at (1.5,4.69) {};
+\node[draw,agent] (4) at (2.5,5.36) {};
+\node[draw,agent] (5) at (2.26,6.5) {};
+
+
+% Edges
+\draw (1) edge[,black!60] (2);
+\draw (1) edge[,black!60] (3);
+\draw (1) edge[,black!60] (5);
+\draw (2) edge[,black!60] (3);
+\draw (2) edge[,black!60] (4);
+\draw (3) edge[,black!60] (4);
+\draw (4) edge[,black!60] (5);
+
+% Nodes
+\node[draw,agent] (1) at (6.5,6.22) {};
+\node[draw,agent] (2) at (6.16,5.5) {};
+\node[draw,agent] (3) at (4.26,6.5) {};
+\node[draw,agent] (4) at (3.5,5.84) {};
+
+% Edges
+\draw (1) edge[,black!60] (2);
+\draw (1) edge[,black!60] (4);
+\draw (2) edge[,black!60] (3);
+\draw (3) edge[,black!60] (4);
+
+% Nodes
+\node[draw,agent] (1) at (1.5,3.5) {};
+\node[draw,agent] (2) at (1.74,1.95) {};
+\node[draw,agent] (3) at (2.39,2.41) {};
+\node[draw,agent] (4) at (2.54,3.32) {};
+\node[draw,agent] (5) at (2.86,1.5) {};
+\node[draw,agent] (6) at (3.5,2.69) {};
+
+% Edges
+\draw (1) edge[,black!60] (2);
+\draw (1) edge[,black!60] (3);
+\draw (1) edge[,black!60] (4);
+\draw (2) edge[,black!60] (3);
+\draw (2) edge[,black!60] (4);
+\draw (2) edge[,black!60] (5);
+\draw (3) edge[,black!60] (4);
+\draw (3) edge[,black!60] (5);
+\draw (3) edge[,black!60] (6);
+\draw (4) edge[,black!60] (5);
+\draw (4) edge[,black!60] (6);
+\draw (5) edge[,black!60] (6);
+
+% Nodes
+\node[draw,agent] (1) at (6.29,4.5) {};
+\node[draw,agent] (2) at (6.5,3.5) {};
+\node[draw,agent] (3) at (4.5,3.92) {};
+
+\node[lab] (agl) at (\labx,3) {Agent: farmer or other actor}; 
+\draw[->, labedge] (agl) to (2);
+\node[ lab, below=of agl] (st) {Socio-technical
+interactions};
+\draw[->, labedge] (st) to +(-2.6,0);
+
+
+% Edges
+\draw (1) edge[,black!60] (2);
+\draw (1) edge[,black!60] (3);
+\draw (2) edge[,black!60] (3);
+
+% Nodes
+\node[draw,agent] (1) at (6.5,1.85) {};
+\node[draw,agent] (2) at (5.82,1.5) {};
+\node[draw,agent] (3) at (5.41,2.05) {};
+\node[draw,agent] (4) at (4.5,2.5) {};
+
+% Edges
+\draw (1) edge[,black!60] (2);
+\draw (1) edge[,black!60] (3);
+\draw (2) edge[,black!60] (3);
+\draw (3) edge[,black!60] (4);
+
+\end{pgfonlayer}
+
+\node [locn,fill=orange] (r1) at (2,5.5) {$R_1$};
+\node [locn,fill=blue] (r2) at (5,6) {$R_2$};
+\node [locn,fill=green] (r3) at (2.5,2.5) {$R_3$};
+\node [locn,fill=pink] (r4) at (5.5,4) {$R_4$};
+\node [locn,fill=purple] (l5) at (5.5,1.5) {$R_5$};
+
+% water
+\draw (r1) edge[gridedge,->,out=30,in=150] (r2);
+\draw (r1) edge[gridedge,->,out=-150,in=120] (r3);
+\draw (r4) edge[gridedge,->,out=-60,in=60] (l5);
+\draw (r4) edge[gridedge,->,out=180,in=0] (r3);
+\draw (r4) edge[gridedge,->,out=90,in=-60] (r2);
+
+\node[lab] (reg) at (\labx,6.5) {Region};
+\draw[->, labedge] (reg) to +(-2,0);
+\node[lab,below=of reg] (flow) {Region to region water flow};
+\draw[->, labedge] (flow) to +(-3.4,-.2);
+
+\end{scope}
+
+\end{tikzpicture}
+\end{document}

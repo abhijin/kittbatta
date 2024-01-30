@@ -1,0 +1,62 @@
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz,border=2]{standalone}
+\usepackage{amssymb}
+%%\usepackage{enumerate}
+\usepackage{mathtools} % contains amsmath which comes with align
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{microtype} % some compression
+\usepackage[skins]{tcolorbox}
+%%%%%%%%%%
+%% from https://www.gliffy.com/go/html5/launch?templateId=7033011
+\definecolor{Color0}{HTML}{FFFFD9}
+\definecolor{Color1}{HTML}{EDF8B1}
+\definecolor{Color2}{HTML}{C7E9B4}
+\definecolor{Color3}{HTML}{7FCDBB}
+\definecolor{Color4}{HTML}{41B6C4}
+\definecolor{Color5}{HTML}{1D91C0}
+\definecolor{Color6}{HTML}{225EA8}
+\definecolor{Color7}{HTML}{0C2C84}
+\definecolor{Unreported}{HTML}{DDDDDD}
+%%%%%%%%%%
+%% from https://www.gliffy.com/go/html5/launch?templateId=7033011
+%\definecolor{col0}{HTML}{FFFFB2}
+\definecolor{col0}{HTML}{FECC5C}
+\definecolor{col1}{HTML}{FD8D3C}
+\definecolor{col2}{HTML}{E31A1C}
+\definecolor{free}{HTML}{DDDDDD}
+\definecolor{edgecolor}{HTML}{666666}
+%%
+\usetikzlibrary{shadows,arrows,patterns,shapes,positioning,calc,backgrounds,
+fit,automata,decorations.markings,
+decorations.pathreplacing,decorations.pathmorphing,spy}
+%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\def\a{1.25cm}
+\begin{tikzpicture}
+[scale=1,auto, 
+   arr/.style={>=latex', shorten >=.0pt, shorten <=.0pt},
+   transform shape, spy using outlines={rectangle,connect
+   spies,draw=gray,ultra thick,magnification=2},
+block/.style={rectangle,fill=white,draw=edgecolor,thick,width=.5cm,height=\a},
+every label/.style={fill=white}]
+%%
+\node (main) {\includegraphics[trim={0 6.5cm 0 1.85cm}]{aux/timeline_basic.pdf}};
+% color bar
+\begin{scope}[shift={(-16.3,-7.5)},scale=1]
+\node (Unreported)
+[block,fill=Unreported,label=right:\huge{Unreported}] at (0,0) {};
+\node (col0) [block,fill=col0,label=right:\huge{2005 and earlier},shift={(0,1.5cm)}] at (Unreported) {};
+\node (col1) [block,fill=col1,label=right:\huge{2006 to 2015},shift={(0,\a)}] at (col0) {};
+\node (col2) [block,fill=col2,label=right:\huge{2016},shift={(0,\a)}] at (col1) {};
+\node (state) [block,pattern=grid,pattern color=edgecolor,label=right:\huge{Reporting states/provinces},shift={(0,1.5cm)}] at (col2) {};
+%%
+\node [anchor=east,color=edgecolor] at (current bounding box.south east)
+{\emph{updated on \today}};
+\node [shift={(0,.8cm)}] at (current bounding box.north)
+{\Huge{\textbf{Global spread of \emph{Tuta absoluta}}}};
+\end{scope}
+%
+\end{tikzpicture}
+\end{document}
+

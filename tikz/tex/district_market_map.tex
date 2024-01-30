@@ -1,0 +1,74 @@
+\documentclass[tikz,border=2]{standalone}
+\usepackage{amssymb}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit}
+\begin{document}
+
+\begin{tikzpicture}
+[scale=1,transform shape,
+node distance=1cm,
+%
+vertex/.style={shape=circle,fill=black,inner sep=1pt},
+selected/.style={shape=circle,fill=black!25,inner sep=3pt},
+part/.style={shape=rectangle,draw=black,inner sep=2pt,semithick},
+%
+every edge/.style={draw,thin},
+match/.style={draw,line width=3pt,black!25},
+dedge/.style={>=latex', shorten >=.0pt, shorten <=.0pt, thin, black!50}]
+%
+% V_P
+\foreach \y in {1,...,4}
+   \node (B\y) [part,label=left:$M_{\y}$] at (0,-.75*\y) {};
+%%
+\node (Bkm) [part,label=left:$M_{k-1}$] at (0,-.75*6) {};
+\node (Bk) [part,label=left:$M_{k}$] at (0,-.75*7) {};
+%%
+% V
+\foreach \y in {1,...,5}
+\node (v\y) [vertex,label=right:{\small $D_\y$}] at (2,-.75*\y+.75) {};
+\node (vnm) [vertex,label=right:{\small $D_{n-1}$}] at (2,-.75*7) {};
+\node (vn) [vertex,label=right:{\small $D_{n}$}] at (2,-.75*8) {};
+%%
+% all edges
+%%% matched edges
+\draw (B1) -- (v3);
+\draw (B2) -- (v1);
+\draw (B3) -- (v5);
+\draw (B4) -- +(.25,-.25);
+\draw[dashed] (B4)+(.25,-.25) -- +(.75,-.75);
+\draw (Bkm) -- (vnm);
+\draw[dashed] (Bk) -- +(.75,.75);
+%% other edges
+\draw (B1) -- (v1);
+\draw (B1) -- (v4);
+\draw (B2) -- (v5);
+\draw (B3) -- (v4);
+\draw (B3) -- +(.5,-.25);
+\draw[dashed] (B3) -- +(1,-1);
+\draw (B4) -- (v2);
+\draw[dashed] (Bkm) -- +(1,1);
+\draw (Bkm) -- (vn);
+\draw (Bk) -- (vn);
+%%
+% matched edges highlighted
+\begin{pgfonlayer}{background}
+\draw[match] (B1) -- (v3);
+\draw[match] (B2) -- (v1);
+\draw[match] (B3) -- (v5);
+\draw[match] (B4) -- +(.25,-.25);
+\draw[match,dashed] (B4) -- +(.75,.75);
+\draw[match] (Bkm) -- (vnm) node (ancMatch) [below,midway]{};
+\draw[match,dashed] (Bk) -- +(.75,.75);
+\end{pgfonlayer}
+%%
+\node (dis) [above of=v1] {Districts};
+\node at (dis-|B1) {Markets};
+% matched nodes
+\begin{pgfonlayer}{background}
+   \node[selected] at (v1) {};
+   \node[selected] at (v3) {};
+   \node[selected] at (v5) {};
+   \node[selected] at (vnm) {};
+\end{pgfonlayer}
+%%
+\end{tikzpicture}
+\end{document}

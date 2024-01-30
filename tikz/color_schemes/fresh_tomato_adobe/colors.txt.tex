@@ -1,0 +1,18 @@
+\documentclass[tikz,border=2]{standalone}
+\usepackage{lmodern} % enhanced version of computer modern
+\usepackage[T1]{fontenc} % for hyphenated characters
+\definecolor{LightGreen}{HTML}{5E7122}
+\definecolor{DarkGreen}{HTML}{1C2506}
+\definecolor{Maroon}{HTML}{4A0603}
+\definecolor{DarkRed}{HTML}{730202}
+\definecolor{Red}{HTML}{C51508}
+\begin{document}
+\begin{tikzpicture}[
+every node/.style={rectangle, minimum width=4cm, minimum height=.5cm, draw=none}]
+\node [label=left:LightGreen,fill=LightGreen] at (0,0cm) {};
+\node [label=left:DarkGreen,fill=DarkGreen] at (0,0.75cm) {};
+\node [label=left:Maroon,fill=Maroon] at (0,1.5cm) {};
+\node [label=left:DarkRed,fill=DarkRed] at (0,2.25cm) {};
+\node [label=left:Red,fill=Red] at (0,3cm) {};
+\end{tikzpicture}
+\end{document}

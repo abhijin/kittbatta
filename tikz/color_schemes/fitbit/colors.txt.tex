@@ -1,0 +1,20 @@
+\documentclass[tikz,border=2]{standalone}
+\usepackage{lmodern} % enhanced version of computer modern
+\usepackage[T1]{fontenc} % for hyphenated characters
+\definecolor{LightBlue}{HTML}{38BFB3}
+\definecolor{DarkBlue}{HTML}{3E6A74}
+\definecolor{LightGreen}{HTML}{99DB3B}
+\definecolor{Orange}{HTML}{F4AD2F}
+\definecolor{Red}{HTML}{F56544}
+\definecolor{Pink}{HTML}{EF386D}
+\begin{document}
+\begin{tikzpicture}[
+every node/.style={rectangle, minimum width=4cm, minimum height=.5cm, draw=none}]
+\node [label=left:LightBlue,fill=LightBlue] at (0,0cm) {};
+\node [label=left:DarkBlue,fill=DarkBlue] at (0,0.75cm) {};
+\node [label=left:LightGreen,fill=LightGreen] at (0,1.5cm) {};
+\node [label=left:Orange,fill=Orange] at (0,2.25cm) {};
+\node [label=left:Red,fill=Red] at (0,3cm) {};
+\node [label=left:Pink,fill=Pink] at (0,3.75cm) {};
+\end{tikzpicture}
+\end{document}

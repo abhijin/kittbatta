@@ -1,0 +1,8 @@
+LightBlue C7DFE3
+DarkBlue 72AFB6
+DarkBrown D2BE89
+LightBrown F4ECDF
+Grey A7A195
+Red CA6C2E
+#TextLightBrown C3B288
+#TextDarkBrown 9C9183

@@ -312,12 +312,16 @@ def subplot_hatch(**kwargs):
         huelist = []
         for patch in pp:
             huelist.append(patch.get_facecolor())
-        hues = pd.DataFrame.from_records(huelist).drop_duplicates()
+        hues = pd.DataFrame.from_records(huelist).drop_duplicates().reset_index(
+                drop=True)
 
         for patch in pp:
             col = patch.get_facecolor()
-            hue = hues[hues == col].dropna().index[0]
-            patch.set_hatch(HATCH[hue])
+            try:
+                hue = hues[hues == col].dropna().index[0]
+                patch.set_hatch(HATCH[hue])
+            except:
+                set_trace()
             edgecol = patch.get_edgecolor() # assumes same edgecolor for all
 
         # Update legend
@@ -379,7 +383,8 @@ def subplot_axes_grid(**kwargs):
         ax.spines['bottom'].set_color(AXES_COLOR)
         ax.tick_params(axis='y', length=0)
         ax.tick_params(axis='x', length=0)
-        ax.set_yticks(ax.get_yticks(), minor=False, colors=AXES_COLOR)
+        ax.set_yticks(ax.get_yticks(), minor=False)
+        ax.tick_params(axis='y', colors=AXES_COLOR)
     elif axis_type == 'boxx':
         ax.grid(axis='x', color=GRID_COLOR, which='major', 
                 linewidth=MAJOR_TICK_LINEWIDTH)
@@ -387,21 +392,24 @@ def subplot_axes_grid(**kwargs):
         ax.spines['left'].set_color(AXES_COLOR)
         ax.tick_params(axis='y', length=0)
         ax.tick_params(axis='x', length=0)
-        ax.set_xticks(ax.get_xticks(), minor=False, colors=AXES_COLOR)
+        ax.set_xticks(ax.get_xticks(), minor=False)
+        ax.tick_params(axis='x', colors=AXES_COLOR)
     elif axis_type == 'histy':
         ax.grid(axis='y', color=GRID_COLOR, which='major', 
                 linewidth=MAJOR_TICK_LINEWIDTH)
         ax.spines[['left', 'right', 'top']].set_visible(False)
         ax.spines['bottom'].set_color(AXES_COLOR)
         ax.tick_params(axis='y', length=0)
-        ax.set_yticks(ax.get_yticks(), minor=False, colors=AXES_COLOR)
+        ax.set_yticks(ax.get_yticks(), minor=False)
+        ax.tick_params(axis='y', colors=AXES_COLOR)
     elif axis_type == 'histx':
         ax.grid(axis='x', color=GRID_COLOR, which='major', 
                 linewidth=MAJOR_TICK_LINEWIDTH)
         ax.spines[['bottom', 'right', 'top']].set_visible(False)
         ax.spines['left'].set_color(AXES_COLOR)
         ax.tick_params(axis='x', length=0)
-        ax.set_xticks(ax.get_xticks(), minor=False, colors=AXES_COLOR)
+        ax.set_xticks(ax.get_xticks(), minor=False)
+        ax.tick_params(axis='x', colors=AXES_COLOR)
     elif axis_type == 'none':
         ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
         ax.set_xticks([])

@@ -1,0 +1,412 @@
+%% raindrop, oxford
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz,border=2]{standalone}
+%% \usepackage[sfdefault]{noto}
+% FONTS
+\usepackage{lmodern} % enhanced version of computer modern
+\usepackage[T1]{fontenc} % for hyphenated characters and textsc in section title
+\usepackage{microtype} % some compression
+\usetikzlibrary{decorations.pathreplacing,shadows,arrows,arrows.meta,shapes,positioning,calc,backgrounds,fit,automata,shadows,patterns.meta}
+\usepackage{xparse}
+\usepackage{ifthen}
+\newcommand{\loc}[1]{\underline{#1}} 
+%\usepackage{xifthen}
+\ExplSyntaxOn
+\NewDocumentCommand { \xifnum } { }
+    {
+        \fp_compare:nTF
+    }
+\ExplSyntaxOff
+
+\usepackage{comment}
+
+\tikzset{cross/.style={cross out, draw, 
+         minimum size=2*(#1-\pgflinewidth), 
+         inner sep=0pt, outer sep=0pt}}
+\begin{document}
+
+
+
+%% oxford (see tiddly)
+\definecolor{Blue}{HTML}{59adb7}
+\definecolor{Red}{HTML}{ca4224}
+\definecolor{DarkYellow}{HTML}{e8b043}
+\definecolor{DarkBlue}{HTML}{2a5484}
+\definecolor{DarkerBlue}{HTML}{091436}
+\definecolor{Orange}{HTML}{eb6933}
+\definecolor{LightBlue}{HTML}{69d0dd}
+
+\newcommand{\eco}{\mathcal{E}}
+\newcommand{\ecob}{\mathcal{E}_B}
+\newcommand{\nat}{\mathcal{N}}
+\newcommand{\hlong}{\mathcal{H}_L}
+\newcommand{\hshort}{\mathcal{H}_S}
+\newcommand{\hroad}{\mathcal{H}_R}
+\newcommand{\landuse}{\mathcal{L}}
+
+\newcommand{\peco}{\theta_\mathcal{E}}
+\newcommand{\pecob}{\theta_{\mathcal{E}_B}}
+\newcommand{\pnat}{\theta_\mathcal{N}}
+\newcommand{\phlong}{\theta_{\mathcal{H}_L}}
+\newcommand{\phshort}{\theta_{\mathcal{H}_S}}
+\newcommand{\phroad}{\theta_{\mathcal{H}_R}}
+\newcommand{\planduse}{\theta_{\mathcal{L}}}
+\newcommand{\asd}{\alpha_s}
+\newcommand{\afm}{\alpha_{\ell}}
+\newcommand{\ald}{\alpha_{\ell d}}
+\newcommand{\layersep}{1cm}
+\newcommand*{\arrowcolor}{black}%
+\newcommand*{\infcolor}{Red}%
+\newcommand*{\suscolor}{Green}%
+\newcommand*{\loccolor}{black!80}%
+\newcommand*{\moorecolor}{\loccolor}%
+\newcommand*{\loccolora}{Blue}%
+\newcommand*{\loccolorb}{DarkYellow}%
+\newcommand*{\locline}{black!100}%
+\newcommand*{\backcolor}{black}%
+\newcommand*{\backopacity}{0.12}%
+\newcommand*{\backline}{white}%
+\newcommand*{\arrowopacity}{1}%
+\newcommand*{\radcolor}{white}%
+
+\def\MooreNbd#1#2#3#4#5{
+    \newcommand*{\xycolor}{#1}%
+    \newcommand*{\xMin}{#2}%
+    \newcommand*{\xMax}{#3}%
+    \newcommand*{\yMin}{#4}%
+    \newcommand*{\yMax}{#5}%
+    \pgfmathparse{\xMin + 0.5}
+    \pgfmathresult \let\xpoint\pgfmathresult;
+    \pgfmathparse{\yMin + 0.5}
+    \pgfmathresult \let\ypoint\pgfmathresult
+    \foreach \x in {\xMin,\xpoint,...,\xMax}
+    	{\foreach \y in {\yMin,\ypoint,...,\yMax}
+            {\draw[draw=\locline,fill=\xycolor] (\x,\y) rectangle (\x + 0.5,\y + 0.5);}}
+    
+}
+
+\def\Group#1#2#3#4#5{
+        \newcommand*{\abcolor}{#1}%
+        \newcommand*{\aMin}{#2}%
+        \newcommand*{\aMax}{#3}%
+        \newcommand*{\bMin}{#4}%
+        \newcommand*{\bMax}{#5}%
+        \pgfmathparse{\aMin + 0.5}
+        \pgfmathresult \let\apoint\pgfmathresult;
+        \pgfmathparse{\bMin + 0.5}
+        \pgfmathresult \let\bpoint\pgfmathresult
+        \foreach \a in {\aMin,\apoint,...,\aMax} 
+        	{\foreach \b in {\bMin,\bpoint,...,\bMax}
+                {\xifnum{\a!=\aMin}
+                	{\xifnum{\b!=\bMin}
+                	    {\xifnum{\b!=\bMax}
+                        {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}
+                            {\xifnum{\a!=\aMax}
+                            {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}           
+                                {}}}
+                        {\xifnum{\a!=\aMax}
+                            {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}
+                            {}}}
+                    {\xifnum{\b!=\bMin}
+                	    {\xifnum{\b!=\bMax}
+                            {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}           {}}
+                        {}}}
+                        }
+}
+
+\def\GroupTwo#1#2#3#4#5{
+        \newcommand*{\cdcolor}{#1}
+        \newcommand*{\cMin}{#2}%
+        \newcommand*{\cMax}{#3}%
+        \newcommand*{\dMin}{#4}%
+        \newcommand*{\dMax}{#5}%
+        \pgfmathparse{\cMin + 0.5}
+        \pgfmathresult \let\cpoint\pgfmathresult;
+        \pgfmathparse{\dMin + 0.5}
+        \pgfmathresult \let\dpoint\pgfmathresult
+        \foreach \c in {\cMin,\cpoint,...,\cMax} 
+        	{\foreach \d in {\dMin,\dpoint,...,\dMax}
+                {\xifnum{\c!=\cMin}
+                	{\xifnum{\d!=\dMin}
+                	    {\xifnum{\d!=\dMax}
+                        {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}
+                            {\xifnum{\c!=\cMax}
+                            {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}           
+                                {}}}
+                        {\xifnum{\c!=\cMax}
+                            {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}
+                            {}}}
+                    {\xifnum{\d!=\dMin}
+                	    {\xifnum{\d!=\dMax}
+                            {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}           {}}
+                        {}}}
+                        }
+}
+
+\newcommand{\raindrop}[5]{
+    \draw[#1] (#2,#3) pic {raindrop};
+    \node[shift={(0,-2.5)},font=\small,text width=1cm,align=center] at (#2,#3) {#4};
+    \node[shift={(0,-.5)}] (#5) at (#2,#3) {};
+}
+
+\begin{tikzpicture}[scale=.7,every node/.style={minimum size=1cm},on grid,
+block/.style ={rectangle, draw=black, thick, text width=3mm, align=center,
+rounded corners, minimum height=10mm, minimum width = 7mm},
+module/.style={rectangle, line width=.5mm, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,draw,inner sep=0mm},
+app/.style={circle, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,inner sep=0mm},
+desc/.style={rectangle, align=center,font=\small},
+raindropedge/.style={black},
+raindrop/.pic={
+    code={\tikzset{scale=1.25}
+    \fill (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;
+ \draw[black] (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;}},
+ledge/.style={rounded corners, thick, black!50, -{Straight Barb[left]},
+shorten >=.5pt, shorten <=.5pt},
+redge/.style={rounded corners, thick, black!50, -{Straight Barb[right]},
+shorten >=.5pt, shorten <=.5pt}, task/.style={fill=black!10,minimum size=0}
+]
+
+		
+    %slanting: production of a set of n 'laminae' to be piled up. N=number of grids.
+    \begin{scope}[
+            scale=.3,
+            auto,
+            yshift=-83,
+            every node/.append style={yslant=0.5,xslant=-1},
+            yslant=0.5,xslant=-1
+            ]
+        % opacity to prevent graphical interference
+        \fill[draw=\backcolor,fill opacity=\backopacity] (0,0) rectangle (7,7);
+        \draw[step=5mm, \backline] (0,0) grid (7,7); %defining grids
+        
+        
+        %% % {<color of outside cells>} {<xmin>} {<xmax>} {<ymin>} {<ymax>}
+        %% \MooreNbd{\moorecolor} {0} {1} {0} {1}
+        %% %Infected cell
+        %% \fill[\suscolor] (0.5,0.5) rectangle (1,1);
+        \fill[\infcolor](0,) rectangle (0.5, 1.5);
+        \fill[\infcolor](1,0) rectangle (1.5, 0.5);
+         
+         
+         
+        \Group{\loccolora} {4.5} {6.5} {3.5} {5.5}
+        %City
+        %% \fill[\suscolor] (5,4) rectangle (5.5, 4.5);
+        %Infected cell
+        \fill[\infcolor] (4.5,4.5) rectangle (5,5);
+        \fill[\infcolor] (5.5,3.5) rectangle(6,4);
+        \fill[\infcolor] (5.5,5) rectangle (6,5.5);
+        \fill[\infcolor](1,0) rectangle (1.5, 0.5);
+
+	    \fill[pattern={Lines[line width=.8mm,angle=-45]},pattern
+	    color=\infcolor,](1,7) rectangle (1.5, 6.5);
+        \fill[pattern={Lines[line width=.8mm,angle=-45]},pattern
+        color=\infcolor,](1.5,7) rectangle (2, 6.5);
+	    \fill[pattern={Lines[line width=.8mm,angle=-45]},pattern
+        color=\infcolor,](1,6.5) rectangle (1.5, 6);
+        
+     
+        
+        %%\GroupTwo{\loccolorb} {0} {2} {2.5} {4.5}
+        %group 2
+        \fill[\loccolorb, draw=\locline] (.5,3) rectangle (1, 3.5);
+        \fill[\loccolorb, draw=\locline] (.5,3.5) rectangle (1, 4);
+        \fill[\loccolorb, draw=\locline] (.5,4) rectangle (1, 4.5);
+        \fill[\loccolorb, draw=\locline] (1,3) rectangle (1.5, 3.5);
+        \fill[\loccolorb, draw=\locline] (1,3.5) rectangle (1.5, 4);
+        \fill[\loccolorb, draw=\locline] (1,4) rectangle (1.5, 4.5);
+        \fill[\loccolorb, draw=\locline] (1,4.5) rectangle (1.5, 5);
+        \fill[\loccolorb, draw=\locline] (1.5,3.5) rectangle (2, 4);
+        \fill[\loccolorb, draw=\locline] (1.5,4) rectangle (2, 4.5);
+        \fill[\loccolorb, draw=\locline] (1.5,4.5) rectangle (2, 5);
+        \fill[\loccolorb, draw=\locline] (2,3.5) rectangle (2.5, 4);
+        \fill[\loccolorb, draw=\locline] (2,4) rectangle (2.5, 4.5);
+        
+        %% %Diagram
+		%% \fill[\suscolor](6.5,0) rectangle (7,0.5); 
+		%% \fill[\infcolor](5.5,1) rectangle(6,1.5);       
+        
+	    \draw[\backline,very thick] (0,0) rectangle (7,7);%marking borders
+        
+        %Radius
+    \end{scope}
+	
+    \begin{scope}[scale=.3,auto]
+	%Arrows
+	%Farm to Market
+    \draw[->,thin,\arrowcolor, opacity = \arrowopacity](0,1.9)node[right]{}
+        to[out=70,in=160] (1,1.8);
+    \draw[->,thin,\arrowcolor, opacity = \arrowopacity](1.9,1.7)node[right]{}
+        to[out=110,in=20] (1,1.8);
+    \draw[->,thin,\arrowcolor, opacity = \arrowopacity](0.4,2.5)node[right]{}
+        to[out=20,in=90] (1,1.8);
+        
+        %Short distance
+    \draw[->,thin,\arrowcolor, opacity = \arrowopacity](-0.8,-2.2)node[right]{}
+        to[out=90,in=110] (0,-2.2);
+    \draw[->,thin,\arrowcolor, opacity = \arrowopacity](0.8,-2.2)node[right]{}
+        to[out=90,in=70] (0,-2.2);
+        
+        %Market to Market
+    
+	\draw[black](0.6,5) circle(10pt);     
+	\draw (0.6,5) node[cross=2pt,rotate=45,black]{};   
+        
+    \draw[->,thin,\arrowcolor, opacity = \arrowopacity](0.2,5.2)node[right]{}
+        to[out=140,in=70] (-2.7,3.9);
+        
+	\draw[->,thin, \arrowcolor, opacity = \arrowopacity](0,1.9)node[right]{}to(0.5,4.6);
+	\draw[->,thin, \arrowcolor, opacity = \arrowopacity](1.9,1.7)node[right]{}to(0.7,4.6);
+	\draw[->,thin, \arrowcolor, opacity = \arrowopacity](0.4,2.5)node[right]{}to(0.6,4.6);
+
+    \draw[black](-2.7,3.5) circle(10pt);     
+	\draw (-2.7,3.5) node[cross=2pt,rotate=45,black]{};  
+	
+	\draw[->,thin,\arrowcolor, opacity = \arrowopacity](-2.7,3.1)node[right]{}to(-3.5,-0.4);
+	\draw[->,thin,\arrowcolor, opacity = \arrowopacity](-2.7,3.1)node[right]{}to(-2.5,-0.5);
+	\draw[->,thin,\arrowcolor, opacity = \arrowopacity](-2.7,3.1)node[right]{}to(-1.9,0.3);
+
+\node (gli) at (5,3) {};
+\node[text width=4cm] (Fij) at (-3.5,6){};
+\node[text width=2cm] (node) at (3.5,-2.7) {};
+\end{scope}
+
+%% Modules
+\node[module,draw=Red,text width=3cm,minimum height=3cm] (mpnds) at
+(0,1) {MPNDS \\
+formulation\\\mbox{}\\\mbox{}\\\mbox{}\\\mbox{}\\\mbox{}};
+
+\node[module,draw=DarkBlue,text width=1.8cm,xshift=1.5cm]
+(cal) at (mpnds.east) {Joint calibration};
+
+\node[module,draw=DarkBlue,text width=1.8cm,xshift=1.5cm]
+(state) at (cal.east) {State estimation};
+
+\node[module,draw=black!60,dashed,text width=1.8cm,minimum
+height=1.8cm,yshift=2cm] (remote) at (state.north) {Remote-sensed images};
+
+\node[module,draw=Blue,text width=2cm,xshift=-3.5cm,yshift=2.5cm] (eco)
+at (mpnds.west) {Ecological model for IAPS $\eco(\peco)$};
+
+\node[module,draw=Blue,text width=2cm,yshift=-2.5cm] (ecob)
+at (eco|-mpnds.west) {Biocontrol ecological model $\ecob(\pecob)$};
+
+\node[module,draw=black!60,dashed,text width=2cm,yshift=-2.5cm,below
+of=mpnds] (grid) {Mapping datasets to grid cells};
+
+\node[module,draw=DarkYellow,text width=2cm,yshift=2.5cm,above
+of=mpnds] (pathways) {Spread pathways\\$\nat$, $\hshort$, $\hlong$, $\hroad$};
+
+\node[module,draw=black!60,dashed,text width=2cm,minimum
+height=1.8cm,yshift=-2.5cm,xshift=-2.5cm,below of=state] (fs) {Field survey
+for IAPS \& biocontrol agent};
+
+\node[module,draw=Orange,text width=1.2cm,minimum
+height=.7cm,yshift=0cm,xshift=.1cm,below of=state,anchor=north]
+(sense) at (state.south) {Sensing};
+
+%%
+\node[dashed,draw=black,rounded corners,fit=(mpnds)(cal)(state)] (sim) {}; 
+
+\node[module,draw=Orange,anchor=west,text width=2cm,minimum
+height=1.5cm,xshift=2cm,yshift=3.5cm] (surv) at (sim.east) {Surveillance
+for early discovery};
+
+\node[module,draw=Orange,anchor=north,text width=2cm,minimum
+height=1cm,xshift=0cm,yshift=-.7cm] (ctrl) at (surv.south) {Intervention};
+
+\node[module,draw=Red,anchor=north,text width=2cm,minimum
+height=1cm,xshift=0cm,yshift=-.7cm] (risk) at (ctrl.south) {Risk\\
+assessment};
+
+\node[module,draw=Blue,anchor=north,text width=2cm,minimum
+height=1cm,xshift=0cm,yshift=-.7cm] (health) at (risk.south) {Health impact};
+
+\node[module,draw=Blue,anchor=north,text width=2cm,minimum
+height=1cm,xshift=0cm,yshift=-.7cm] (econ) at (health.south) {Economic impact};
+
+\node[module,draw=black!60,minimum height=.8cm,text
+width=1.2cm,xshift=-2cm] (survey) at (econ.west) {Survey};
+
+\node[dashed,draw=black,rounded
+corners,inner sep=6pt,fit=(surv)(ctrl)(risk)(health)(econ)] (app) {}; 
+
+\draw[redge] ($(eco.east)+(0,-.1)$) -- ++(1.35,0) |- ($(mpnds.west)+(0,1.4)$);
+\draw[redge] ($(mpnds.west)+(0,1.6)$) -- ++(-2.0,0) |- ($(eco.east)+(0,.1)$);
+
+\draw[ledge] ($(ecob.east)+(0,.1)$) -- ++(1.35,0) |- ($(mpnds.west)+(0,-1.4)$);
+\draw[ledge] ($(mpnds.west)+(0,-1.6)$) -- ++(-2.0,0) |- ($(ecob.east)+(0,-.1)$);
+
+\draw[ledge] ($(mpnds.east)+(0,.1)$) -- ($(cal.west)+(0,.1)$);
+\draw[ledge] ($(cal.west)+(0,-.1)$) -- ($(mpnds.east)+(0,-.1)$);
+
+\draw[ledge] ($(cal.east)+(0,.1)$) -- ($(state.west)+(0,.1)$);
+\draw[ledge] ($(state.west)+(0,-.1)$) -- ($(cal.east)+(0,-.1)$);
+
+\draw[ledge,->] (grid) -- (mpnds);
+
+\draw[redge] ($(mpnds.north)+(.1,0)$) -- ($(pathways.south)+(.1,0)$);
+\draw[redge] ($(pathways.south)+(-.1,0)$) -- ($(mpnds.north)+(-.1,0)$);
+
+\draw[redge,->] (state.south-|sense) -- (sense);
+\draw[redge,->] (sense) |- (fs);
+\draw[redge,->] (fs.north) -- +(0,1) -| ($(state.south)+(-.8,0)$);
+\draw[ledge,->] (remote) -- (state);
+
+\draw[ledge,->] (econ.east) -- +(.8cm,0) |- ($(risk.east)+(0,.4)$);
+\draw[ledge,->] (health.east) -- +(.5cm,0) |- ($(risk.east)+(0,-.4)$);
+
+\draw[ledge,<-] (surv.west) -- +(-.8cm,0) |- ($(risk.west)+(0,-.2)$);
+\draw[ledge,<-] (ctrl.west) -- +(-.5cm,0) |- ($(risk.west)+(0,.2)$);
+
+\draw [->, line width=2mm, -latex, black!20] (sim) -- ($(app.west)+(-.8,0)$);
+
+\draw[ledge,->] (survey) -- (econ);
+\draw[ledge,->] (survey.north) -- ++(0,.5) -- ++(1,0) |- (health);
+
+\node[desc,text width=2.5cm,anchor=east,xshift=-.1cm] at (mpnds.west)
+{Suitability, population size, propensity to spread};
+
+\node[desc,text width=2cm,anchor=west,xshift=-.2cm,yshift=.5cm] at (eco.east)
+{Climate, land use};
+\node[desc,text width=2cm,anchor=west,xshift=-.2cm,yshift=-.8cm] at (ecob.east)
+{Climate, land use, IAPS pop.};
+
+\node[desc,text width=3.0cm,anchor=east,xshift=1.1cm,yshift=-.5cm] at
+(pathways.south west) {Multi-pathway network $G(V,E)$};
+\node[desc,text width=3.3cm,anchor=west,xshift=-.9cm,yshift=-.5cm] at
+(pathways.south east) {Environ., economic, social, infrastructure};
+
+%% Tasks
+\node[task,xshift=-.9cm,yshift=-.55cm,anchor=south] at (mpnds.south) {T1.1};
+\node[task,xshift=-.5cm,yshift=0cm,anchor=north] at (eco.south) {T1.2};
+\node[task,xshift=0cm,yshift=0cm,anchor=north east] at (pathways.north
+west) {T1.3};
+\node[task,xshift=.1cm,yshift=.1cm,anchor=south west] at (state.south west)
+{T2.1};
+\node[task,xshift=.1cm,yshift=.1cm,anchor=south west] at (cal.south west)
+{T2.2};
+\node[task,xshift=0cm,yshift=0cm,anchor=east] at (sense.west)
+{T2.3};
+\node[task,xshift=0cm,yshift=0cm,anchor=south east] at (survey.south west)
+{T3.1};
+\node[task,xshift=0cm,yshift=0cm,anchor=north west] at (health.south west)
+{T3.2};
+\node[task,xshift=0cm,yshift=0cm,anchor=north east] at (health.south east)
+{T3.3};
+\node[task,xshift=0cm,yshift=0cm,anchor=east] at (econ.south west)
+{T3.4};
+\node[task,xshift=0cm,yshift=0cm,anchor=north west] at (risk.south west)
+{T4.1};
+\node[task,xshift=0cm,yshift=0cm,anchor=north west] at (surv.south west)
+{T4.2};
+\node[task,xshift=-.5cm,yshift=0cm,anchor=south] at (ecob.north) {T4.3};
+\node[task,xshift=0cm,yshift=0cm,anchor=north west] at (ctrl.south west)
+{T4.4};
+
+\end{tikzpicture}
+\end{document}

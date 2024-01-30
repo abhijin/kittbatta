@@ -1,0 +1,56 @@
+\documentclass[tikz,border=2]{standalone}
+\usepackage{amssymb}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% colors
+\definecolor{myBlue}{HTML}{0060AD}
+\definecolor{myRed}{HTML}{DD181F}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\sep{0.75}
+\newcommand{\namedColumns}[6]{
+   \node at (0,-\sep*1) {#1};
+   \node at (0,-\sep*2) {#2};
+   \node at (0,-\sep*3) {#3};
+   \node at (0,-\sep*4) {#4};
+   \node at (0,-\sep*5) {#5};
+   \node at (0,-\sep*6) {#6};
+}
+
+\begin{tikzpicture}
+[scale=1,transform shape,
+node distance=1cm,
+%
+vertex/.style={shape=circle,draw=black,inner sep=2pt,semithick},
+clause/.style={shape=rectangle,draw=black,inner sep=2pt,semithick},
+literal/.style={shape=circle,draw=black,inner sep=1.5pt,semithick},
+nliteral/.style={literal,fill=black},
+dummy/.style={literal,fill=black!30,thin},
+%
+edge/.style={draw,shorten >=.4pt,shorten <=.4pt},
+dedge/.style={gray,>=latex', shorten >=.0pt, shorten <=.0pt, thick}]
+%
+\begin{scope}
+    \namedColumns{$u_1$}{$u_2$}{$u_3$}{$u_4$}{$u_5$}{$v$}
+\end{scope}
+%
+\begin{scope}[shift={(1,0)}]
+   \node at (0,0) {$q_1$};
+   \namedColumns{$1$}{$1$}{$1$}{$0$}{$0$}{$0$}
+\end{scope}
+%
+\begin{scope}[shift={(2,0)}]
+   \node at (0,0) {$q_2$};
+   \namedColumns{$1$}{$1$}{$1$}{$1$}{$1$}{$0$}
+\end{scope}
+%
+\begin{scope}[shift={(3,0)}]
+   \node at (0,0) {$q_3$};
+   \namedColumns{$1$}{$1$}{$1$}{$1$}{$0$}{$0$}
+\end{scope}
+%
+\draw[myRed] (0.5,.2) -- ++(0,-4.8);
+\draw[myRed] (-.25,-.25) -- ++(3.5,0);
+\end{tikzpicture}
+{}
+\end{document}

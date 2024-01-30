@@ -1,0 +1,135 @@
+%% tag line width
+\documentclass[tikz,border=2]{standalone}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define the layers to draw the diagram
+\pgfdeclarelayer{bg}
+\pgfsetlayers{bg,main}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% colors
+\definecolor{myBlue}{HTML}{0060AD}
+\definecolor{myRed}{HTML}{DD181F}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tikzpicture}
+[node distance=1cm,
+bend angle=15,
+subdue/.style={draw=black!30},
+vertex/.style={shape=circle,inner sep=2pt,fill=black!30},
+removed/.style={shape=circle,inner sep=2pt,draw},
+accepting/.append style={draw=myRed,fill=myRed},
+infected/.style={vertex,accepting,shape=circle,inner sep=2pt},
+anc/.style={inner sep=0pt},
+%
+myedge/.style={semithick},
+source/.style={shape=circle,fill=myRed,draw=myRed,inner sep=2pt},
+dedge/.style={semithick,dashed,>=latex', shorten >=.0pt, black!90, shorten <=.0pt}]
+%
+%%%%%%%%%%%%%% IC model
+\begin{scope}
+\node (v1) [vertex,infected] at (0,0) {};
+\node (v2) [vertex,above right=of v1] {};
+\node (v3) [vertex,right=of v2,shift={(0,-.5)}] {};
+\node (v4) [vertex,below=of v3,shift={(0,.25)}] {};
+\node (v5) [vertex,below right=of v1] {};
+%
+\draw[myedge] (v1) -- (v2) node [font=\small,midway,above left=-3pt] {0.5};
+\draw[myedge] (v1) -- (v3) node [font=\small,midway,above] {1};
+\draw[myedge] (v1) -- (v5) node [font=\small,midway,below left=-3pt] {0.25};
+\draw[myedge] (v2) -- (v3) node [font=\small,midway,above] {0.5};
+\draw[myedge] (v3) -- (v5) node [font=\small,midway,above left=-3pt] {0.75};
+\draw[myedge] (v3) -- (v4) node [font=\small,midway,right=-2pt] {0.5};
+\draw[myedge] (v4) -- (v5) node [font=\small,midway,below] {0.25};
+%%\node (t0) [rotate=90,left=of v1,shift={(1,-.5)}] {IC model};
+\end{scope}
+%
+\begin{scope}[shift={(4,0)}]
+\node (v1) [removed] at (0,0) {};
+\node (v2) [vertex,above right=of v1] {};
+\node (v3) [infected,right=of v2,shift={(0,-.5)}] {};
+\node (v4) [vertex,below=of v3,shift={(0,.25)}] {};
+\node (v5) [vertex,below right=of v1] {};
+%
+\draw[myedge] (v1) -- (v2) node [font=\small,midway,above left=-3pt] {0.5};
+\draw[dedge,->] (v1) -- (v3) node [font=\small,midway,above] {1};
+\draw[myedge] (v1) -- (v5) node [font=\small,midway,below left=-3pt] {0.25};
+\draw[myedge] (v2) -- (v3) node [font=\small,midway,above] {0.5};
+\draw[myedge] (v3) -- (v5) node [font=\small,midway,above left=-3pt] {0.75};
+\draw[myedge] (v3) -- (v4) node [font=\small,midway,right=-2pt] {0.5};
+\draw[myedge] (v4) -- (v5) node [font=\small,midway,below] {0.25};
+\end{scope}
+%
+\begin{scope}[shift={(8,0)}]
+\node (v1) [removed] at (0,0) {};
+\node (v2) [vertex,above right=of v1] {};
+\node (v3) [removed,right=of v2,shift={(0,-.5)}] {};
+\node (v4) [infected,below=of v3,shift={(0,.25)}] {};
+\node (v5) [infected,below right=of v1] {};
+%
+\draw[myedge] (v1) -- (v2) node [font=\small,midway,above left=-3pt] {0.5};
+\draw[myedge] (v1) -- (v3) node [font=\small,midway,above] {1};
+\draw[myedge] (v1) -- (v5) node [font=\small,midway,below left=-3pt] {0.25};
+\draw[myedge] (v2) -- (v3) node [font=\small,midway,above] {0.5};
+\draw[dedge,->] (v3) -- (v5) node [font=\small,midway,above left=-3pt] {0.75};
+\draw[dedge,->] (v3) -- (v4) node [font=\small,midway,right=-2pt] {0.5};
+\draw[myedge] (v4) -- (v5) node [font=\small,midway,below] {0.25};
+\end{scope}
+%%
+\draw[line width=.35cm,black!8] (-.25,-1.5) -- ++(10.75,0);
+\node (t0) at (1,-1.5) {time 0};
+\node (t0) at (5,-1.5) {time 1};
+\node (t0) at (9,-1.5) {time 2};
+%% %%%%%%%%%%%%%% threshold model
+%% \begin{scope}[shift={(0,-3)}]
+%% \begin{scope}
+%% \node (v1) [vertex,infected,label=below:2] at (0,0) {};
+%% \node (v2) [vertex,above right=of v1,label=left:1] {};
+%% \node (v3) [vertex,right=of v2,shift={(0,-.5)},label=above right:2] {};
+%% \node (v4) [vertex,below=of v3,shift={(0,.25)},label=right:2] {};
+%% \node (v5) [vertex,below right=of v1,label=below:1] {};
+%% %
+%% \draw[myedge] (v1) -- (v2);
+%% \draw[myedge] (v1) -- (v3);
+%% \draw[myedge] (v1) -- (v5);
+%% \draw[myedge] (v2) -- (v3);
+%% \draw[myedge] (v3) -- (v5);
+%% \draw[myedge] (v3) -- (v4);
+%% \draw[myedge] (v4) -- (v5);
+%% \node (t0) [rotate=90,left=of v1,shift={(1.4,-.5)}] {Threshold model};
+%% \end{scope}
+%% %
+%% \begin{scope}[shift={(4,0)}]
+%% \node (v1) [vertex,label=below:2] at (0,0) {};
+%% \node (v2) [vertex,infected,above right=of v1,label=left:1] {};
+%% \node (v3) [vertex,right=of v2,shift={(0,-.5)},label=above right:2] {};
+%% \node (v4) [vertex,below=of v3,shift={(0,.25)},label=right:2] {};
+%% \node (v5) [vertex,infected,below right=of v1,label=below:1] {};
+%% %
+%% \draw[myedge] (v1) -- (v2);
+%% \draw[myedge] (v1) -- (v3);
+%% \draw[myedge] (v1) -- (v5);
+%% \draw[myedge] (v2) -- (v3);
+%% \draw[myedge] (v3) -- (v5);
+%% \draw[myedge] (v3) -- (v4);
+%% \draw[myedge] (v4) -- (v5);
+%% \end{scope}
+%% %
+%% \begin{scope}[shift={(8,0)}]
+%% \node (v1) [vertex,infected,label=below:2] at (0,0) {};
+%% \node (v2) [vertex,infected,above right=of v1,label=left:1] {};
+%% \node (v3) [vertex,infected,right=of v2,shift={(0,-.5)},label=above right:2] {};
+%% \node (v4) [vertex,below=of v3,shift={(0,.25)},label=right:2] {};
+%% \node (v5) [vertex,infected,below right=of v1,label=below:1] {};
+%% %
+%% \draw[myedge] (v1) -- (v2);
+%% \draw[myedge] (v1) -- (v3);
+%% \draw[myedge] (v1) -- (v5);
+%% \draw[myedge] (v2) -- (v3);
+%% \draw[myedge] (v3) -- (v5);
+%% \draw[myedge] (v3) -- (v4);
+%% \draw[myedge] (v4) -- (v5);
+%% \end{scope}
+%% \end{scope}
+\end{tikzpicture}
+\end{document}

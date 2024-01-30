@@ -1,0 +1,3 @@
+- put tex file in tex/ and any input files to tex/aux/ and make changes accordingly in tex file.
+- run gen_tikz.sh
+- run update_tiddly.sh; copy code and paste it in notes.html. Add tags.

@@ -1,0 +1,101 @@
+\documentclass[tikz,border=2]{standalone}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define the layers to draw the diagram
+\pgfdeclarelayer{bg}
+\pgfsetlayers{bg,main}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% colors
+\definecolor{myBlue}{HTML}{0060AD}
+\definecolor{myRed}{HTML}{DD181F}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tikzpicture}
+[node distance=1cm,
+bend angle=15,
+subdue/.style={draw=black!30},
+vertex/.style={shape=circle,inner sep=2pt},
+uninfected/.style={vertex,draw},
+accepting/.append style={draw=myBlue,fill=myBlue},
+vaccinated/.style={vertex,shape=rectangle,inner sep=3pt,fill=myBlue},
+infected/.style={shape=circle,inner sep=2pt,fill=myRed},
+anc/.style={inner sep=0pt},
+%
+myedge/.style={thick},
+source/.style={shape=circle,fill=myRed,draw=myRed,inner sep=2pt},
+dedge/.style={thick,>=latex', shorten >=.0pt, black!90, shorten <=.0pt}]
+%
+%
+\node (v1) [vaccinated,label=left:$1$] at (0,0) {};
+\node (v2) [uninfected,above right=of v1,shift={(1,0)},label=above:$2$] {};
+\node (v3) [uninfected,below right=of v2,label=right:$3$] {};
+\node (v4) [uninfected,below=of v2,label=above:$4$] {};
+\node (v5) [uninfected,below=of v3,label=right:$5$] {};
+\node (v6) [vaccinated,below right=of v1,label=left:$6$] {};
+\node (v7) [vaccinated,above right=of v1,shift={(0,.5)},,label=above:$7$] {};
+%% \node [above left=of v1] {$G$};
+%
+\draw[myedge,subdue] (v1) -- (v2);
+\draw[myedge,subdue] (v1) -- (v4);
+\draw[myedge,subdue] (v1) -- (v6);
+\draw[myedge,subdue] (v1) -- (v7);
+%
+\draw[myedge] (v2) -- (v3);
+\draw[myedge,subdue] (v2) -- (v6);
+\draw[myedge,subdue] (v2) -- (v7);
+%
+\draw[myedge] (v3) -- (v5);
+\draw[myedge] (v3) -- (v4);
+%
+\draw[myedge] (v4) -- (v5);
+\draw[myedge,subdue] (v4) -- (v6);
+%
+\draw[myedge,subdue] (v5) -- (v6);
+%
+\node (t0) [below=of v6,shift={(1,-.5)}] {$t=0$};
+\node [right=of t0,shift={(2,0)}] {$t=2$};
+   \node (anc2) [anc] at (3.5,0) {};
+%%%%%%%%%%%% source 2
+\begin{scope}[scale=.75,transform shape, shift={(5,1.5)},myedge/.style={semithick}]
+   \node (anc0) [anc] at (1.25,0) {};
+\node (v2) [accepting,source,above right=of v1,shift={(1,0)},label=above:$2$] at (0,0) {};
+\node (v3) [infected,below right=of v2,label=right:$3$] {};
+\node (v4) [vaccinated,below=of v2,label=above:$4$] {};
+\node (v5) [vaccinated,below=of v3,label=right:$5$] {};
+%% \node [above left=of v1] {$G$};
+%
+\draw[myedge] (v2) -- (v3);
+%
+\draw[myedge] (v3) -- (v5);
+\draw[myedge] (v3) -- (v4);
+%
+\draw[myedge] (v4) -- (v5);
+%
+\end{scope}
+%%%%%%%%%%%% source 3
+\begin{scope}[scale=.75,transform shape, shift={(5,-1.5)},myedge/.style={semithick}]
+   \node (anc1) [anc] at (1.25,0) {};
+\node (v2) [infected,above right=of v1,shift={(1,0)},label=above:$2$] at (0,0) {};
+\node (v3) [accepting,source,below right=of v2,label=right:$3$] {};
+\node (v4) [infected,below=of v2,label=above:$4$] {};
+\node (v5) [infected,below=of v3,label=right:$5$] {};
+%% \node [above left=of v1] {$G$};
+%
+\draw[myedge] (v2) -- (v3);
+%
+\draw[myedge] (v3) -- (v5);
+\draw[myedge] (v3) -- (v4);
+%
+\draw[myedge] (v4) -- (v5);
+%
+\end{scope}
+\draw[dedge,->] (anc2) -- (anc0);
+\draw[dedge,->] (anc2) -- (anc1);
+%% legend
+\node [vaccinated,label=right:{\small vaccinated}] at (6.5,2) {};
+\node [accepting,source,label=right:{\small source}] at (6.5,1.5) {};
+\node [infected,label=right:{\small infected}] at (6.5,1) {};
+\node [uninfected,label=right:{\small uninfected}] at (6.5,.5) {};
+\end{tikzpicture}
+\end{document}

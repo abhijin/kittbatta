@@ -1,0 +1,329 @@
+\documentclass[dvipsnames,tikz,border=2]{standalone}
+\usetikzlibrary{decorations.pathreplacing,shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata,shadows}
+\usepackage{xparse}
+\usepackage{ifthen}
+%\usepackage{xifthen}
+\ExplSyntaxOn
+\NewDocumentCommand { \xifnum } { }
+    {
+        \fp_compare:nTF
+    }
+\ExplSyntaxOff
+
+\definecolor{RED}{HTML}{E41A1C}
+\definecolor{BLUE}{HTML}{377EB8}
+\definecolor{GREEN}{HTML}{4DAF4A}
+\definecolor{ORANGE}{HTML}{FF7F00}
+
+
+
+\usepackage{comment}
+
+\tikzset{cross/.style={cross out, draw, 
+         minimum size=2*(#1-\pgflinewidth), 
+         inner sep=0pt, outer sep=0pt}}
+\begin{document}
+
+\newcommand{\asd}{\alpha_s}
+\newcommand{\afm}{\alpha_{\ell}}
+\newcommand{\ald}{\alpha_{\ell d}}
+
+\newcommand{\layersep}{1cm}
+\newcommand*{\arrowcolor}{Red}%
+\newcommand*{\infcolor}{Red}%
+\newcommand*{\suscolor}{ForestGreen}%
+\newcommand*{\loccolor}{black!70}%
+\newcommand*{\moorecolor}{\loccolor}%
+\newcommand*{\loccolora}{BurntOrange}%
+\newcommand*{\loccolorb}{ForestGreen!60}%
+\newcommand*{\locline}{black!50}%
+\newcommand*{\backcolor}{black}%
+\newcommand*{\backopacity}{0.1}%
+\newcommand*{\backline}{white}%
+\newcommand*{\arrowopacity}{1}%
+\newcommand*{\radcolor}{white}%
+
+\def\MooreNbd#1#2#3#4#5{
+    \newcommand*{\xycolor}{#1}%
+    \newcommand*{\xMin}{#2}%
+    \newcommand*{\xMax}{#3}%
+    \newcommand*{\yMin}{#4}%
+    \newcommand*{\yMax}{#5}%
+    \pgfmathparse{\xMin + 0.5}
+    \pgfmathresult \let\xpoint\pgfmathresult;
+    \pgfmathparse{\yMin + 0.5}
+    \pgfmathresult \let\ypoint\pgfmathresult
+    \foreach \x in {\xMin,\xpoint,...,\xMax}
+    	{\foreach \y in {\yMin,\ypoint,...,\yMax}
+            {\draw[draw=\locline,fill=\xycolor] (\x,\y) rectangle (\x + 0.5,\y + 0.5);}}
+    
+}
+
+\def\Locality#1#2#3#4#5{
+        \newcommand*{\abcolor}{#1}%
+        \newcommand*{\aMin}{#2}%
+        \newcommand*{\aMax}{#3}%
+        \newcommand*{\bMin}{#4}%
+        \newcommand*{\bMax}{#5}%
+        \pgfmathparse{\aMin + 0.5}
+        \pgfmathresult \let\apoint\pgfmathresult;
+        \pgfmathparse{\bMin + 0.5}
+        \pgfmathresult \let\bpoint\pgfmathresult
+        \foreach \a in {\aMin,\apoint,...,\aMax} 
+        	{\foreach \b in {\bMin,\bpoint,...,\bMax}
+                {\xifnum{\a!=\aMin}
+                	{\xifnum{\b!=\bMin}
+                	    {\xifnum{\b!=\bMax}
+                        {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}
+                            {\xifnum{\a!=\aMax}
+                            {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}           
+                                {}}}
+                        {\xifnum{\a!=\aMax}
+                            {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}
+                            {}}}
+                    {\xifnum{\b!=\bMin}
+                	    {\xifnum{\b!=\bMax}
+                            {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}           {}}
+                        {}}}
+                        }
+}
+
+\def\LocalityTwo#1#2#3#4#5{
+        \newcommand*{\cdcolor}{#1}
+        \newcommand*{\cMin}{#2}%
+        \newcommand*{\cMax}{#3}%
+        \newcommand*{\dMin}{#4}%
+        \newcommand*{\dMax}{#5}%
+        \pgfmathparse{\cMin + 0.5}
+        \pgfmathresult \let\cpoint\pgfmathresult;
+        \pgfmathparse{\dMin + 0.5}
+        \pgfmathresult \let\dpoint\pgfmathresult
+        \foreach \c in {\cMin,\cpoint,...,\cMax} 
+        	{\foreach \d in {\dMin,\dpoint,...,\dMax}
+                {\xifnum{\c!=\cMin}
+                	{\xifnum{\d!=\dMin}
+                	    {\xifnum{\d!=\dMax}
+                        {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}
+                            {\xifnum{\c!=\cMax}
+                            {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}           
+                                {}}}
+                        {\xifnum{\c!=\cMax}
+                            {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}
+                            {}}}
+                    {\xifnum{\d!=\dMin}
+                	    {\xifnum{\d!=\dMax}
+                            {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}           {}}
+                        {}}}
+                        }
+                        }
+
+
+
+
+
+\begin{tikzpicture}[scale=.7,every node/.style={minimum size=1cm},on grid, block/.style ={rectangle, draw=black, thick, text width=3mm,
+align=center, rounded corners, minimum height=10mm, minimum width = 7mm},
+dedge/.style={ultra thick, black!60, >=latex', shorten >=.5pt, shorten <=.5pt}]
+
+		
+    %slanting: production of a set of n 'laminae' to be piled up. N=number of grids.
+    \begin{scope}[
+            yshift=-83,every node/.append style={
+            yslant=0.5,xslant=-1},yslant=0.5,xslant=-1
+            ]
+        % opacity to prevent graphical interference
+        \fill[draw=\backcolor,fill opacity=\backopacity] (0,0) rectangle (7,7);
+        \draw[step=5mm, \backline] (0,0) grid (7,7); %defining grids
+        
+        
+        % {<color of outside cells>} {<xmin>} {<xmax>} {<ymin>} {<ymax>}
+        \MooreNbd{\moorecolor} {0} {1} {0} {1}
+        %Infected cell
+        \fill[\suscolor] (0.5,0.5) rectangle (1,1);
+        \fill[\infcolor](0,1) rectangle (0.5, 1.5);
+        \fill[\infcolor](1,0) rectangle (1.5, 0.5);
+         
+         
+         
+        \Locality{\loccolora} {4.5} {6.5} {3.5} {5.5}
+        %City
+        \fill[\suscolor] (5,4) rectangle (5.5, 4.5);
+        %Infected cell
+        \fill[\infcolor] (4.5,4.5) rectangle (5,5);
+        \fill[\infcolor] (5.5,3.5) rectangle(6,4);
+        \fill[\infcolor] (5.5,5) rectangle (6,5.5);
+        
+     
+        
+        \LocalityTwo{\loccolorb} {0} {2} {2.5} {4.5}
+        %City
+        \fill[\suscolor] (1,3.5) rectangle (1.5, 4);
+        
+        %Diagram
+		\fill[\suscolor](6.5,0) rectangle (7,0.5); 
+		\fill[\infcolor](5.5,1) rectangle(6,1.5);       
+        
+	    \draw[\backline,very thick] (0,0) rectangle (7,7);%marking borders
+        
+        %Radius
+        \draw[\radcolor,thick,dashed] (1.25,3.75) circle (30pt);
+    \end{scope}
+
+    %% %putting arrows and labels:
+    %% \draw[-latex,thick,blue] (7.5,2) node[right]{Farm to Market Spread}
+    %%      to (7,2);
+
+    %% \draw[-latex,thick,red](7.5,1)node[right]{Short Distance Spread}
+    %%     to (7,1);
+
+    %% \draw[-latex,thick,purple](7.5,3)node[right]{Market to Market Spread}
+    %%     to (7,3);
+
+	%Cell properties diagram
+	
+%	\draw[-latex,thick,black](5.5,1.3)to(5.5,3)to(7,3)to node[above]{$\rho$}(7,3.5);
+%	\draw[-latex,thick,black](5.5,3)to node[above]{$\epsilon$}(5.5,3.5);
+%	\draw[-latex,thick,black](5.5,3)to(4,3)to node[above]{SEI}(4,3.5);
+
+
+%susceptible
+\draw[-latex,thick,black](6.5,0.8)to(6.5,1.5)to node[above]{$\epsilon (t)$}(6.5,2.5);
+
+
+%arrow
+    \draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](4.5,0.4)node[right]{}
+        to[out=-70,in=-120] (6.5,0.4);
+        
+        %infected
+        \draw[-latex,thick,black](4.5,0.8)to(4.5,1.3)to node[above=1mm]{$\rho (t)$}(4.5,2.5);
+        
+        %sei
+        \draw[-latex,thick,black](5.6,-0.3)to node[below=8mm,block,fill=Yellow] (E){E} (5.6, -2);
+        \node[block,fill=\suscolor] at (3, -3)(S){S};
+        
+        \node[block,fill=\infcolor] at (8,-3) (I){I};
+       
+       \draw[->,dedge] ($(S.north east)+(0,-1.3)$) -- ($(E.north west)+(0,-1.3)$) 
+node[midway,above=-3.8mm,black,text width=2.5cm,align=center](ald){$\ald$};
+	\draw[->,dedge] (S) -- (E) 
+node[midway,above=-3.8mm,black,text width=2.5cm,align=center](afm){$\afm$};
+\draw[->,dedge] ($(S.south east)+(0,1.3)$) -- ($(E.south west)+(0,1.3)$) 
+node[midway,above=-3.8mm,black,text width=2.5cm,align=center](asd){$\asd$};
+
+%,$\afm$,$\ald$};
+%\node[above=-2mm] at (weights) {Weights};
+
+        \draw[->,dedge] (E) -- (I) node[midway,above=-3.5mm,black] (latency){$\ell$};
+        
+        %\node[above=-2mm] at (latency) {Latency};
+       %suscolor!60
+
+%\node[block,fill=GREEN!50] (S) {S};
+	
+	%Key
+	%Spread
+	\draw[-latex,thick,\arrowcolor](-9,6)to node[right]{}(-8.5,6);
+	\node[right] at (-8.46, 6){Spread};
+	
+	%Sum
+	\draw[black](-8.75,5.5) circle(5pt);     
+	\draw (-8.75,5.5) node[cross=2pt,rotate=45,black]{};  
+	\node[right] at (-8.53,5.5){Sum}; 
+	
+	%Infected cell
+	\draw[fill=\infcolor, draw=\infcolor] (-8.9,4.8) rectangle 		
+		(-8.6,5.1);
+		\node[right] at (-8.5, 4.9){Infected cell};
+	
+	%Susceptible cell
+	\draw[fill=\suscolor, draw=\suscolor] (-8.9,4.2) rectangle 
+	 	(-8.6,4.5);
+		\node[right] at (-8.5, 4.3){Target susceptible cell};
+		
+
+
+
+		%Switch comments for different styles
+%		%Neighborhood
+%		\draw[fill=\loccolor, draw=\loccolor] (-8.9,3.6) rectangle 
+%		(-8.6,3.9);
+%		\node[right] at (-8.5, 3.72){Neighborhood};
+
+
+		%Neighborhood
+	 	\draw[fill=\loccolor, draw=\loccolor] (-8.9,3.6) rectangle 
+		(-8.6,3.9);
+		\node[right] at (-8.5, 3.72){Moore neighborhood};
+	
+		%Localities
+	 	\draw[fill=\loccolora, draw=\loccolora] (-8.9,3.0) rectangle (-8.6,3.3);
+	\node[right] at (-8.5, 3.14){Infected locality};
+	
+		\draw[fill=\loccolorb, draw=\loccolorb] (-8.9,2.4) rectangle (-8.6, 2.7);
+	\node[right] at (-8.5, 2.5){Susceptible locality};
+		
+	
+	
+	
+	
+	
+	%Arrows
+	%Farm to Market
+    \draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](0,1.9)node[right]{}
+        to[out=70,in=160] (1,1.8);
+    \draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](1.9,1.7)node[right]{}
+        to[out=110,in=20] (1,1.8);
+    \draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](0.4,2.5)node[right]{}
+        to[out=20,in=90] (1,1.8);
+        
+        %Short distance
+    \draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](-0.8,-2.2)node[right]{}
+        to[out=90,in=110] (0,-2.2);
+    \draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](0.8,-2.2)node[right]{}
+        to[out=90,in=70] (0,-2.2);
+        
+        %Market to Market
+    
+	\draw[black](0.6,5) circle(10pt);     
+	\draw (0.6,5) node[cross=4pt,rotate=45,black]{};   
+        
+    \draw[-latex,ultra thick,\arrowcolor, opacity = \arrowopacity](0.2,5.2)node[right]{}
+        to[out=140,in=70] (-2.7,3.9);
+        
+	\draw[-latex,thick, \arrowcolor, opacity = \arrowopacity](0,1.9)node[right]{}to(0.5,4.6);
+	\draw[-latex,thick, \arrowcolor, opacity = \arrowopacity](1.9,1.7)node[right]{}to(0.7,4.6);
+	\draw[-latex,thick, \arrowcolor, opacity = \arrowopacity](0.4,2.5)node[right]{}to(0.6,4.6);
+
+    \draw[black](-2.7,3.5) circle(10pt);     
+	\draw (-2.7,3.5) node[cross=4pt,rotate=45,black]{};  
+	
+	\draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](-2.7,3.1)node[right]{}to(-3.5,-0.4);
+	\draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](-2.7,3.1)node[right]{}to(-2.5,-0.5);
+	\draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](-2.7,3.1)node[right]{}to(-1.9,0.3);
+
+
+%% Label arrows
+    \draw[-latex,thick,black](-3.5,-2.6)node[left]{Moore neighborhood}
+         to (-1.5,-2.25);
+    \draw[-latex,thick](-6.2,-0.4)node[left,black](loc){Locality}
+         to (-4,-0.4);    
+    \node[below=-2mm] at (loc) {radius};
+         
+        \draw[-latex,thick,black](-5.3,-1.7)node[left]{Locality}
+         to (-2.7,-0.5);  
+         
+         \draw[-latex,thick](1,6)node[text width=4cm,right,black](loc){Long distance
+         human-mediated spread}
+         to (-0.5,5.6);
+         
+         \draw[-latex,thick](1.5,4.2)node[text width=5cm,anchor=west,black](loc){Short distance human-mediated spread (Farm
+         to market spread)} to (1,2.2);
+         
+         \draw[-latex,thick](-1.5,-3.4)node[text width=5cm,anchor=east
+         ,black](loc){Short-distance or natural spread}
+         to (-0.5,-2);
+	
+\node at (-1,6){$F_{ij}(t)$};
+	
+\end{tikzpicture}
+\end{document}

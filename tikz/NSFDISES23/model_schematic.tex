@@ -1,0 +1,367 @@
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz,border=2]{standalone}
+%% \usepackage[sfdefault]{noto}
+% FONTS
+\usepackage{lmodern} % enhanced version of computer modern
+\usepackage[T1]{fontenc} % for hyphenated characters and textsc in section title
+\usepackage{microtype} % some compression
+\usetikzlibrary{decorations.pathreplacing,shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata,shadows,patterns.meta}
+\usepackage{xparse}
+\usepackage{ifthen}
+\newcommand{\loc}[1]{\underline{#1}} 
+%\usepackage{xifthen}
+\ExplSyntaxOn
+\NewDocumentCommand { \xifnum } { }
+    {
+        \fp_compare:nTF
+    }
+\ExplSyntaxOff
+
+\usepackage{comment}
+
+\tikzset{cross/.style={cross out, draw, 
+         minimum size=2*(#1-\pgflinewidth), 
+         inner sep=0pt, outer sep=0pt}}
+\begin{document}
+
+
+
+%% oxford (see tiddly)
+\definecolor{Blue}{HTML}{59adb7}
+\definecolor{Red}{HTML}{ca4224}
+\definecolor{DarkYellow}{HTML}{e8b043}
+\definecolor{DarkBlue}{HTML}{2a5484}
+\definecolor{DarkerBlue}{HTML}{091436}
+\definecolor{Orange}{HTML}{eb6933}
+\definecolor{LightBlue}{HTML}{69d0dd}
+
+\newcommand{\eco}{\mathcal{E}}
+\newcommand{\ecob}{\mathcal{E}_B}
+\newcommand{\nat}{\mathcal{N}}
+\newcommand{\hlong}{\mathcal{H}_L}
+\newcommand{\hshort}{\mathcal{H}_S}
+\newcommand{\hroad}{\mathcal{H}_R}
+\newcommand{\landuse}{\mathcal{L}}
+
+\newcommand{\peco}{\theta_\mathcal{E}}
+\newcommand{\pecob}{\theta_{\mathcal{E}_B}}
+\newcommand{\pnat}{\theta_\mathcal{N}}
+\newcommand{\phlong}{\theta_{\mathcal{H}_L}}
+\newcommand{\phshort}{\theta_{\mathcal{H}_S}}
+\newcommand{\phroad}{\theta_{\mathcal{H}_R}}
+\newcommand{\planduse}{\theta_{\mathcal{L}}}
+\newcommand{\asd}{\alpha_s}
+\newcommand{\afm}{\alpha_{\ell}}
+\newcommand{\ald}{\alpha_{\ell d}}
+\newcommand{\layersep}{1cm}
+\newcommand*{\arrowcolor}{black}%
+\newcommand*{\infcolor}{Red}%
+\newcommand*{\suscolor}{Green}%
+\newcommand*{\loccolor}{black!80}%
+\newcommand*{\moorecolor}{\loccolor}%
+\newcommand*{\loccolora}{Blue}%
+\newcommand*{\loccolorb}{DarkYellow}%
+\newcommand*{\locline}{black!100}%
+\newcommand*{\backcolor}{black}%
+\newcommand*{\backopacity}{0.12}%
+\newcommand*{\backline}{white}%
+\newcommand*{\arrowopacity}{1}%
+\newcommand*{\radcolor}{white}%
+
+\def\MooreNbd#1#2#3#4#5{
+    \newcommand*{\xycolor}{#1}%
+    \newcommand*{\xMin}{#2}%
+    \newcommand*{\xMax}{#3}%
+    \newcommand*{\yMin}{#4}%
+    \newcommand*{\yMax}{#5}%
+    \pgfmathparse{\xMin + 0.5}
+    \pgfmathresult \let\xpoint\pgfmathresult;
+    \pgfmathparse{\yMin + 0.5}
+    \pgfmathresult \let\ypoint\pgfmathresult
+    \foreach \x in {\xMin,\xpoint,...,\xMax}
+    	{\foreach \y in {\yMin,\ypoint,...,\yMax}
+            {\draw[draw=\locline,fill=\xycolor] (\x,\y) rectangle (\x + 0.5,\y + 0.5);}}
+    
+}
+
+\def\Group#1#2#3#4#5{
+        \newcommand*{\abcolor}{#1}%
+        \newcommand*{\aMin}{#2}%
+        \newcommand*{\aMax}{#3}%
+        \newcommand*{\bMin}{#4}%
+        \newcommand*{\bMax}{#5}%
+        \pgfmathparse{\aMin + 0.5}
+        \pgfmathresult \let\apoint\pgfmathresult;
+        \pgfmathparse{\bMin + 0.5}
+        \pgfmathresult \let\bpoint\pgfmathresult
+        \foreach \a in {\aMin,\apoint,...,\aMax} 
+        	{\foreach \b in {\bMin,\bpoint,...,\bMax}
+                {\xifnum{\a!=\aMin}
+                	{\xifnum{\b!=\bMin}
+                	    {\xifnum{\b!=\bMax}
+                        {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}
+                            {\xifnum{\a!=\aMax}
+                            {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}           
+                                {}}}
+                        {\xifnum{\a!=\aMax}
+                            {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}
+                            {}}}
+                    {\xifnum{\b!=\bMin}
+                	    {\xifnum{\b!=\bMax}
+                            {\draw[draw=\locline,fill=\abcolor] (\a,\b) rectangle (\a + 0.5,\b + 0.5);}           {}}
+                        {}}}
+                        }
+}
+
+\def\GroupTwo#1#2#3#4#5{
+        \newcommand*{\cdcolor}{#1}
+        \newcommand*{\cMin}{#2}%
+        \newcommand*{\cMax}{#3}%
+        \newcommand*{\dMin}{#4}%
+        \newcommand*{\dMax}{#5}%
+        \pgfmathparse{\cMin + 0.5}
+        \pgfmathresult \let\cpoint\pgfmathresult;
+        \pgfmathparse{\dMin + 0.5}
+        \pgfmathresult \let\dpoint\pgfmathresult
+        \foreach \c in {\cMin,\cpoint,...,\cMax} 
+        	{\foreach \d in {\dMin,\dpoint,...,\dMax}
+                {\xifnum{\c!=\cMin}
+                	{\xifnum{\d!=\dMin}
+                	    {\xifnum{\d!=\dMax}
+                        {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}
+                            {\xifnum{\c!=\cMax}
+                            {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}           
+                                {}}}
+                        {\xifnum{\c!=\cMax}
+                            {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}
+                            {}}}
+                    {\xifnum{\d!=\dMin}
+                	    {\xifnum{\d!=\dMax}
+                            {\draw[draw=\locline,fill=\cdcolor] (\c,\d) rectangle (\c + 0.5,\d + 0.5);}           {}}
+                        {}}}
+                        }
+}
+
+\newcommand{\raindrop}[5]{
+    \draw[#1] (#2,#3) pic {raindrop};
+    \node[shift={(0,-2.5)},font=\small,text width=1cm,align=center] at (#2,#3) {#4};
+    \node[shift={(0,-.5)}] (#5) at (#2,#3) {};
+}
+
+\begin{tikzpicture}[scale=.7,every node/.style={minimum size=1cm},on grid,
+block/.style ={rectangle, draw=black, thick, text width=3mm, align=center,
+rounded corners, minimum height=10mm, minimum width = 7mm},
+module/.style={circle, line width=.5mm, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,draw,inner sep=0mm},
+app/.style={circle, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,inner sep=0mm},
+desc/.style={rectangle, align=center},
+raindropedge/.style={black},
+raindrop/.pic={
+    code={\tikzset{scale=1.25}
+    \fill (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;
+ \draw[black] (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;}},
+dedge/.style={ultra thick, black!60, >=latex', shorten >=.5pt, shorten
+<=.5pt}]
+
+		
+    %slanting: production of a set of n 'laminae' to be piled up. N=number of grids.
+    \begin{scope}[
+            yshift=-83,
+            every node/.append style={yslant=0.5,xslant=-1},
+            yslant=0.5,xslant=-1
+            ]
+        % opacity to prevent graphical interference
+        \fill[draw=\backcolor,fill opacity=\backopacity] (0,0) rectangle (7,7);
+        \draw[step=5mm, \backline] (0,0) grid (7,7); %defining grids
+        
+        
+        %% % {<color of outside cells>} {<xmin>} {<xmax>} {<ymin>} {<ymax>}
+        %% \MooreNbd{\moorecolor} {0} {1} {0} {1}
+        %% %Infected cell
+        %% \fill[\suscolor] (0.5,0.5) rectangle (1,1);
+        \fill[\infcolor](0,) rectangle (0.5, 1.5);
+        \fill[\infcolor](1,0) rectangle (1.5, 0.5);
+         
+         
+         
+        \Group{\loccolora} {4.5} {6.5} {3.5} {5.5}
+        %City
+        %% \fill[\suscolor] (5,4) rectangle (5.5, 4.5);
+        %Infected cell
+        \fill[\infcolor] (4.5,4.5) rectangle (5,5);
+        \fill[\infcolor] (5.5,3.5) rectangle(6,4);
+        \fill[\infcolor] (5.5,5) rectangle (6,5.5);
+        \fill[\infcolor](1,0) rectangle (1.5, 0.5);
+
+	    \fill[pattern={Lines[line width=.8mm,angle=-45]},pattern
+	    color=\infcolor,](1,7) rectangle (1.5, 6.5);
+        \fill[pattern={Lines[line width=.8mm,angle=-45]},pattern
+        color=\infcolor,](1.5,7) rectangle (2, 6.5);
+	    \fill[pattern={Lines[line width=.8mm,angle=-45]},pattern
+        color=\infcolor,](1,6.5) rectangle (1.5, 6);
+        
+     
+        
+        %%\GroupTwo{\loccolorb} {0} {2} {2.5} {4.5}
+        %group 2
+        \fill[\loccolorb, draw=\locline] (.5,3) rectangle (1, 3.5);
+        \fill[\loccolorb, draw=\locline] (.5,3.5) rectangle (1, 4);
+        \fill[\loccolorb, draw=\locline] (.5,4) rectangle (1, 4.5);
+        \fill[\loccolorb, draw=\locline] (1,3) rectangle (1.5, 3.5);
+        \fill[\loccolorb, draw=\locline] (1,3.5) rectangle (1.5, 4);
+        \fill[\loccolorb, draw=\locline] (1,4) rectangle (1.5, 4.5);
+        \fill[\loccolorb, draw=\locline] (1,4.5) rectangle (1.5, 5);
+        \fill[\loccolorb, draw=\locline] (1.5,3.5) rectangle (2, 4);
+        \fill[\loccolorb, draw=\locline] (1.5,4) rectangle (2, 4.5);
+        \fill[\loccolorb, draw=\locline] (1.5,4.5) rectangle (2, 5);
+        \fill[\loccolorb, draw=\locline] (2,3.5) rectangle (2.5, 4);
+        \fill[\loccolorb, draw=\locline] (2,4) rectangle (2.5, 4.5);
+        
+        %% %Diagram
+		%% \fill[\suscolor](6.5,0) rectangle (7,0.5); 
+		%% \fill[\infcolor](5.5,1) rectangle(6,1.5);       
+        
+	    \draw[\backline,very thick] (0,0) rectangle (7,7);%marking borders
+        
+        %Radius
+    \end{scope}
+	
+    \begin{scope}[shift={(-3.7,-10.5)}]
+	%Infected cell
+	\draw[fill=\infcolor, draw=\infcolor] (-8.9,4.8) rectangle +(.3,.3);
+    \node[right] at (-8.5, 4.9){Infested node};
+
+	\fill[pattern={Lines[line width=.8mm,angle=-45]},pattern
+    color=\infcolor,](-8.9,4.2) rectangle +(.3,.3);
+    \node[right] at (-8.5, 4.3){Presence of biocontrol agent};
+
+    %Group u
+    \draw[fill=\loccolora, draw=\loccolora] (-8.9,3.6) rectangle +(.3,.3);
+    \node[right] at (-8.5, 3.7){Cells of locality $L_i$};
+
+    %Group v
+	\draw[fill=\loccolorb, draw=\loccolorb] (-8.9,3) rectangle +(.3,.3);
+    \node[right] at (-8.5, 3.1){Cells of locality $L_j$};
+    \end{scope}
+	
+	%Arrows
+	%Farm to Market
+    \draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](0,1.9)node[right]{}
+        to[out=70,in=160] (1,1.8);
+    \draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](1.9,1.7)node[right]{}
+        to[out=110,in=20] (1,1.8);
+    \draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](0.4,2.5)node[right]{}
+        to[out=20,in=90] (1,1.8);
+        
+        %Short distance
+    \draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](-0.8,-2.2)node[right]{}
+        to[out=90,in=110] (0,-2.2);
+    \draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](0.8,-2.2)node[right]{}
+        to[out=90,in=70] (0,-2.2);
+        
+        %Market to Market
+    
+	\draw[black](0.6,5) circle(10pt);     
+	\draw (0.6,5) node[cross=4pt,rotate=45,black]{};   
+        
+    \draw[-latex,ultra thick,\arrowcolor, opacity = \arrowopacity](0.2,5.2)node[right]{}
+        to[out=140,in=70] (-2.7,3.9);
+        
+	\draw[-latex,thick, \arrowcolor, opacity = \arrowopacity](0,1.9)node[right]{}to(0.5,4.6);
+	\draw[-latex,thick, \arrowcolor, opacity = \arrowopacity](1.9,1.7)node[right]{}to(0.7,4.6);
+	\draw[-latex,thick, \arrowcolor, opacity = \arrowopacity](0.4,2.5)node[right]{}to(0.6,4.6);
+
+    \draw[black](-2.7,3.5) circle(10pt);     
+	\draw (-2.7,3.5) node[cross=4pt,rotate=45,black]{};  
+	
+	\draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](-2.7,3.1)node[right]{}to(-3.5,-0.4);
+	\draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](-2.7,3.1)node[right]{}to(-2.5,-0.5);
+	\draw[-latex,thick,\arrowcolor, opacity = \arrowopacity](-2.7,3.1)node[right]{}to(-1.9,0.3);
+
+
+%% Label arrows
+    %%\draw[-latex,thick,black](-3.5,-2)node[left]{Moore neighborhood}
+    %%     to (-1.5,-2.25);
+         
+    \draw[-latex,thick,black,dashed](-.5,-1)node[right]{Locality $L_j$}
+to (-3.3,-0.6);
+\node (gli) at (5,3) {Locality $L_i$};
+\draw[-latex,thick,black,dashed] (gli) -- (2.5,2);
+
+\draw[-latex,thick,dashed](1.5,5.8)node[right,black](loc){Inter-locality spread}
+to (-0.5,5.6);
+
+\node[text width=4cm] (Fij) at (-3.5,6){Long distance Flow $F_{ij}(t)$};
+\draw[-latex,thick,dashed](Fij) -- (-2.5,4.5);
+	
+\node[text width=2cm] (node) at (3.5,-2.7) {Node~$v$ with time-varying
+attributes};
+\draw[-latex,thick,dashed](node) -- (4,-.7);
+
+%% road
+\draw[line width=1mm,black!80] plot [smooth, tension=.5] coordinates
+{(-2,0) (-1,1) (0,1) (.2,1.8)};
+\draw[thick,white,dashed] plot [smooth, tension=.5] coordinates {(-2,0) (-1,1)
+(0,1) (.2,1.8)};
+
+\node[module,draw=DarkYellow,text width=1.1cm,anchor=south] (nat) at
+(0.5,-6.5) {Natural spread $\nat(\pnat)$};
+\node (natanc) at (.5,-1.2) {};
+\draw[raindropedge] (nat.north) -- (natanc);
+\node[desc,text width=2.5cm,anchor=north] at (nat.south) {Biotic and abiotic
+factors};
+
+\node[module,draw=DarkYellow,text width=1.1cm,shift={(3.25,0)},anchor=south] (road) at (nat.south) {Roadside spread $\hroad(\phroad)$};
+\node[circle] (roadanc) at (-.7,1) {};
+\draw[raindropedge] (road.north) -- ++(0,4) -- (roadanc);
+\node[desc,text width=2cm,anchor=north] at (road.south) {Traffic flow};
+
+\node[module,draw=DarkYellow,shift={(0,.7)}]
+(hlong) at (9,3.2) {Long-distance human-mediated spread
+$\hlong(\phlong)$};
+\node[circle] (hlonganc) at (-.5,5) {};
+\draw[raindropedge] (hlong.north west) -- ++(-.5,.5) -| (hlonganc);
+\node[desc,text width=1.5cm,anchor=west] at (hlong.east) {Trade and travel};
+
+\node[module,draw=Blue,text width=1.4cm,below of=hlong,shift={(0,-2)}] (eco)
+{Ecological model $\eco(\peco)$};
+\draw[raindropedge] (eco.north west) -- ++(-.5,.5) -- +(-4.5,0);
+\node[desc,text width=2cm,anchor=west] at (eco.east) {Suitability,
+population size, propensity to spread};
+
+\node[module,draw=DarkYellow,shift={(-3.5,0)},anchor=south] (hshort) at
+(nat.south) {Short-distance human-mediated spread $\hshort(\phshort)$};
+\node (hshortanc) at (.2,-1.6) {};
+\draw[raindropedge] (hshort.north east) -- (hshortanc);
+\node[desc,text width=3.6cm,anchor=north] at (hshort.south) {Farms,
+livestock, forests};
+
+\node[module,draw=Blue,text width=1.6cm] (ecob) at (-8.,4)
+{Biocontrol ecological model $\ecob(\pecob)$};
+\node[circle] (ancecob) at (-5,0.5) {};
+\draw[raindropedge] (ecob.east) -- ++(1,0) -- (ancecob);
+\node[desc,text width=1.5cm,anchor=east] at (ecob.west) {Biocontrol
+agents, efficacy of management};
+
+\node[module,draw=Blue,text width=1.5cm,shift={(0,-2)}] (lu) at (ecob.south)
+{Land use, social and economic activities};
+\draw[raindropedge] (lu.east) -- ++(2,0) -- +(2,.5);
+\draw[raindropedge] ($(lu.east)+(2,0)$) -- +(1,1.5);
+\node[desc,text width=2cm,anchor=east] at (lu.west) {Deforestation,
+degrarianization, forest communities, agriculture};
+
+\node[app,fill=Red,text=black,shift={(0,-.4)},anchor=south,opacity=.8,
+text width=2cm]
+(ecs) at (eco.south|-road.south) {Economic and social impact};
+\node[app,fill=Blue,text=black,shift={(1.55,1.35)},opacity=.8] (sm) at
+(ecs) {Surveillance and management};
+\node[app,fill=DarkYellow,text=black,shift={(1.9,-.5)},opacity=.8] (ra) at
+(ecs) {Risk assessment};
+
+\draw [->, line width=3mm, -latex, black!20] (6,-1.5) -- (8.5,-3.);
+
+\end{tikzpicture}
+\end{document}

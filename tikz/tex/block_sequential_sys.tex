@@ -1,0 +1,66 @@
+\documentclass[tikz,border=2]{standalone}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit}
+\newcommand{\vanish}[1]{}
+% Define the layers to draw the diagram
+%
+\begin{document}
+\pgfdeclarelayer{bg}
+\pgfdeclarelayer{fg}
+\pgfsetlayers{bg,main,fg}
+%
+\begin{tikzpicture}
+[scale=2,node distance=1cm, transform shape,
+every node/.style={shape=circle,draw=black,fill,scale=.5},
+myblock/.style={draw=none,fill=none,scale=1.5,inner sep=0pt},
+myedge/.style={semithick},
+every fit/.style={fill=black!10,ellipse,draw=black!20},
+myellipse/.style={fill=black,draw=none,opacity=.1}]
+%%%%%%%%%%
+\begin{scope}[xshift=3cm,yshift=3cm,rotate=130]
+\def \n {4}
+\def \rad {.75cm}
+\foreach \x in {1,...,4}
+\draw node(a\x) at ({360/\n * \x}:\rad) {\vanish{a\x}};
+\draw[myedge]
+(a1)--(a2)--(a3)--(a4)--(a1)--(a3);
+\end{scope}
+%%%%%%%%%%
+\begin{scope}[xshift=1cm,yshift=2cm]
+\def \n {5}
+\def \rad {1cm}
+\foreach \x in {1,...,5}
+\draw node(b\x) at ({360/\n * \x}:\rad) {\vanish{b\x}};
+\draw[myedge]
+(b1)--(b2)--(b3)--(b4)--(b5)--(b1)--(b3)--(b5)--(b2)--(b4)--(b1);
+\end{scope}
+%%%%%%%%%%
+\begin{scope}[xshift=4.5cm,yshift=1.5cm]
+\def \n {3}
+\def \rad {.75cm}
+\foreach \x in {1,...,3}
+\draw node(c\x) at ({360/\n * \x}:\rad) {\vanish{b\x}};
+\draw[myedge] (c1)--(c2)--(c3)--(c1);
+\end{scope}
+%%%%%%%%%%
+\draw node (d1) at (3,.5) {};
+%%%%%%%%%%
+%% stitching together
+\draw[myedge] (d1) -- (c2);
+\draw[myedge] (d1) -- (b3);
+\draw[myedge] (c1) -- (a3);
+\draw[myedge] (b1) -- (a4);
+\draw[myedge] (b5) -- (a1);
+%%
+\begin{pgfonlayer}{bg}
+\draw[myellipse] (b1) circle[xshift=-.3cm,yshift=-.95cm,radius=1.15cm];
+\draw[myellipse] (a1) circle[xshift=.6cm,yshift=.5cm,radius=.9cm];
+\draw[myellipse] (c2) circle[xshift=.35cm,yshift=.65cm,radius=.9cm];
+\draw[myellipse] (d1) circle[xshift=.0cm,yshift=.0cm,radius=.4cm];
+\end{pgfonlayer}
+%%
+\node[myblock] at (1,2) {$B_1$};
+\node[myblock] at (3,3.3) {$B_2$};
+\node[myblock] at (4.5,1.5) {$B_3$};
+\node[myblock] at (3.2,1.1) {$B_4$};
+\end{tikzpicture}
+\end{document}

@@ -1,0 +1,98 @@
+\documentclass[tikz,border=2]{standalone}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Common preamble
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PAGE
+%% \usepackage{fullpage}
+% FONTS
+\usepackage{lmodern} % enhanced version of computer modern
+\usepackage[T1]{fontenc} % for hyphenated characters
+%% \usepackage{gillius2}
+%% \renewcommand{\familydefault}{\sfdefault}
+\usepackage{amssymb} % for \checkmark
+\usepackage{mathtools} % contains amsmath which comes with align
+\usepackage{amsthm}
+%%\usepackage{enumitem}
+\usepackage{microtype} % some compression
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{subfig}
+\usepackage{tikz}
+\usetikzlibrary{spy,shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+\newcommand{\score}{\text{score}}
+
+\definecolor{myblue}{HTML}{C5E0DC}
+\definecolor{vtblue}{HTML}{557082}
+\definecolor{hokie}{HTML}{660000}
+\definecolor{hokieRed}{HTML}{980000}
+
+\definecolor{col1}{HTML}{D53E4F}
+\definecolor{col2}{HTML}{F46D43}
+\definecolor{col3}{HTML}{FDAE61}
+\definecolor{col4}{HTML}{FEE08B}
+\definecolor{col5}{HTML}{E6F598}
+\definecolor{col6}{HTML}{ABDDA4}
+\definecolor{col7}{HTML}{66C2A5}
+\definecolor{col8}{HTML}{3288BD}
+
+\newcommand{\dunder}[1]{\underline{\underline{#1}}}
+\newcommand{\dmax}{d_{\max}}
+\newcommand{\cost}{\text{cost}}
+%\newcommand{\comment}[1]{{\color{red}#1}}
+\newcommand{\wmin}{w_{\min}}
+\newcommand{\copt}{C_{\text{OPT}}}
+\newcommand{\TikZ}{Ti\textit{k}Z\xspace}
+\newcommand{\tuta}{\emph{T. absoluta}}
+\newcommand{\prempt}{\textsc{PREMpT}}
+\newcommand{\parnode}[1]{\parbox{3cm}{\centering #1}}
+
+%%
+%% This ``scales'' the font. Don't extend too much beyond 128x96
+%% Uncomment the next line for default sizes:
+%% \setbeamercolor{block title}{use=structure,fg=white,bg=black!75!white}
+%% \setbeamercolor{block body}{use=structure,fg=black,bg=black!10!white}
+%%
+%% ----------------------------------------------------------------------
+%%
+\begin{document}
+\begin{tikzpicture}
+[scale=.75,auto,transform shape,
+edge/.style={black!60,>=latex, shorten >=2pt, shorten <=2pt, line width=.4mm},
+block/.style={draw=black,ultra thin,rounded corners}]
+%%
+\node[block] (passive) {\parnode{Passive}};
+%%
+\node (random) [block,below=of passive,shift={(0,.3)}]{\parnode{
+Observations from a distribution (PAC learning)}};
+%%
+\node (act) [block, below=of random,shift={(0,.3)}] {\parnode{Active querying}};
+%%
+\node [above of=passive,shift={(0,0)},font=\large] {\parnode{\bf Type of input}};
+%%
+\begin{pgfonlayer}{background}
+\draw[rounded corners,fill=black!10,draw=none] ($(passive.north
+west)+(-.2,.2)$) rectangle ($(act.south east)+(.2,-.2)$);
+\end{pgfonlayer}
+%%
+\node (gds) [block,right=of random,font=\large] {\parnode{Propagation model over a
+network}};
+\node [above of=gds,shift={(0,.3)},font=\large] {\parnode{\bf Unknown}};
+\node (obs) [above of=gds,shift={(2,1.5)},font=\large]
+{\parbox{2.5cm}{\centering{\bf
+Observation}\\$k$ time steps, partial/full}};
+\node (inf) [block,right=of gds,font=\large] {\parnode{Inference algorithm}};
+\node (result) [right=of inf] {\parbox{3cm}{Network \\ Model \\
+Source \\ Important nodes \& edges}};
+\node (resTitle) [above=of result] {\bf\large  What to infer?};
+%%
+\draw[edge,->] ($(random.east)+(.2,0)$) -- (gds);
+\draw[edge,->] (gds.east) -- (inf);
+\draw [edge,line width=.2mm] (inf.east) -- (result) -|
+(result.north west) -- +(.4,0);
+\draw [edge,line width=.2mm] (result) -| (result.south west) -- +(.4,0);
+\draw [black!60,line width=.2mm] ($(obs.south)+(0,-1.6)$) -- (obs.south) --
+(obs.south west) -- +(0,.4);
+\draw [black!60,line width=.2mm] (obs.south) -- (obs.south east) -- +(0,.4);
+\end{tikzpicture}
+\end{document}

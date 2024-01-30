@@ -1,0 +1,337 @@
+\documentclass[tikz,border=2]{standalone}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata,mindmap}
+\newcommand{\vanish}[1]{}
+\newcommand{\Su}{\mathrm{\mathbf{S}}}
+\newcommand{\Ex}{\mathrm{\mathbf{E}}}
+\newcommand{\In}{\mathrm{\mathbf{I}}}
+\newcommand{\Rem}{\mathrm{\mathbf{R}}}
+
+% grand budapest
+\definecolor{green}{HTML}{B3E2CD}
+\definecolor{orange}{HTML}{FDCDAC}
+\definecolor{blue}{HTML}{CBD5E8}
+\definecolor{pink}{HTML}{F4CAE4}
+\definecolor{t6}{HTML}{FFFFFF}
+\definecolor{t5}{HTML}{FEEDDE}
+\definecolor{t4}{HTML}{FDD0A2}
+\definecolor{t3}{HTML}{FDAE6B}
+\definecolor{t2}{HTML}{FD8D3C}
+\definecolor{t1}{HTML}{E6550D}
+\definecolor{t0}{HTML}{A63603}
+
+% grid
+\def \sn {7}
+\def \snm {6}
+\def \sng {3}
+\def \sngm {2}
+\def \qot {4}
+
+\newcommand{\grid}{
+\foreach \x in {1,...,\sn}
+\foreach \y in {1,...,\sn}
+\node [inner sep=0] at (\x,\y) (\x,\y) {};
+
+\foreach \x in {1,...,\sn}
+\foreach \y in {1,...,\sn}
+\node [inner sep=0] at (\x,\y) (\x,\y) {};
+
+\foreach \x in {1,...,\sn}
+\foreach \y in {1,...,\snm}
+\draw[grid] (\x,\y)--(\x,\y+1);
+
+\foreach \y in {1,...,\sn}
+\foreach \x in {1,...,\snm}
+\draw[grid] (\x,\y)--(\x+1,\y);
+}
+
+\newcommand{\cell}[3]{ % x,y,color
+    \draw[fill=t#3] (#1,#2) rectangle ({#1+1},{#2+1});
+}
+
+\newcommand{\Thorizon}{4}
+\newcommand{\Thorizonminus}{3}
+\newcommand{\wnodes}[4]{ %% x,y,label,color
+\foreach \x in {0,...,\Thorizon}
+\node[wnode,fill=#4] (#3\x) at ({3*\x+#1},{#2}) {$#3_\x$};
+\foreach \x [evaluate=\x as \y using int(\x-1)] in {1,...,\Thorizon}
+\draw[->,out=60,in=120,-latex,dashed,looseness=.4] (#3\y) to (#3\x);
+}
+
+\newcommand{\bnodes}[3]{ %% x,y,label
+\foreach \x [evaluate=\x as \y using int(\x-1)] in {1,...,\Thorizon}
+\node[bnode] (#3\y0) at
+({3*\x-2+#1},{#2}) {$#3_{\y,0}$};
+\foreach \x [evaluate=\x as \y using int(\x-1)] in {1,...,\Thorizon}
+\node[bnode] (#3\y1) at
+({3*\x-1+#1},{#2}) {$#3_{\y,1}$};
+\foreach \x [evaluate=\x as \y using int(\x-1)] in {1,...,\Thorizon}
+\draw[->,out=0,in=180,-latex,dashed] (#3\y0) to (#3\y1);
+\foreach \x [evaluate=\x as \y using int(\x-1),
+evaluate=\x as \z using int(\x+1)] in {1,...,\Thorizonminus}
+\draw[->,out=-60,in=-120,-latex,dashed,looseness=.4] (#3\y1) to (#3\z);
+}
+
+\newcommand{\gedges}[2]{ %% label1,label2
+\foreach \x [evaluate=\x as \y using int(\x-1)] in {1,...,\Thorizonminus}
+\draw[->,-latex] (#1\y) to (#2\x0);
+}
+
+\newcommand{\vcolon}[2]{ %% x,y
+\foreach \x in {0,...,\Thorizon}
+\node at ({2*\x+#1},{#2}) {$\vdots$};
+}
+
+% Define the layers to draw the diagram
+%
+\begin{document}
+\pgfdeclarelayer{bg}
+\pgfdeclarelayer{fg}
+\pgfsetlayers{bg,main,fg}
+%
+\begin{tikzpicture}
+[scale=2,node distance=1cm, transform shape,
+siminstances/.style={scale=.2},
+wnode/.style={draw,minimum width=5mm,minimum height=5mm,inner
+sep=1pt},
+bnode/.style={draw,circle,inner sep=0pt,minimum width=5mm,font=\small},
+cross/.style={cross out, draw, minimum size=2*(#1-\pgflinewidth), inner
+sep=0pt, outer sep=0pt},
+arrow/.style={gray!80,>=latex, shorten >=.4mm, shorten <=.4mm, 
+line width=1mm},
+thickarrow/.style={gray!60,>=triangle 90, shorten >=.4mm, shorten <=.4mm, 
+line width=2.5mm,postaction={draw, line width=6mm, shorten >=3mm, -}},
+group/.style={draw=none,inner sep=1pt,rounded corners},
+heading/.style={font=\bf},
+block/.style={draw,align=center,rounded corners},
+tblock/.style={align=center,font=\small},
+grid/.style={black!60},
+edge/.style={-latex,black!60,shorten >=2mm, shorten
+<=2mm, line width=1mm,looseness=.5}]
+%%%%%%%%%%
+
+%% network
+\begin{scope}[scale=0.7,local bounding box=network,shift={(0,0)}]
+\grid
+% groups
+\begin{pgfonlayer}{bg}
+    \draw [group,fill=green] (.9,.9) rectangle (3.1,3.1);
+    \draw [group,fill=orange] (.9,4.9) rectangle (3.1,7.1);
+    \draw [group,fill=blue] (4.9,.9) rectangle (7.1,3.1);
+    \draw [group,fill=pink] (4.9,4.9) rectangle (7.1,7.1);
+\end{pgfonlayer}
+\node [group,fill=orange] (g1) at (2,6) {$G_1$};
+\node [group,fill=pink] (g2) at (6,6) {$G_2$};
+\node [group,fill=green] (g3) at (2,2) {$G_3$};
+\node [group,fill=blue] (g4) at (6,2) {$G_4$};
+\draw (g1) edge[edge,->,out=30,in=150] (g2);
+\draw (g2) edge[edge,->,out=-150,in=-30] (g1);
+\draw (g2) edge[edge,->,out=-90,in=30] (g3);
+\draw (g2) edge[edge,->,out=-30,in=60] (g4);
+\node [font=\small] at (1.5,6.5) {$a$};
+\node [font=\small] at (1.5,5.5) {$b$};
+\node [font=\small] at (6.5,6.5) {$c$};
+\node [font=\small] at (6.5,1.5) {$d$};
+\end{scope}
+
+\node (ng) at (network.north) [above,heading,text width=5.5cm,align=center]
+{Multi-pathway network \\ with groups};
+
+% time expanded graph
+\begin{scope}[local bounding box=teg,scale=.8,shift={(5,-7)}]
+    \wnodes{0}{5.5}{a}{orange}
+    \bnodes{0}{5.5}{a}{0}
+    \wnodes{0}{4}{b}{orange}
+    \bnodes{0}{4}{b}{0}
+    \vcolon{0}{3}
+    \wnodes{0}{2}{c}{pink}
+    \bnodes{0}{2}{c}{0}
+    \vcolon{0}{1}
+    \wnodes{0}{0}{d}{blue}
+    \bnodes{0}{0}{d}{0}
+    \begin{pgfonlayer}{bg}
+        \gedges{a}{b}
+        \gedges{b}{a}
+        \gedges{a}{c}
+        \gedges{b}{c}
+        \gedges{c}{a}
+        \gedges{c}{b}
+        \gedges{c}{d}
+    \end{pgfonlayer}
+\end{scope}
+\node at (teg.south) [below,heading] {Time expanded graph for an SEI
+process};
+
+% time expanded graph legend
+\begin{scope}[local bounding box=teglegend,scale=.8,shift={(0,-1.5)}]
+    \node (v0) at (1.5,0) [wnode] {};
+    \node (v1) at (2.5,0) [wnode] {};
+    \draw[->, dashed, -latex] (v0) to (v1);
+    \node (t) at (3.5,0) {$\In\rightarrow\In$};
+    \node (v0) [below=of v0,wnode] {};
+    \node (v1) [below=of v1,bnode] {};
+    \draw[->, dashed, -latex] (v0) to (v1);
+    \node (t) [below=of t] {$\Su\rightarrow\Ex$};
+    \node (v0) [below=of v0,bnode] {};
+    \node (v1) [below=of v1,bnode] {};
+    \draw[->, dashed, -latex] (v0) to (v1);
+    \node (t) [below=of t] {$\Ex\rightarrow\Ex$};
+    \node (v0) [below=of v0,bnode] {};
+    \node (v1) [below=of v1,wnode] {};
+    \draw[->, dashed, -latex] (v0) to (v1);
+    \node (t) [below=of t] {$\Ex\rightarrow\In$};
+\end{scope}
+
+% simulator
+\node (sim) [right=of network,shift={(-.5,0)}] {\includegraphics[width=1.5cm]{laptop.png}};
+\node at (sim) [shift={(0,.1)}] {\includegraphics[width=.5cm]{spread.png}};
+
+\draw[arrow,->] (network) to (sim);
+\draw[arrow,<-] (sim) -- +(0,-1.2) node[tblock,anchor=north,text
+width=1.7cm,align=center, black] (mp)
+{Model \\ parameters};
+\draw[arrow,<-] (sim) -- +(0,1.2) node[tblock,anchor=south,text
+width=1.7cm,align=center, black]
+{Seeding \\ scenarios};
+
+\node[heading, align=center,text width=3cm] at (sim|-ng) {Propagation model};
+
+\node (ref1) at (teg.north) [shift={(-3,.75)}] {};
+\draw[arrow] (ref1) circle(4.5pt);
+\draw (ref1) node[arrow,cross=4.5pt,rotate=45,line width=.7mm]{};   
+\draw[arrow,->] (ref1) -- +(0,-.7);
+
+\draw[arrow] (network) |- (ref1);
+\draw[arrow] (mp) |- (ref1);
+%% \node at (ref1.east) [shift={(2,.4)}, text width=3cm, align=center,
+%% font=\small]
+%% {Latency period $\ell$ and time horizon $T$};
+
+\def\six {8.4}
+\def\siy {4}
+% simulation instances
+\begin{scope}[local bounding box=s1,anchor=north west,shift={(\six,\siy)},siminstances]
+\grid
+\cell{1}{3}{3}
+\cell{1}{4}{0}
+\cell{1}{5}{1}
+\cell{1}{6}{1}
+\cell{2}{2}{4}
+\cell{2}{3}{3}
+\cell{2}{5}{2}
+\cell{2}{6}{1}
+\cell{3}{6}{3}
+\cell{5}{2}{5}
+\cell{5}{5}{4}
+\cell{5}{6}{3}
+\cell{6}{5}{3}
+\cell{6}{6}{4}
+\node at (-2,5) [scale=4] {$H^1$};
+\end{scope}
+
+\begin{scope}[local bounding box=s2,anchor=north
+    west,shift={($(\six,\siy)+(0,-1.25)$)},siminstances]
+\grid
+\cell{1}{2}{3}
+\cell{1}{3}{2}
+\cell{1}{4}{0}
+\cell{1}{5}{1}
+\cell{1}{6}{1}
+\cell{2}{2}{5}
+\cell{2}{3}{3}
+\cell{2}{5}{1}
+\cell{2}{6}{1}
+\cell{3}{2}{5}
+\cell{3}{3}{4}
+\cell{4}{3}{5}
+\cell{5}{2}{5}
+\cell{5}{1}{5}
+\cell{5}{5}{4}
+\cell{5}{6}{3}
+\cell{6}{5}{3}
+\cell{6}{6}{5}
+\node at (-2,5) [scale=4] {$H^2$};
+\end{scope}
+
+
+\begin{scope}[local bounding box=s3,anchor=north
+west,shift={($(\six,\siy)+(0,-2.5)$)},siminstances]
+\grid
+\cell{1}{3}{1}
+\cell{1}{4}{0}
+\cell{1}{5}{1}
+\cell{1}{6}{2}
+\cell{2}{3}{3}
+\cell{2}{4}{1}
+\cell{2}{5}{2}
+\cell{2}{6}{1}
+\cell{3}{3}{4}
+\cell{3}{4}{5}
+\cell{4}{3}{5}
+\cell{5}{1}{5}
+\cell{5}{2}{5}
+\cell{6}{1}{5}
+\cell{6}{2}{5}
+\cell{5}{5}{4}
+\cell{5}{6}{3}
+\cell{6}{5}{3}
+\cell{6}{6}{5}
+\node at (-2,5) [scale=4] {$H^3$};
+\end{scope}
+
+\begin{scope}[local bounding box=s4,anchor=north
+    west,shift={($(\six,\siy)+(0,-3.75)$)},siminstances]
+\grid
+\cell{1}{1}{4}
+\cell{1}{2}{4}
+\cell{1}{3}{5}
+\cell{1}{4}{0}
+\cell{1}{5}{1}
+\cell{1}{6}{1}
+\cell{2}{1}{4}
+\cell{2}{2}{4}
+\cell{2}{3}{5}
+\cell{2}{5}{2}
+\cell{2}{6}{1}
+\cell{3}{6}{3}
+\cell{5}{2}{5}
+\cell{5}{5}{4}
+\cell{5}{6}{3}
+\cell{6}{2}{5}
+\cell{6}{5}{3}
+\cell{6}{6}{3}
+\node at (-2,5) [scale=4] {$H^4$};
+\end{scope}
+
+%% simulation instances legend
+\begin{scope}[shift={($(s1.north west)+(.6,.0)$)},scale=.15]
+    \cell{1}{1}{0}
+    \cell{2}{1}{1}
+    \cell{3}{1}{2}
+    \cell{4}{1}{3}
+    \cell{5}{1}{4}
+    \cell{6}{1}{5}
+    \cell{7}{1}{6}
+    \node at (1,3) [scale=5] {$0$};
+    \node at (8,3) [scale=5] {$T$};
+    \node at (-.7,1.5) [scale=6] {$t=$};
+\end{scope}
+
+\node at (s4.south) [below,text width=3cm,align=center,shift={(.2,0)}] {Simulation instances};
+
+\draw[arrow,->] (sim.east) -- +(.7,0);
+
+\node (alg) at (sim.east) [block,shift={(5.5,0)},text width=3.2cm]
+{\textbf{Surveillance \\ algorithm} \\ \small{using sample average approximation}};
+\draw[arrow,<-] (alg.west) -- +(-.8,0);
+
+\node (bud) [tblock,above=of alg,align=center,shift={(0,-.2)},text
+width=3.25cm]
+{Budget on number \\ of locations and resources};
+\draw[arrow,->] (bud) -- (alg);
+\draw[arrow,<-] (alg) -- +(0,-3);
+
+\end{tikzpicture}
+\end{document}
+
+page rank
+

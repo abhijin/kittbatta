@@ -1,0 +1,116 @@
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz,border=2]{standalone}
+%%\usepackage{lmodern} % enhanced version of computer modern
+%%\usepackage[T1]{fontenc} % for hyphenated characters
+\usepackage{times}
+\usepackage{amssymb}
+\usepackage{mathtools} % contains amsmath which comes with align
+\usepackage{amsthm}
+\usepackage{microtype} % some compression
+\usepackage[skins]{tcolorbox} % some compression
+\usepackage{marvosym}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata,decorations.markings,
+decorations.pathreplacing,decorations.pathmorphing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define the layers to draw the diagram
+\pgfdeclarelayer{bg}
+\pgfsetlayers{bg,main}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% macros
+\def\filledrect[#1,#2,#3]{\fill[#3] (#1+0.05,#2+0.05) rectangle (#1+.95,#2+.95)}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\begin{tikzpicture}
+[scale=1,auto, transform shape,
+%node distance=.5cm, 
+every node/.style={align=center},
+modblock/.style={rounded
+corners,rectangle,thick,draw=black,fill=RoyalBlue!30,align=center,
+text centered},
+dbblock/.style={rounded
+corners,rectangle,thick,draw=black,fill=black!25,align=center,
+text centered,font=\scriptsize},
+xmltext/.style={rectangle,text width=6em,font=\scriptsize},
+egtext/.style={text width=6em, rectangle,font=\tiny},
+ioblock/.style={rectangle,draw=black,thick},
+plainblock/.style={rectangle,white,align=center},
+dummyblock/.style={rectangle,align=center},
+myedge/.style={>=latex', shorten >=.5pt, shorten <=.5pt,thick}
+]
+%%%%%%%% ecological niche modeling
+\begin{scope}[xshift=5cm,yshift=8cm]
+\begin{scope}[opacity=.9,yshift=0cm,yslant=0.5,xslant=-1]
+\draw[black,thick,fill=Brown] (0,0) rectangle (2,2);%marking borders
+\end{scope}
+\begin{scope}[opacity=.9,yshift=1cm,yslant=0.5,xslant=-1]
+\draw[black,thick,shading=axis,bottom color=blue!80,top color=blue!30] (0,0) rectangle (2,2);%marking borders
+\end{scope}
+\begin{scope}[opacity=.9,yshift=2cm,yslant=0.5,xslant=-1]
+\draw[black,thick,shading=axis,bottom color=red,top color=Yellow] (0,0) rectangle (2,2);%marking borders
+\end{scope}
+\node at (-3.2,0) {etc.};
+\node at (-3.2,1) {Soil};
+\node at (-3.2,2) {Precipitation};
+\node at (-3.2,3) {Temperature};
+\end{scope}
+%%%%%%%% life cycle modeling
+\begin{scope}[xshift=-5cm,yshift=10cm,yslant=0,xslant=0]
+\node[rectangle,inner sep=2.5cm, fill overzoom image=life_cycle] {};
+\node at (4,0) {Life-cycle model};
+\end{scope}
+%%%%%%%% biological subsystem
+\draw[dashed] (-7.75,7) rectangle (7.25,12.75) node (bio){};
+\node[xshift=-7.5cm,yshift=-.25cm] at (bio) {\textbf{\large Biological subsystem}};
+%%%%%%%% cellular automaton
+\node (ca) at (1,3) {};
+\begin{scope}[
+yshift=0,yslant=0.5,xslant=-1
+]
+\node (neighbor) at (3.5,3) {};
+\fill[white,fill opacity=0.9] (0,0) rectangle (5,5);
+\draw[step=1cm, black] (0,0) grid (5,5); %defining grids
+\draw[black,thick] (0,0) rectangle (5,5);%marking borders
+%%\fill[red] (0.05,0.05) rectangle (.95,.95);
+\filledrect[0,0,red!20];
+\filledrect[1,1,red!60];
+\filledrect[2,1,red!70];
+\filledrect[2,2,red!50];
+\filledrect[3,3,red!80];
+\filledrect[3,2,red!80];
+\filledrect[2,3,red!60];
+\filledrect[3,1,red!70];
+%% arrows from neighboring cells
+\draw[myedge,<-] (ca) -- +(1,0);
+\draw[myedge,<-] (ca) -- +(0,1);
+\draw[myedge,<-] (ca) -- +(0,-1);
+\draw[myedge,<-] (ca) -- +(-1,0);
+\end{scope}
+\node at (-5.5,1) {\parbox{4.5cm}{\large Cellular automaton or spatio-temporal models
+(spread in a small region)}};
+\draw[myedge,->,black!60,text=black] (neighbor) -- +(-5,1.5) node[above]
+{\large influence of neighboring
+cell};
+%%%%%%%% arrows
+\node[xshift=-7cm,yshift=-5.5cm] (enm) at (bio) {};
+\node (lcm) at (4,5.5) {};
+\node[double arrow,draw,minimum height=1cm,rotate=-90] at (0,-1) {};
+\draw[myedge,black!60,->,text=black] (enm) -- (ca) node[midway]
+{\parbox{4cm}{\large potential geographic
+distribution of the species}};
+\draw[myedge,black!60,->,text=black] (ca) -- (3.5,1) node[label=right:
+{\parbox[c]{3cm}{\large extent of infestation in a cell}}]{};
+%%%%%%%% world map
+\begin{scope}[yshift=-6cm,yslant=0.5,xslant=-1]
+\node[rectangle,inner xsep=4cm, inner ysep=2cm,fill overzoom image=world_map] {};
+\end{scope}
+\draw[dashed] (-7.5,-9.5) rectangle (7.25,-2.75) node (socio){};
+\node[xshift=-2.5cm,yshift=-6.5cm] at (socio) {\textbf{\large Socio-economic subsystem}};
+\node at (-3.5,-4) {\parbox{4cm}{\large human-induced pest expansion
+(spread at a global level)}};
+%%%%%%%% man
+\node[inner sep=0pt] at (-1.5,-5.5) {\resizebox{5mm}{7mm}\Gentsroom};
+\node[inner sep=0pt] at (1,-5.5) {\resizebox{5mm}{7mm}\Gentsroom};
+\node[inner sep=0pt] at (-2,-7.5) {\resizebox{5mm}{7mm}\Gentsroom};
+\node[inner sep=0pt] at (3.5,-4.5) {\resizebox{5mm}{7mm}\Gentsroom};
+\end{tikzpicture}
+\end{document}

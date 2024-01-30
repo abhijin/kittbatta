@@ -1,0 +1,228 @@
+\documentclass[tikz,border=2,dvspsnames]{standalone}
+\usetikzlibrary{shadows,arrows,arrows.meta,shapes,positioning,calc,backgrounds,fit}
+\newcommand{\vanish}[1]{}
+% Define the layers to draw the diagram
+%
+\definecolor{s1}{HTML}{CAC2C2}
+\definecolor{s1border}{HTML}{A39C9C}
+\definecolor{s2}{HTML}{5E6068}
+\definecolor{s3}{HTML}{5B1A18}
+\newcommand{\sqrttwo}{1.41421356237}
+%% \newcommand{\offset}{0.17677669529}
+\newcommand{\offset}{0.125}
+\newcommand{\invsqrttwo}{0.70710678118}
+
+\begin{document}
+%
+\renewcommand{\diamond}[4]{\draw[draw=#4,fill=#3,shift={(#1,#2)}] (0,0) --
+(.5,.5) -- (1,0) -- (.5,-.5) -- cycle}
+\newcommand{\downtriangle}[4]{\draw[draw=#4,fill=#3,shift={(#1,#2)}] (0,0)
+-- (1,0) -- (.5,-.5)}
+\newcommand{\righttriangle}[4]{\draw[draw=#4,fill=#3,shift={(#1,#2)}] (0,0)
+-- (0,1) -- (.5,.5)}
+\newcommand{\uptriangle}[4]{\draw[draw=#4,fill=#3,shift={(#1,#2)}] (0,0)
+-- (1,0) -- (.5,.5)}
+
+
+\newcommand{\diamondgrid}[7]{
+\begin{scope}[shift={(#1,#2)}]
+    \fill[#7,shift={(0,-.5)}] (0,0) rectangle (#3+1,#4+1);
+\foreach \x in {0,...,#3}
+    \foreach \y in {0,...,#4}
+        \diamond{\x}{\y}{#5}{#6};
+\end{scope}
+}
+
+\newcommand{\fourdiamonds}[4]{
+\begin{scope}[shift={(#1,#2)}]
+\diamond{0}{0}{#3}{#4};
+\diamond{1}{0}{#3}{#4};
+\diamond{.5}{.5}{#3}{#4};
+\diamond{.5}{-.5}{#3}{#4};
+\end{scope}
+}
+
+\newcommand{\eightdiamonds}[4]{
+\begin{scope}[shift={(#1,#2)}]
+\diamond{0}{0}{#3}{#4};
+\diamond{.5}{.5}{#3}{#4};
+\diamond{1}{1}{#3}{#4};
+\diamond{1.5}{.5}{#3}{#4};
+\diamond{2}{0}{#3}{#4};
+\diamond{1.5}{-.5}{#3}{#4};
+\diamond{1}{-1}{#3}{#4};
+\diamond{.5}{-.5}{#3}{#4};
+\diamond{1}{0}{#3}{#4};
+\end{scope}
+}
+
+\begin{tikzpicture}
+\begin{scope}[shift={(40,-28)}]
+\diamondgrid{0}{0}{33}{6}{none}{s1border}{s1}
+\diamondgrid{7}{6}{9}{4}{none}{s1border}{s1}
+
+% \fourdiamonds{0}{3}{s2}{s1border}
+\fourdiamonds{4}{3}{s2}{s1border}
+\fourdiamonds{18}{3}{s2}{s1border}
+%% \fourdiamonds{23}{3}{s2}{s1border}
+\fourdiamonds{32}{3}{s2}{s1border}
+
+%% \fourdiamonds{11}{7}{s2}{s1border}
+\eightdiamonds{10.5}{6.5}{s2}{s1border}
+\diamond{9.5}{6.5}{s2}{s1border};
+\diamond{13.5}{6.5}{s2}{s1border};
+\diamond{11.5}{8.5}{s2}{s1border};
+\diamond{11.5}{4.5}{s2}{s1border};
+
+%% \foreach \x in {0,...,5}
+%%     \downtriangle{\x+.5}{6.5}{s2}{s1border};
+%% \foreach \x in {17,...,32}
+%%     \downtriangle{\x+.5}{6.5}{s2}{s1border};
+%% \foreach \x in {7,...,15}
+%% \downtriangle{\x+.5}{10.5}{s2}{s1border};
+%% \foreach \x in {0,...,32}
+%%     \uptriangle{\x+.5}{-.5}{s2}{s1border};
+
+\node at (2,-1) [font=\huge\bfseries] {Design 10};
+\end{scope}
+
+\begin{scope}[shift={(0,-28)}]
+\diamondgrid{0}{0}{33}{6}{none}{s1border}{s1}
+\diamondgrid{7}{6}{9}{4}{none}{s1border}{s1}
+
+\fourdiamonds{0}{3}{s2}{s1border}
+\fourdiamonds{7}{3}{s2}{s1border}
+\fourdiamonds{15}{3}{s2}{s1border}
+\fourdiamonds{23}{3}{s2}{s1border}
+\fourdiamonds{31}{3}{s2}{s1border}
+
+%% \fourdiamonds{11}{7}{s2}{s1border}
+\eightdiamonds{10.5}{6.5}{s2}{s1border}
+\diamond{9.5}{6.5}{s2}{s1border};
+\diamond{13.5}{6.5}{s2}{s1border};
+\diamond{11.5}{8.5}{s2}{s1border};
+\diamond{11.5}{4.5}{s2}{s1border};
+
+%% \foreach \x in {0,...,5}
+%%     \downtriangle{\x+.5}{6.5}{s2}{s1border};
+%% \foreach \x in {17,...,32}
+%%     \downtriangle{\x+.5}{6.5}{s2}{s1border};
+%% \foreach \x in {7,...,15}
+%% \downtriangle{\x+.5}{10.5}{s2}{s1border};
+%% \foreach \x in {0,...,32}
+%%     \uptriangle{\x+.5}{-.5}{s2}{s1border};
+
+\node at (2,-1) [font=\huge\bfseries] {Design 3};
+\end{scope}
+
+\begin{scope}[shift={(0,-42)}]
+\diamondgrid{0}{0}{33}{6}{none}{s1border}{s1}
+\diamondgrid{7}{6}{9}{4}{none}{s1border}{s1}
+
+\fourdiamonds{-1}{3}{s2}{s1border}
+\fourdiamonds{7}{3}{s2}{s1border}
+\fourdiamonds{15}{3}{s2}{s1border}
+\fourdiamonds{23}{3}{s2}{s1border}
+\fourdiamonds{31}{3}{s2}{s1border}
+%\fourdiamonds{32}{3}{s2}{s1border}
+
+\fourdiamonds{11}{8}{s2}{s1border}
+\node at (2,-1) [font=\huge\bfseries] {Design 11};
+\end{scope}
+
+\begin{scope}[shift={(0,0)}]
+\diamondgrid{0}{0}{33}{6}{none}{s1border}{s1}
+\diamondgrid{7}{6}{9}{4}{none}{s1border}{s1}
+
+\fourdiamonds{2}{3}{s2}{s1border}
+\fourdiamonds{8}{3}{s2}{s1border}
+\fourdiamonds{14}{3}{s2}{s1border}
+\fourdiamonds{20}{3}{s2}{s1border}
+\fourdiamonds{26}{3}{s2}{s1border}
+\fourdiamonds{32}{3}{s2}{s1border}
+
+\fourdiamonds{11}{8}{s2}{s1border}
+\node at (2,-1) [font=\huge\bfseries] {Design 1};
+\end{scope}
+
+
+\begin{scope}[shift={(0,-14)}]
+\diamondgrid{0}{0}{33}{6}{none}{s1border}{s1}
+\diamondgrid{7}{6}{9}{4}{none}{s1border}{s1}
+
+\fourdiamonds{2}{3}{s2}{s1border}
+\fourdiamonds{8}{3}{s2}{s1border}
+\fourdiamonds{14}{3}{s2}{s1border}
+\fourdiamonds{20}{3}{s2}{s1border}
+\fourdiamonds{26}{3}{s2}{s1border}
+\fourdiamonds{32}{3}{s2}{s1border}
+
+\fourdiamonds{11}{7}{s2}{s1border}
+
+\foreach \x in {0,...,5}
+    \downtriangle{\x+.5}{6.5}{s2}{s1border};
+\foreach \x in {17,...,32}
+    \downtriangle{\x+.5}{6.5}{s2}{s1border};
+\foreach \x in {7,...,15}
+\downtriangle{\x+.5}{10.5}{s2}{s1border};
+\foreach \x in {0,...,32}
+    \uptriangle{\x+.5}{-.5}{s2}{s1border};
+
+\node at (2,-1) [font=\huge\bfseries] {Design 2};
+\end{scope}
+
+
+\begin{scope}[shift={(40,0)}]
+\diamondgrid{0}{0}{33}{6}{none}{s1border}{s1}
+\diamondgrid{7}{6}{9}{4}{none}{s1border}{s1}
+
+\foreach \x in {5,11,...,33}
+    \diamond{\x}{2}{s2}{s1border};
+\foreach \x in {2,8,...,33}
+    \diamond{\x}{4}{s2}{s1border};
+\foreach \x in {11,...,11}
+    \diamond{\x}{6}{s2}{s1border};
+\foreach \x in {8,14,...,16}
+    \diamond{\x}{8}{s2}{s1border};
+
+%% \foreach \x in {0,...,5}
+%%     \downtriangle{\x+.5}{6.5}{s2}{s1border};
+%% \foreach \x in {17,...,32}
+%%     \downtriangle{\x+.5}{6.5}{s2}{s1border};
+%% \foreach \x in {7,...,15}
+%% \downtriangle{\x+.5}{10.5}{s2}{s1border};
+%% \foreach \x in {0,...,32}
+%%     \uptriangle{\x+.5}{-.5}{s2}{s1border};
+
+\node at (2,-1) [font=\huge\bfseries] {Design 4};
+\end{scope}
+
+\begin{scope}[shift={(40,-14)}]
+\diamondgrid{0}{0}{33}{6}{none}{s1border}{s1}
+\diamondgrid{7}{6}{9}{4}{none}{s1border}{s1}
+
+\foreach \x in {9,19,...,33}
+    \diamond{\x}{1}{s2}{s1border};
+\foreach \x in {4,14,...,33}
+    \diamond{\x}{3}{s2}{s1border};
+\foreach \x in {9,19,...,33}
+    \diamond{\x}{5}{s2}{s1border};
+\foreach \x in {14,...,14}
+    \diamond{\x}{7}{s2}{s1border};
+\foreach \x in {9,...,9}
+    \diamond{\x}{9}{s2}{s1border};
+
+%% \foreach \x in {0,...,5}
+%%     \downtriangle{\x+.5}{6.5}{s2}{s1border};
+%% \foreach \x in {17,...,32}
+%%     \downtriangle{\x+.5}{6.5}{s2}{s1border};
+%% \foreach \x in {7,...,15}
+%% \downtriangle{\x+.5}{10.5}{s2}{s1border};
+%% \foreach \x in {0,...,32}
+%%     \uptriangle{\x+.5}{-.5}{s2}{s1border};
+
+\node at (2,-1) [font=\huge\bfseries] {Design 5};
+\end{scope}
+
+\end{tikzpicture}
+\end{document}

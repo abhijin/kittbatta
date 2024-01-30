@@ -1,0 +1,84 @@
+\documentclass[tikz,border=2]{standalone}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Common preamble
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% PAGE
+%% \usepackage{fullpage}
+% FONTS
+\usepackage{lmodern} % enhanced version of computer modern
+\usepackage[T1]{fontenc} % for hyphenated characters
+%% \usepackage{gillius2}
+%% \renewcommand{\familydefault}{\sfdefault}
+\usepackage{amssymb}
+\usepackage{mathtools} % contains amsmath which comes with align
+\usepackage{amsthm}
+%%\usepackage{enumitem}
+\usepackage{microtype} % some compression
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{subfig}
+\usepackage{tikz}
+\usetikzlibrary{spy,shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+\newcommand{\score}{\text{score}}
+
+\definecolor{myblue}{HTML}{C5E0DC}
+\definecolor{vtblue}{HTML}{557082}
+\definecolor{hokie}{HTML}{660000}
+\definecolor{hokieRed}{HTML}{980000}
+
+\definecolor{col1}{HTML}{D53E4F}
+\definecolor{col2}{HTML}{F46D43}
+\definecolor{col3}{HTML}{FDAE61}
+\definecolor{col4}{HTML}{FEE08B}
+\definecolor{col5}{HTML}{E6F598}
+\definecolor{col6}{HTML}{ABDDA4}
+\definecolor{col7}{HTML}{66C2A5}
+\definecolor{col8}{HTML}{3288BD}
+
+\newcommand{\dunder}[1]{\underline{\underline{#1}}}
+\newcommand{\dmax}{d_{\max}}
+\newcommand{\cost}{\text{cost}}
+\newcommand{\comment}[1]{{\color{red}#1}}
+\newcommand{\wmin}{w_{\min}}
+\newcommand{\copt}{C_{\text{OPT}}}
+\newcommand{\TikZ}{Ti\textit{k}Z\xspace}
+\newcommand{\tuta}{\emph{T. absoluta}}
+\newcommand{\prempt}{\textsc{PREMpT}}
+
+%% ----------------------------------------------------------------------
+%%
+\begin{document}
+\pgfdeclarelayer{bg}
+\pgfdeclarelayer{fg}
+\pgfsetlayers{bg,main,fg}
+%%
+%% ----------------------------------------------------------------------
+\newcommand{\parnode}[1]{\parbox{3cm}{\centering #1}}
+\begin{tikzpicture}
+[scale=.75,auto,transform shape,
+edge/.style={black!60,>=latex, shorten >=2pt, shorten <=2pt, line width=.4mm},
+block/.style={draw=black,ultra thin,rounded corners}]
+\node[block,dashed] (adv) {\parnode{{\bf Adversary model} \\\smallskip
+\small Worst case bounds}};
+\node (pac) [block,below=of adv]{\parnode{{\bf Samples from a distribution} \\
+\smallskip \small PAC model \\ Known distribution?}};
+%%
+\node (act) [block,below=of pac] {\parnode{{\bf Active query} \\\small Batch and
+adaptive modes}};
+%%
+\begin{pgfonlayer}{bg}
+\draw[rounded corners,fill=black!10,draw=none] ($(adv.north
+west)+(-.2,.2)$) rectangle ($(act.south east)+(.2,-.2)$);
+\end{pgfonlayer}
+%%
+\node (tds) [block,right=of pac] {\parnode{Threshold dynamical system}};
+\node (inf) [block,right=of tds] {\parnode{Inference}};
+\node (err) [above=of inf] {\parnode{Error tolerance ($\epsilon$) \\ and \\
+guarantees ($\delta$)}};
+%%
+\draw[edge,->] ($(pac.east)+(.2,0)$) -- (tds);
+\draw[edge,->] (tds) -- (inf);
+\draw[edge,->] (err) -- (inf);
+\end{tikzpicture}
+%% ----------------------------------------------------------------------
+\end{document}

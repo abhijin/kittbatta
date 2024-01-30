@@ -1,0 +1,277 @@
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz,border=2]{standalone}
+\usepackage{lmodern} % enhanced version of computer modern
+\usepackage[T1]{fontenc} % for hyphenated characters
+\usepackage{amssymb}
+\usepackage{mathtools} % contains amsmath which comes with align
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{microtype} % some compression
+\usepackage[skins]{tcolorbox}
+% colors (Rand Olson)
+%% \definecolor{cOne}{HTML}{1F77B4}
+%% \definecolor{blue}{HTML}{D62728}
+%% ForestGreen is red
+%%%%%%%%%%
+%% from https://www.gliffy.com/go/html5/launch?templateId=7033011
+\definecolor{lBrown}{HTML}{F1D4AF}
+\definecolor{blue}{HTML}{C5E0DC}
+\definecolor{red}{HTML}{E08E79}
+\definecolor{dBrown}{HTML}{663300}
+%%
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,
+fit,automata,decorations.markings,
+decorations.pathreplacing,decorations.pathmorphing}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define the layers to draw the diagram
+%\pgfdeclarelayer{bg}
+%\pgfsetlayers{bg,main}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\begin{tikzpicture}
+[scale=1,auto, transform shape,
+show background rectangle,
+background rectangle/.style={fill=white},
+node distance=6cm, 
+every node/.style={align=center,text=dBrown},
+metablock/.style={rectangle,minimum width=18.75cm},
+titleblock/.style={font=\large,rectangle,minimum height=.6cm,rotate=-90},
+block/.style={rectangle,thick,draw=none,fill=black!25,align=center, text
+centered,font=\large,minimum width=4.5cm,minimum height=2cm,text width=10em},
+impl/.style={circle,draw=none,semithick, minimum width=8cm},
+anc/.style={inner sep=0},
+cedge/.style={draw=dBrown,>=latex', shorten >=.0pt, shorten <=.0pt, ultra
+thick},
+iedge/.style={draw=dBrown,>=latex', shorten >=.0pt, shorten <=.0pt, ultra
+thick, dashed},
+vertex/.style={shape=circle,inner sep=1pt,draw},
+gedge/.style={>=latex', shorten >=.0pt, shorten <=.0pt, thick}]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% schematic of interactions
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node (con) [block,fill=lBrown]{Intervention subsystem};
+\node (hldd) [block,below right of=con,fill=red]{Human-mediated dispersal subsystem};
+\node (eco) [block,below left of=con,text=white,fill=dBrown]{Ecological subsystem};
+%% edges
+\draw[cedge,dBrown,->] (con) -| (eco);
+\draw[cedge,dBrown,->] (con) -| (hldd);
+\draw[iedge,dBrown,->] ($(eco.east)+(0,.5cm)$) -| ($(con.south)+(-1cm,0)$);
+\draw[iedge,dBrown,->] ($(hldd.west)+(0,.5cm)$) -| ($(con.south)+(1cm,0)$);
+\draw[iedge,dBrown,<->] ($(hldd.west)+(0,-.5cm)$) -- ($(eco.east)+(0,-.5cm)$);
+%% edge labels
+\node [above left of= eco,shift={(2.5cm,-1.5cm)}]
+{\parbox{3cm}{\centering Control through IPM strategies}};
+\node [above right of= eco,shift={(-2.25cm,-2cm)}]
+{\parbox{2cm}{\centering Distribution of the pest}};
+\node [above right of= hldd,shift={(-1.75cm,-1.75cm)}]
+{\parbox{4cm}{\centering Control through trade restrictions, phytosanitary measures, etc.}};
+\node [above left of= hldd,shift={(2.25cm,-2cm)}]
+{\parbox{2.25cm}{\centering Commodity flow}};
+\node (ex) [below right of= eco,shift={(0cm,3cm)}]
+{\parbox{2.25cm}{\centering Exchange of state information}};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% metablocks
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node (impmeta) [metablock,below=of eco,minimum
+height=9cm,shift={(4.25cm,4.25cm)}] {};
+%%\node (datameta) [metablock,below of=pubmeta,minimum
+%%height=3.5cm,shift={(0cm,2.5cm)}] {};
+%% titles
+\node (imptitle) [titleblock,fill=blue,right=of
+impmeta,shift={(-4.25cm,-5.5cm)},minimum width=9cm] {Implementation};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Implementation part
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% 
+\node (ihldd) [impl,draw=red!150,below=of hldd,shift={(1cm,4cm)}] {};
+\node (ieco) [impl,draw=dBrown,below=of eco,shift={(-1cm,4cm)}] {};
+\node (icon) [impl,minimum width=4cm,draw=lBrown!190,above
+right=of eco,shift={(1cm,0cm)}] {};
+\draw[cedge,dBrown,semithick] (eco) -- ++(0,-2cm) -| (ieco);
+\draw[cedge,red!150,semithick] (hldd) -- ++(0,-2cm) -| (ihldd);
+\draw[cedge,lBrown!150,semithick] (con) |- (icon);
+%%\node [above right of=con,shift={(-2cm,-1.5cm)}] {possibilities};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% hdd implementation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newcommand{\boundingRect}{\path[fill=dBrown!40,opacity=.1,shift={(.5cm,.25cm)}]
+(-.75,-1.75) rectangle (2.25,.75);}
+\node [above of=ihldd,shift={(0,-3cm)},font=\large] {Multi-network ABM};
+%%
+\node (air) [shift={($(ihldd)+(0cm,1.7cm)$)}] {Logistics \hspace{4cm}
+   \includegraphics[width=.9cm]{truck.png}};
+\node (trade) [node distance=1.7cm,below of=air,shift={(-.25cm,0)}] {Global trade \hspace{4cm}
+   \includegraphics[width=.9cm]{boat.png}};
+   \node (trans) [node distance=1.7cm,below of=trade,shift={(.25cm,0)}]
+   {Travel \hspace{4cm} \includegraphics[width=.9cm]{airplane.png}};
+\begin{scope}[yslant=0,xslant=1,shift={($(ihldd)+(-2.25cm,1.5cm)$)}]
+%%%%% trade
+\begin{scope}[node
+distance=.7cm,vertex/.style={red,draw,circle,thick,inner sep=2pt}]
+\boundingRect
+%% nodes
+\node (v1) [vertex] at (0,0) {};
+\node (maplog) [anc] at (0,0) {};
+\node (v2) [vertex,above right=of v1,shift={(1,0)}] {};
+\node (v3) [vertex,below right=of v2] {};
+\node (v4) [vertex,below=of v3] {};
+\node (v5) [vertex,below left=of v4,shift={(-.5,.5)}] {};
+\node (v6) [vertex,above left=of v5,shift={(-.5,0)}] {};
+\node (v7) [vertex,right=of v1,shift={(-.5,0)}] {};
+\node (v8) [vertex,below left=of v2] {};
+\node (v9) [vertex,above =of v8] {};
+% edges
+\draw[gedge,red!190] (v1) -- (v2);
+\draw[gedge,red!190] (v1) -- (v6);
+\draw[gedge,red!190] (v1) -- (v7);
+\draw[gedge,red!190] (v2) -- (v3);
+\draw[gedge,red!190] (v2) -- (v8);
+\draw[gedge,red!190] (v2) -- (v9);
+\draw[gedge,red!190] (v3) -- (v4);
+\draw[gedge,red!190] (v3) -- (v5);
+\draw[gedge,red!190] (v3) -- (v6);
+\draw[gedge,red!190] (v4) -- (v5);
+\draw[gedge,red!190] (v5) -- (v6);
+\draw[gedge,red!190] (v6) -- (v7);
+\end{scope}
+%%%%% logistics
+\begin{scope}[shift={(1.5,-1.5)},node
+distance=.7cm,vertex/.style={blue,draw,circle,thick,inner
+sep=2pt}]
+\boundingRect;
+%% nodes
+\node (v1) [vertex] at (0,0) {};
+\node (v2) [vertex,above right=of v1,shift={(1,0)}] {};
+\node (v3) [vertex,right=of v2] {};
+\node (v4) [vertex,below=of v3] {};
+\node (v5) [vertex,below left=of v4,shift={(-.5,0)}] {};
+\node (v6) [vertex,above left=of v5,shift={(-.5,0)}] {};
+\node (v7) [vertex,below left of= v1,shift={(.5,0)}] {};
+% edges
+\draw[gedge,blue!190] (v1) -- (v2);
+\draw[gedge,blue!190] (v1) -- (v6);
+\draw[gedge,blue!190] (v1) -- (v7);
+\draw[gedge,blue!190] (v2) -- (v3);
+\draw[gedge,blue!190] (v3) -- (v4);
+\draw[gedge,blue!190] (v3) -- (v5);
+\draw[gedge,blue!190] (v3) -- (v6);
+\draw[gedge,blue!190] (v4) -- (v5);
+\draw[gedge,blue!190] (v5) -- (v6);
+\draw[gedge,blue!190] (v6) -- (v7);
+\draw[gedge,blue!190] (v5) -- (v7);
+\end{scope}
+%%%%% airline
+\begin{scope}[shift={(3,-3)},node
+distance=.7cm,vertex/.style={dBrown,draw,circle,thick,inner
+sep=2pt}]
+\boundingRect
+%% nodes
+\node (v1) [vertex] at (0,0) {};
+\node (v2) [vertex,above left=of v1,shift={(1,0)}] {};
+\node (v3) [vertex,below right=of v2,shift={(1,0)}] {};
+\node (v4) [vertex,below right=of v3] {};
+\node (v5) [vertex,below left=of v4,shift={(-.5,0)}] {};
+\node (v6) [vertex,above left=of v5,shift={(-.5,0)}] {};
+\node (v7) [vertex,below =of v1] {};
+\node (v8) [vertex,above right of=v3] {};
+\node (v9) [vertex,above left of=v3] {};
+% edges
+\draw[gedge,dBrown] (v1) -- (v2);
+\draw[gedge,dBrown] (v1) -- (v6);
+\draw[gedge,dBrown] (v1) -- (v7);
+\draw[gedge,dBrown] (v4) -- (v7);
+\draw[gedge,dBrown] (v1) -- (v3);
+\draw[gedge,dBrown] (v2) -- (v3);
+\draw[gedge,dBrown] (v3) -- (v4);
+\draw[gedge,dBrown] (v3) -- (v5);
+\draw[gedge,dBrown] (v4) -- (v5);
+\draw[gedge,dBrown] (v5) -- (v6);
+\draw[gedge,dBrown] (v6) -- (v7);
+\draw[gedge,dBrown] (v3) -- (v8);
+\draw[gedge,dBrown] (v3) -- (v9);
+\end{scope}
+\end{scope}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% eco implementation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\filledrect[#1,#2,#3]{\fill[#3,scale=.5] (#1+0.05,#2+0.05) rectangle (#1+.95,#2+.95)}
+\begin{scope}[yslant=0,xslant=1,shift={($(eco)+(5cm,-6.5cm)$)}]
+%% weather
+\begin{scope}[node distance=.25cm,vertex/.style={red,draw,circle,thick,inner
+sep=2pt},shift={(.5cm,-2.5cm)}]
+\path[scale=.5,fill=dBrown!5,opacity=.2] (0,0) rectangle (6,5);
+\filledrect[0,0,blue!100];\filledrect[0,1,blue!100];\filledrect[0,2,blue!100];\filledrect[0,3,blue!100];\filledrect[0,4,blue!100];
+\filledrect[1,0,blue!100];\filledrect[1,1,lBrown!100];\filledrect[1,2,blue!100];\filledrect[1,3,blue!100];\filledrect[1,4,blue!100];
+\filledrect[2,0,blue!100];\filledrect[2,1,lBrown!100];\filledrect[2,2,lBrown!100];\filledrect[2,3,blue!100];\filledrect[2,4,blue!100];
+\filledrect[3,0,blue!100];\filledrect[3,1,blue!100];\filledrect[3,2,blue!100];\filledrect[3,3,lBrown!100];\filledrect[3,4,blue!100];
+\filledrect[4,0,blue!100];\filledrect[4,1,blue!100];\filledrect[4,2,blue!100];\filledrect[4,3,blue!100];\filledrect[4,4,blue!100];
+\filledrect[5,0,blue!100];\filledrect[5,1,blue!100];\filledrect[5,2,blue!100];\filledrect[5,3,blue!100];\filledrect[5,4,blue!100];
+\end{scope}
+%% ecological models
+\begin{scope}[node distance=.25cm,vertex/.style={red,draw,circle,thick,inner
+sep=2pt},shift={(-1cm,-1.25cm)}]
+\path[scale=.5,fill=dBrown!5,opacity=1] (0,0) rectangle (6,5);
+\draw[step=1cm,scale=.5,white] (0,0) grid (6,5); %defining grids
+\filledrect[0,0,red!20];\filledrect[0,1,red!50];\filledrect[0,2,red!20];\filledrect[0,3,red!20];\filledrect[0,4,red!20];
+\filledrect[1,0,red!20];\filledrect[1,1,red!20];\filledrect[1,2,red!60];\filledrect[1,3,red!20];\filledrect[1,4,red!20];
+\filledrect[2,0,red!20];\filledrect[2,1,red!80];\filledrect[2,2,red!120];\filledrect[2,3,red!20];\filledrect[2,4,red!20];
+\filledrect[3,0,red!20];\filledrect[3,1,red!100];\filledrect[3,2,red!150];\filledrect[3,3,red!80];\filledrect[3,4,red!20];
+\filledrect[4,0,red!20];\filledrect[4,1,red!80];\filledrect[4,2,red!80];\filledrect[4,3,red!100];\filledrect[4,4,red!20];
+\filledrect[5,0,red!20];\filledrect[5,1,red!20];\filledrect[5,2,red!20];\filledrect[5,3,red!20];\filledrect[5,4,red!20];
+\end{scope}
+%% for mapping purpose
+\begin{scope}[node distance=.25cm,vertex/.style={red,draw,circle,thick,inner
+sep=2pt},shift={(-2.5cm,0cm)}]
+\filledrect[5,3,dBrown!70];\filledrect[5,4,dBrown!70];
+\filledrect[4,3,dBrown!70];\filledrect[4,4,dBrown!70];
+\node (mapcells) at (2.2,2.6) [anc] {};
+\end{scope}
+\end{scope}
+%%
+\node (ca) [shift={($(ieco)+(-1cm,2.5cm)$)}] {\parbox{3cm}{\centering
+Natural dispersal modeled by CA}};
+\draw[cedge,dBrown,->,thin] (ca) -- +(.75cm,-1.5cm);
+\node (weather) [shift={($(ieco)+(0cm,-2.8cm)$)}] {\parbox{4cm}{\centering
+Pest potential distribution as a function of biotic \& abiotic factors derived from ecological models}};
+\draw[cedge,dBrown,->,thin] (weather) -- +(-1cm,1.5cm);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% intervention implementation
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{scope}[shift={($(icon)+(0cm,0cm)$)}]
+\node {\parbox{3.5cm}{\centering Modeling effect of trade restrictions,
+phytosanitary measures, compliance, IPM strategies.}};
+\end{scope}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% mapping edge
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\draw[iedge,blue!120,->,ultra thick] (maplog) edge[out=130,in=60,looseness=1] (mapcells);
+\node[node distance=1cm,below of=ex,shift={(.25,-1.25)}] {\parbox{2cm}{\centering Mapping nodes to cells}};
+\end{tikzpicture}
+\end{document}
+\node (pubmeta) [metablock,fill=dBrown!5,below of=impmeta,minimum
+height=2.5cm,shift={(0.25cm,.5cm)}] {};
+\node (littitle) [titleblock,fill=red,right of=
+imptitle,shift={(-.75cm,0cm)},minimum width=2.5cm] {Literature};
+\node [titleblock,fill=blue,right of=
+littitle,shift={(-3.25cm,0cm)},minimum width=3cm] {Data};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% literature
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node (lithldd) [below of=ihldd,shift={(0,.3cm)}] {\shortstack{Carrasco
+et al., 2012\\Robinet et al., 2012\\ Lookingbill et al., 2010\\ Pautasso et
+al., 2010}};
+\node (liteco) [below of=ieco,shift={(0,.25cm)}] {\shortstack{Rebaudo et al. 2011\\ \\ Ponti et al. 2015}};
+\node (litcon) [right of=icon,fill=dBrown!5,shift={(-2.5cm,0)}]
+{\shortstack{Ameden, 2008\\APHIS, 2011}};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% data
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node [below of=lithldd,shift={(0,3.25cm)}] {\shortstack{FAO, CABI \\
+\\www.tutaabsoluta.com \\ \\NASS, APHIS \\ \\USDA, ICIPE\\
+\\openflights.org}};
+\node [below of=liteco,shift={(0,3.5cm)}] {\shortstack{Field
+experiments,\\insect database,\\ climate data,\\ tuta absoluta
+datasheet\\(see Table 1)}};
+\end{tikzpicture}
+\end{document}
+

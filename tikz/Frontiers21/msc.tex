@@ -1,0 +1,94 @@
+\documentclass[tikz,border=2]{standalone}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+\newcommand{\vanish}[1]{}
+% Define the layers to draw the diagram
+%
+\begin{document}
+\pgfdeclarelayer{bg}
+\pgfdeclarelayer{fg}
+\pgfsetlayers{bg,main,fg}
+%
+\begin{tikzpicture}
+[scale=2,node distance=1cm, transform shape,
+every node/.style={shape=circle,draw=black,fill,scale=.5,font=\Huge},
+metanode/.style={state,accepting,thick,fill=white,opacity=.5},
+anc/.style={draw=none,fill=none},
+inedge/.style={line width=.5mm,dashed},
+metaedge/.style={line width=2mm,black!40,looseness=.5}]
+%%%%%%%%%%
+\def \sn {12}
+\def \snm {11}
+\def \sng {3}
+\def \sngm {2}
+\def \qot {4}
+% grid
+\foreach \x in {1,...,\sn}
+\foreach \y in {1,...,\sn}
+\node at (\x,\y) (\x,\y) {};
+
+\foreach \x in {1,...,\sn}
+\foreach \y in {1,...,\snm}
+\draw (\x,\y)--(\x,\y+1);
+
+\foreach \y in {1,...,\sn}
+\foreach \x in {1,...,\snm}
+\draw (\x,\y)--(\x+1,\y);
+
+\foreach \x in {0,...,\sngm}
+\foreach \y in {0,...,\sngm}
+{
+    \node[fill=white] (\qot*\x+2,\qot*\y+2) at (\qot*\x+2,\qot*\y+2) {};
+    \node[fill=white] (\qot*\x+2,\qot*\y+3) at (\qot*\x+2,\qot*\y+3) {};
+    \node[fill=white] (\qot*\x+3,\qot*\y+3) at (\qot*\x+3,\qot*\y+3) {};
+    \node[fill=white] (\qot*\x+3,\qot*\y+2) at (\qot*\x+3,\qot*\y+2) {};
+}
+
+\begin{pgfonlayer}{bg}
+    \foreach \x in {1,...,\sng}
+    \foreach \y in {1,...,\sng}
+    \draw[fill=black!10,rounded corners] (\qot*\x-\qot+1-.2,\qot*\y-\qot+1-.2) rectangle
+    ++(\qot-1+.4,\qot-1+.4);
+
+\foreach \x in {0,...,\sngm}
+\foreach \y in {0,...,\sngm}
+{
+    \draw (\qot*\x+2,\qot*\y+2) edge[inedge,bend left=25] (\qot*\x+2,\qot*\y+3);
+    \draw (\qot*\x+2,\qot*\y+2) edge[inedge,bend left=15] (\qot*\x+3,\qot*\y+3);
+    \draw (\qot*\x+2,\qot*\y+2) edge[inedge,bend left=-25] (\qot*\x+3,\qot*\y+2);
+    \draw (\qot*\x+2,\qot*\y+3) edge[inedge,bend left=25] (\qot*\x+3,\qot*\y+3);
+    \draw (\qot*\x+2,\qot*\y+3) edge[inedge,bend left=15] (\qot*\x+3,\qot*\y+2);
+    \draw (\qot*\x+3,\qot*\y+3) edge[inedge,bend left=25] (\qot*\x+3,\qot*\y+2);
+}
+\end{pgfonlayer}
+
+\foreach \x in {1,...,\sng}
+\foreach \y in {1,...,\sng}
+\node (g\x\y) [metanode] at (\qot*\x-\qot+2.5,\qot*\y-\qot+2.5) {};
+
+
+\draw (g11) edge[metaedge,bend left=25] (g22);
+\draw (g11) edge[metaedge,bend left=-25] (g12);
+\draw (g11) edge[metaedge,bend left=25] (g21);
+\draw (g21) edge[metaedge,bend left=-25] (g32);
+\draw (g12) edge[metaedge,bend left=25] (g33);
+\draw (g22) edge[metaedge,bend left=-25] (g31);
+\draw (g22) edge[metaedge,bend left=25] (g13);
+\draw (g22) edge[metaedge,bend left=-25] (g23);
+
+\begin{scope}[shift={(13,11.5)}]
+    \node (natural) {};
+    \node [right=of natural,label=right:$G_S$] (naturallab) {};
+    \draw (natural) edge (naturallab);
+
+    \node [fill=white] (ingroup) [below=of natural] {};
+    \node [fill=white,right=of ingroup,label=right:$G_L$] (ingrouplab) {};
+    \draw (ingroup) edge[inedge,bend left=15] (ingrouplab);
+
+    \node (metanode) [metanode,below=of ingroup] {};
+    \node [metanode,right=of metanode,label=right:$G_{LD}$] (metanodelab) {};
+    \draw (metanode) edge[metaedge,bend left=15] (metanodelab);
+\end{scope}
+
+\end{tikzpicture}
+\end{document}
+

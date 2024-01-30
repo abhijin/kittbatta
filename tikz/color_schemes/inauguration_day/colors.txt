@@ -1,0 +1,6 @@
+grape B48AA3
+skin DA9B88
+blue 9EC6D1
+LightBrown F4ECDF
+yellow FEDEA7
+green A5C6A4

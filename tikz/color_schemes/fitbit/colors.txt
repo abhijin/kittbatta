@@ -1,0 +1,6 @@
+LightBlue 38BFB3
+DarkBlue 3E6A74
+LightGreen 99DB3B
+Orange F4AD2F
+Red F56544
+Pink EF386D

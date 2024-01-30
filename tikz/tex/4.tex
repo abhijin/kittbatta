@@ -1,0 +1,45 @@
+\documentclass[tikz,border=2]{standalone}
+\usepackage{amsmath,amsfonts,amssymb}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Define the layers to draw the diagram
+\pgfdeclarelayer{bg}
+\pgfsetlayers{bg,main}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% colors
+\definecolor{myBlue}{HTML}{0060AD}
+\definecolor{myRed}{HTML}{DD181F}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tikzpicture}
+[node distance=1cm,
+bend angle=15,
+subdue/.style={draw=black!30},
+vertex/.style={shape=circle,inner sep=2pt},
+treevertex/.style={shape=circle,inner sep=2pt,fill=myBlue},
+infected/.style={shape=circle,draw=black,inner sep=2pt,fill=brown},
+%
+myedge/.style={thick},
+dedge/.style={dashed,>=latex', shorten >=.0pt, black!90, shorten <=.0pt}]
+%
+% Tree
+\node[treevertex,accepting,draw=myBlue,label=right:$\text{root}(T)$,shift={(2,0)}] (b) at (0,0)  {};
+\node (a) [treevertex,below left=of b,shift={(.5,0)}] {};
+\node (c) [treevertex,below right=of b,shift={(-.5,0)}] {};
+\node (d) [treevertex,below right=of c,shift={(-.5,0)}] {};
+\node (e) [treevertex,below=of c,shift={(0,.25)}] {};
+\node (f) [treevertex,below left=of c,shift={(.5,0)}] {};
+\node [above left=of b,shift={(0.5,-0.7)}] {$T$};
+\node (depth) [below =of d,shift={(0,0.5)}] {\parbox[l]{2cm}{$k=6$\\ $d=2$ \\ $\ell=2$}};
+%
+\draw[myedge] (b) -- (a);
+\draw[myedge] (b) -- (c);
+\draw[myedge] (c) -- (d);
+\draw[myedge] (c) -- (e);
+\draw[myedge] (c) -- (f);
+%
+%% %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{tikzpicture}
+{}
+\end{document}

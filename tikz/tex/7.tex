@@ -1,0 +1,49 @@
+\documentclass[tikz,border=2]{standalone}
+\usepackage{amssymb}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit,automata}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% colors
+\definecolor{myBlue}{HTML}{0060AD}
+\definecolor{myRed}{HTML}{DD181F}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{tikzpicture}
+[scale=1,transform shape,
+node distance=1cm,
+%
+vertex/.style={shape=circle,draw=black,inner sep=2pt,semithick},
+accepting/.append style={draw=myBlue,fill=myBlue},
+%
+myedge/.style={semithick},
+dedge/.style={gray,>=latex', shorten >=.0pt, shorten <=.0pt, thick}]
+%
+\node (x) [vertex,label=left:$x$] at (0,0) {};
+\node (y) [vertex,label=right:$y$] at (.75,.75) {};
+\draw[myedge,dashed,myRed] (x) -- (y);
+\node (a) [vertex] at (1.5,-1) {};
+\node (b) [vertex] at (2,1.5) {};
+\node (c) [vertex] at (-1,.5) {};
+\node (u) [vertex,label=above:$u$,accepting] at (2.5,2) {};
+% polar coordinates used
+\draw[myedge] (u) -- (b);
+\draw[myedge] (b) -- +(-120:.5);
+\draw[myedge] (b) -- +(-150:.5);
+\draw[myedge] (c) -- +(170:.8);
+\draw[myedge] (c) -- +(-60:.5);
+\draw[myedge] (c) -- +(-30:.5);
+\draw[myedge] (x) -- +(-120:.75);
+\draw[myedge] (x) -- +(-60:.75);
+\draw[myedge] (y) -- +(120:.75);
+\draw[myedge] (y) -- +(60:.75);
+\path (a) edge[myedge] +(-30:.8);
+\path (a) edge[myedge] +(-60:.8);
+\path (a) edge[myedge] +(150:.5);
+%
+\begin{pgfonlayer}{background}
+\node[inner
+sep=0pt,fill=black!20,circle,fit=(a)(b)(c),label=above:{$G^{d-1}_t(x,y)$}]{};
+\end{pgfonlayer}
+\end{tikzpicture}
+{}
+\end{document}

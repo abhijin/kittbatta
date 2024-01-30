@@ -1,0 +1,90 @@
+\documentclass[tikz,border=2]{standalone}
+\usepackage{amssymb}
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,fit}
+\begin{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% colors
+\definecolor{myBlue}{HTML}{0060AD}
+\definecolor{myRed}{HTML}{DD181F}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\def\sep{0.35}
+\newcommand{\colorZero}[2]{
+   \draw[shift={(#1,#2*5.5*\sep)},opacity=.25,fill=black!50,draw=none,rounded
+   corners] 
+   (-.15,-1.75) rectangle (.15,-.15);
+   \node[shift={(#1,#2*5.5*\sep)}] at (0,-\sep*1) {0};
+   \node[shift={(#1,#2*5.5*\sep)}] at (0,-\sep*2) {0};
+   \node[shift={(#1,#2*5.5*\sep)}] at (0,-\sep*3) {0};
+   \node[shift={(#1,#2*5.5*\sep)}] at (0,-\sep*4) {$\vdots$};
+}
+\newcommand{\colorOne}[2]{
+   \draw[shift={(#1,#2*5.5*\sep)},opacity=.7,fill=black!90,draw=none,rounded
+   corners] 
+   (-.15,-1.75) rectangle (.15,-.15);
+   \node[shift={(#1,#2*5.5*\sep)},white] at (0,-\sep*1) {1};
+   \node[shift={(#1,#2*5.5*\sep)},white] at (0,-\sep*2) {1};
+   \node[shift={(#1,#2*5.5*\sep)},white] at (0,-\sep*3) {1};
+   \node[shift={(#1,#2*5.5*\sep)},white] at (0,-\sep*4) {$\vdots$};
+}
+
+\begin{tikzpicture}
+[scale=1,transform shape,
+node distance=1cm,
+%
+vertex/.style={shape=circle,draw=black,inner sep=2pt,semithick},
+clause/.style={shape=rectangle,draw=black,inner sep=2pt,semithick},
+literal/.style={shape=circle,draw=black,inner sep=1.5pt,semithick},
+nliteral/.style={literal,fill=black},
+dummy/.style={literal,fill=black!30,thin},
+%
+edge/.style={draw,shorten >=.4pt,shorten <=.4pt},
+dedge/.style={gray,>=latex', shorten >=.0pt, shorten <=.0pt, thick}]
+%
+\begin{scope}[shift={(-1,0)}]
+   \node at (0,-1) {$C_1$};
+   \node at (0,-3) {$C_2$};
+   \node at (0,-2*6*\sep) {$\vdots$};
+   \node at (0,-6) {$C_k$};
+\end{scope}
+%
+\begin{scope}
+   \node at (0,.25) {$q_1$};
+   \colorZero{0}{0}
+   \colorZero{0}{-1}
+   \node at (0,-2*6*\sep) {$\vdots$};
+   \colorZero{0}{-2.5}
+\end{scope}
+%
+\begin{scope}[shift={(1,0)}]
+   \node at (0,.25) {$q_2$};
+   \colorOne{0}{0}
+   \colorZero{0}{-1}
+   \node at (0,-2*6*\sep) {$\vdots$};
+   \colorZero{0}{-2.5}
+\end{scope}
+%
+\begin{scope}[shift={(2,0)}]
+   \node at (0,.25) {$q_3$};
+   \colorOne{0}{0}
+   \colorOne{0}{-1}
+   \node at (0,-2*6*\sep) {$\vdots$};
+   \colorZero{0}{-2.5}
+\end{scope}
+%
+\begin{scope}[shift={(3,0)}]
+   \node at (0,-2*5*\sep) {$\cdots$};
+\end{scope}
+%
+\begin{scope}[shift={(4,0)}]
+   \node at (0,.25) {$q_k$};
+   \colorOne{0}{0}
+   \colorOne{0}{-1}
+   \node at (0,-2*6*\sep) {$\vdots$};
+   \colorOne{0}{-2.5}
+\end{scope}
+%
+\draw[myRed] (-0.5,.5) -- ++(0,-7.25);
+\draw[myRed] (-1.25,0) -- ++(5.7,0);
+\end{tikzpicture}
+{}
+\end{document}

@@ -1,0 +1,5 @@
+Green 857A51
+DarkGreen 525433
+DarkPurple 1D112B
+Purple 2C1936
+Beige A69D90

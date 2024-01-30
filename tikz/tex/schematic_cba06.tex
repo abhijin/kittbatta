@@ -1,0 +1,137 @@
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz,border=2]{standalone}
+\usepackage{amssymb}
+%%\usepackage{enumerate}
+\usepackage{mathtools} % contains amsmath which comes with align
+\usepackage{amsthm}
+\usepackage{graphicx}
+\usepackage{microtype} % some compression
+\usepackage[skins]{tcolorbox}
+%%%%%%%%%%
+%% from https://www.gliffy.com/go/html5/launch?templateId=7033011
+\definecolor{LightBlue}{HTML}{38BFB3}
+\definecolor{DarkBlue}{HTML}{3E6A74}
+\definecolor{LightGreen}{HTML}{99DB3B}
+\definecolor{Orange}{HTML}{F4AD2F}
+\definecolor{Red}{HTML}{F56544}
+\definecolor{Pink}{HTML}{EF386D}
+%%
+\def\labelitemi{\textcolor{gray}{\tiny{$\blacksquare$}}}
+%%
+\usetikzlibrary{shadows,arrows,shapes,positioning,calc,backgrounds,
+fit,automata,decorations.markings,
+decorations.pathreplacing,decorations.pathmorphing}
+%%%%%%%%%%%%%%%%%%%%%%%
+\begin{document}
+\begin{tikzpicture}
+[scale=1,auto, transform shape,
+show background rectangle,
+background rectangle/.style={fill=white},
+every node/.style={align=left},
+titleblock/.style={font=\large,font=\bf,rectangle,minimum width=1cm,text=white,fill=black!50},
+descblock/.style={font=\small,black!80,draw=black,thick,rounded corners,rectangle,minimum width=2cm},
+anc/.style={shape=circle,inner sep=3pt,fill=black},
+vecArrow/.style={thick, decoration={markings,mark=at position 1 with
+{\arrow[semithick]{open triangle 60}}}, double distance=3.5pt, shorten
+>= 6.5pt, preaction = {decorate}, postaction = {draw,line width=1.4pt,
+white,shorten >= 5.5pt}},
+cedge/.style={draw=black,>=latex', shorten >=.0pt, shorten <=.0pt, 
+thick},
+tedge/.style={draw=black,>=latex', shorten >=.0pt, shorten <=.0pt, 
+semithick},
+iedge/.style={draw=black,>=latex', shorten >=.0pt, shorten <=.0pt, ultra
+thick, dashed}]
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Digital library
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node (dlDesc) [descblock,draw=DarkBlue]{\parbox{3.5cm}{
+\vspace{.5cm}
+\begin{itemize}
+\item RDF
+\item browsing, crawling, curating
+\item query processing
+\end{itemize}}};
+%%
+\node (dlTitle) [titleblock,fill=DarkBlue,text=white,align=left,above left=-.4cm and -2.3cm of
+dlDesc,]{Digital library};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% World map
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node (globe) [left=1cm of dlDesc]{\includegraphics[width=7cm]{./aux/world_map.png}};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Survey
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node (surveyDesc) [descblock,draw=LightBlue,above =.5cm of
+globe]{\parbox{4.5cm}{
+\begin{itemize}
+\item Mobility \& behavioral data
+\item WiSDM
+\item ground connectivity
+\item eliciting expert judgement
+\vspace{.5cm}
+\end{itemize}}};
+%%
+\node (surveyTitle) [titleblock,below right=-.4cm and -1.9cm of
+surveyDesc,fill=LightBlue]{Survey data};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% DDL
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node (ddlDesc) [descblock,draw=Red,below=.5cm of globe]{\parbox{4.5cm}{
+\vspace{.5cm}
+\begin{itemize}
+\item USAID open data initiative
+\item DDL
+\item USAID's DHS portal
+\item Feed the Future projects
+\end{itemize}}};
+%%
+\node (ddlTitle) [titleblock,fill=Red,minimum width=2cm,above
+left=-.4cm and -4.9cm of ddlDesc,]{Data from USAID projects};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% End user
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node (euDesc) [descblock,draw=Pink,above right=1.5cm and -1cm of
+dlDesc]{\parbox{3cm}{
+\begin{itemize}
+\item domain experts
+\item policy makers
+\item modelers 
+\vspace{.5cm}
+\end{itemize}}};
+%%
+\node (euTitle) [titleblock,minimum width=2cm,below
+left=-.3cm and -1.9cm of euDesc,fill=Pink]{End user};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% BSVE
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+\node (bsveTitle) [titleblock,minimum width=2cm,fill=Orange,right
+=1.5cm of dlDesc]{BSVE};
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% globe anchors
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\node (senegal) [anc,LightBlue] at (-7.0,0) {};
+\draw[tedge,LightBlue] (senegal) -- ++(0,2) -| ($(surveyDesc.south west)+(1,0)$);
+%%
+\node (tanzania) [anc,LightBlue,right=of senegal,shift={(-.1,-.5)}] {};
+\draw[tedge,LightBlue] (tanzania) -- (surveyTitle.south-|tanzania);
+%%
+\node (southamerica) [anc,Red,left=of senegal,shift={(.2,-.8)}]{};
+\draw[tedge,Red] (southamerica) -- (ddlTitle.north-|southamerica);
+%%
+\node (africa) [anc,Red,right=of senegal,shift={(-.5,-.2)}]{};
+\draw[tedge,Red] (africa) -- ++(0,-1) -| ($(ddlTitle.north west)+(2.5,0)$);
+%%
+\node (asia) [anc,Red,right=of senegal,shift={(1.5,.2)}]{};
+\draw[tedge,Red] (asia) -- ++(0,-1) -| ($(ddlTitle.north east)+(-1,0)$);
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% arrows
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\draw[iedge,Red,->] (ddlDesc) -| ($(dlDesc.south west)+(1,0)$);
+\draw[iedge,LightBlue,->] (surveyDesc) -| ($(dlDesc.north west|-dlTitle.north)+(1,0)$);
+\node[double arrow,black!60,draw,minimum height=1.2cm,thick,right =.15 of dlDesc] {};
+\draw[cedge,black!60,<->] ($(euTitle.south west)+(1,0)$) -- ++(0,-.75) -|
+($(dlDesc.north east)+(-.75,0)$);
+\draw[cedge,black!60,<->] (bsveTitle) -- ++(0,1.7) -| ($(euDesc.south east)+(-1,0)$);
+\end{tikzpicture}
+\end{document}

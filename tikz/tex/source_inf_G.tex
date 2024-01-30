@@ -1,0 +1,29 @@
+%% tags: externalImage; spy; magnify
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz,border=2]{standalone}
+\usetikzlibrary{spy,shadows,arrows,shapes,positioning,calc,backgrounds,fit}
+%%
+\definecolor{source}{HTML}{66C2A5}
+\definecolor{sink}{HTML}{8DA0CB}
+\definecolor{hub}{HTML}{FC8D62}
+%%
+% Define the layers to draw the diagram
+\begin{document}
+\begin{tikzpicture}
+[node distance=1cm,scale=2,
+spy using outlines={rectangle,magnification=2.5,width=6cm,
+height=4cm,connect spies,gray},
+lbl/.style={fill=white,font=\Large},
+ledge/.style={gray,ultra thick,inner sep=2pt,>=latex, shorten >=1pt, shorten
+<=1pt,looseness=.5}]
+%%
+\node {\includegraphics[trim={0.4cm 0.4cm 1.5cm .3cm},clip]{aux/market_ranks_O_G.pdf}};
+\spy[spy connection path={\draw[ultra thick] (tikzspyonnode) --
+(tikzspyinnode);}] on (-6.7,-5.4) in node [left] at (-.3,-.9);
+\node[lbl] at (-1.8,.3) {Markets of Mid Hills and CDR};
+\node[lbl] (dha) at (-1.7,2.7) {Dhankuta};
+\draw[ledge,->] (dha.south) -- +(-.8,-.6);
+%%
+\end{tikzpicture}
+\end{document}
+
