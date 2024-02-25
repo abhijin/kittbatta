@@ -1,0 +1,174 @@
+%% raindrop, oxford
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz,border=2]{standalone}
+%% \usepackage[sfdefault]{noto}
+% FONTS
+\usepackage{lmodern} % enhanced version of computer modern
+\usepackage[T1]{fontenc} % for hyphenated characters and textsc in section title
+\usepackage{microtype} % some compression
+\usetikzlibrary{decorations.pathreplacing,shadows,arrows,arrows.meta,shapes,positioning,calc,backgrounds,fit,automata,shadows,patterns.meta}
+\usepackage{xparse}
+\usepackage{ifthen}
+\newcommand{\loc}[1]{\underline{#1}} 
+%\usepackage{xifthen}
+\ExplSyntaxOn
+\NewDocumentCommand { \xifnum } { }
+    {
+        \fp_compare:nTF
+    }
+\ExplSyntaxOff
+
+\usepackage{comment}
+
+\tikzset{cross/.style={cross out, draw, 
+         minimum size=2*(#1-\pgflinewidth), 
+         inner sep=0pt, outer sep=0pt}}
+\begin{document}
+
+
+
+%% oxford (see tiddly)
+\definecolor{Blue}{HTML}{59adb7}
+\definecolor{Red}{HTML}{ca4224}
+\definecolor{DarkYellow}{HTML}{e8b043}
+\definecolor{DarkBlue}{HTML}{2a5484}
+\definecolor{DarkerBlue}{HTML}{091436}
+\definecolor{Orange}{HTML}{eb6933}
+\definecolor{LightBlue}{HTML}{69d0dd}
+
+\newcommand{\raindrop}[5]{
+    \draw[#1] (#2,#3) pic {raindrop};
+    \node[shift={(0,-2.5)},font=\small,text width=1cm,align=center] at (#2,#3) {#4};
+    \node[shift={(0,-.5)}] (#5) at (#2,#3) {};
+}
+
+\newcommand{\reg}{\mathcal{R}}
+\newcommand{\county}{\mathcal{C}}
+\newcommand{\pred}{\mathbf{h}}
+
+\begin{tikzpicture}[scale=.7,every node/.style={minimum size=1cm},on grid,
+block/.style ={rectangle, draw=black, thick, text width=3mm, align=center,
+rounded corners, minimum height=10mm, minimum width = 7mm},
+module/.style={rectangle, line width=.5mm, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,draw,inner sep=1.5mm},
+app/.style={circle, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,inner sep=0mm},
+desc/.style={rectangle, align=center,font=\small},
+raindropedge/.style={black},
+raindrop/.pic={
+    code={\tikzset{scale=1.25}
+    \fill (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;
+ \draw[black] (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;}},
+ledge/.style={rounded corners, thick, black!50, -{Straight Barb[left]},
+shorten >=.5pt, shorten <=.5pt},
+redge/.style={rounded corners, thick, black!50, -{Straight Barb[right]},
+shorten >=.5pt, shorten <=.5pt}, aim/.style={fill=black!10,minimum
+size=0,inner sep=0.1mm},
+bedge/.style={rounded corners, thick, black!50, -{Straight Barb[right]},
+shorten >=.5pt, shorten <=.5pt}, aim/.style={fill=black!10,minimum
+size=0,inner sep=0.1mm},
+comment/.style={text width=2.5cm,align=center},
+comedge/.style={black!50,thin,inner sep=0},
+anc/.style={minimum size=0, inner sep=0pt},
+aimmod/.style={module,draw=DarkBlue,fill=DarkBlue!10}
+]
+
+%% Modules
+\node[module,draw=DarkBlue,fill=DarkBlue!5,text width=3cm,minimum
+height=2cm] (aim1) at (0,0) {{\bf\large Aim 1}\\
+Prediction of healthcare access behavior};
+
+\node[module,draw=DarkBlue,fill=DarkBlue!5,text width=3.5cm,minimum
+height=2cm,xshift=1cm,anchor=west] (aim2) at (aim1.east) {{\bf\large Aim 2}\\
+Understanding changes in healthcare infrastructure};
+
+\node[module,draw=DarkBlue,fill=DarkBlue!5,text width=3.5cm,minimum
+height=2cm,yshift=-2cm,anchor=north] (aim3) at 
+($(aim1.south)!0.5!(aim2.south)$) {{\bf\large Aim 3}\\
+Vulnerable regions and critical components of the health infrastructure};
+
+\node[module,draw=Orange,fill=Orange!5,text width=4.5cm,minimum
+    height=1cm,xshift=0cm,yshift=.75cm,anchor=south,dashed
+] (data) at ($(aim1.north)!.5!(aim2.north)$) {{\bf \large Data}\\
+HABM APCD; HC Inf APCD; Medicare; SynPop, Mobility
+};
+
+\node[comment,xshift=0cm,yshift=-.5cm,anchor=north,text width=2.5cm] (m1) at
+($(aim1.south)+(-1.5,0)$) {Temporal GNN, fairness, disparity, clustering,
+anomaly detection};
+
+\node[comment,xshift=0cm,yshift=-.5cm,anchor=north] (m2) at ($(aim2.south)+(1.5,0)$)
+{Spatial interaction models, structural and functional perturbation};
+
+\node[module,draw=DarkYellow,fill=DarkYellow!5,rotate=90,text
+width=2.6cm,minimum height=0cm] at (13,2) (phc) {Public health and
+clinician team};
+
+\node[module,draw=Blue,fill=Blue!5,rotate=90,text
+width=2.6cm,minimum height=0cm,anchor=east,xshift=-.5cm] at (phc.west)
+(gp) {General public};
+
+\node[fit=(data)(aim1)(aim2)(aim3)(m1)(m2),rectangle,draw,thin,black!50,rounded
+corners] (fit) {};
+
+\draw[redge,->] (aim1) -- (aim2);
+\draw[redge,->] ($(aim1.south)+(.5,0)$) -- ++(0,-.5) -| ($(aim3.north)+(-2,0)$);
+\draw[redge,->] ($(aim2.south)+(-.5,0)$) -- ++(0,-.5) -| ($(aim3.north)+(2,0)$);
+\draw[redge,->,Orange] ($(data.south)+(-1,0)$) -- ++(0,-.5) -| (aim1);
+\draw[redge,->,Orange] ($(data.south)+(1,0)$) -- ++(0,-.5) -| (aim2);
+\draw[comedge] ($(aim1.south)+(-1.5,0)$) -- (m1.north) -- (m1.north east) -- +(0,-.5);
+\draw[comedge] (m1.north) -- (m1.north west) -- +(0,-.5);
+\draw[comedge] ($(aim2.south)+(1.5,0)$) -- (m2.north) -- (m2.north east) -- +(0,-.5);
+\draw[comedge] (m2.north) -- (m2.north west) -- +(0,-.5);
+
+%%
+\node[anc,yshift=.1cm] (anc1) at (phc.north) {};
+\draw[redge,Red] (anc1) -- (fit.east|-anc1);
+\node[anc,yshift=-.2cm] (anc2) at (fit.east|-anc1) {};
+\draw[redge,Red] (anc2) -- (anc1|-anc2);
+
+%%
+\node[anc,yshift=.1cm] (anc1) at (gp.north) {};
+\draw[redge,Red] (anc1) -- (fit.east|-anc1);
+\node[anc,yshift=-.2cm] (anc2) at (fit.east|-anc1) {};
+\draw[redge,Red] (anc2) -- (anc1|-anc2);
+\draw[Red,line width=2.5mm,opacity=.8] 
+(11.3,3) node[anchor=south,yshift=-.2cm,opacity=1] {\includegraphics[scale=.3]{computer.png}} --
+++(0,-7) node[anchor=east,text=black,xshift=0cm,yshift=0cm,rotate=90,text
+width=1.8cm, align=center] {{\bf Aim 4 \\ Dashboard}};
+
+%%
+\node[fill=white,minimum size=0,inner sep=1pt] at (11.3,-3)
+{\includegraphics[scale=.04]{privacy.png}};
+\node[comment,anchor=south,rotate=90,xshift=.8cm] at (gp.north) {Privacy};
+
+
+%%
+\node[xshift=-.5cm] at (data.west)
+{\includegraphics[scale=.3]{patient_information.png}};
+\node[xshift=.5cm,yshift=.5cm] at (data.east)
+{\includegraphics[scale=.3]{bibsonomy.png}};
+\node[xshift=.5cm,yshift=-.5cm] at (data.east) {\includegraphics[scale=.3]{demographic.png}};
+
+\node[xshift=.5cm,yshift=.5cm] at (aim1.west)
+{\includegraphics[scale=.3]{patient_room.png}};
+
+\node[xshift=-.5cm,yshift=.6cm] at (aim2.east)
+{\includegraphics[scale=.3]{hospital_location.png}};
+
+\node[xshift=-.5cm,yshift=.6cm] at (aim3.east)
+{\includegraphics[scale=.3]{risk_assessment.png}};
+
+\node[comment,yshift=-2.1cm] (card) at ($(aim1)!.5!(aim2)$)
+{Speciality-specific analysis};
+\node[xshift=0cm,yshift=-1.4cm] (card) at ($(aim1)!.5!(aim2)$)
+{\includegraphics[scale=.2]{cardiology.png}};
+\node[] (neu) at (card.west)
+{\includegraphics[scale=.2]{neurology.png}};
+\node[] (gyn) at (card.east)
+{\includegraphics[scale=.2]{gynecology.png}};
+
+\end{tikzpicture}
+\end{document}

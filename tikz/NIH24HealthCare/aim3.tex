@@ -1,0 +1,146 @@
+%% raindrop, oxford
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz,border=2]{standalone}
+%% \usepackage[sfdefault]{noto}
+% FONTS
+\usepackage{lmodern} % enhanced version of computer modern
+\usepackage[T1]{fontenc} % for hyphenated characters and textsc in section title
+\usepackage{microtype} % some compression
+\usetikzlibrary{decorations.pathreplacing,shadows,arrows,arrows.meta,shapes,positioning,calc,backgrounds,fit,automata,shadows,patterns.meta}
+\usepackage{xparse}
+\usepackage{ifthen}
+\newcommand{\loc}[1]{\underline{#1}} 
+%\usepackage{xifthen}
+\ExplSyntaxOn
+\NewDocumentCommand { \xifnum } { }
+    {
+        \fp_compare:nTF
+    }
+\ExplSyntaxOff
+
+\usepackage{comment}
+
+\tikzset{cross/.style={cross out, draw, 
+         minimum size=2*(#1-\pgflinewidth), 
+         inner sep=0pt, outer sep=0pt}}
+\begin{document}
+
+
+
+%% oxford (see tiddly)
+\definecolor{Blue}{HTML}{59adb7}
+\definecolor{Red}{HTML}{ca4224}
+\definecolor{DarkYellow}{HTML}{e8b043}
+\definecolor{DarkBlue}{HTML}{2a5484}
+\definecolor{DarkerBlue}{HTML}{091436}
+\definecolor{Orange}{HTML}{eb6933}
+\definecolor{LightBlue}{HTML}{69d0dd}
+
+\newcommand{\raindrop}[5]{
+    \draw[#1] (#2,#3) pic {raindrop};
+    \node[shift={(0,-2.5)},font=\small,text width=1cm,align=center] at (#2,#3) {#4};
+    \node[shift={(0,-.5)}] (#5) at (#2,#3) {};
+}
+
+\newcommand{\model}{\mathcal{Q}}
+
+\begin{tikzpicture}[scale=.7,every node/.style={minimum size=1cm},on grid,
+block/.style ={rectangle, draw=black, thick, text width=3mm, align=center,
+rounded corners, minimum height=10mm, minimum width = 7mm},
+module/.style={rectangle, line width=.5mm, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,draw,inner sep=1.5mm},
+app/.style={circle, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,inner sep=0mm},
+desc/.style={rectangle, align=center,font=\small},
+raindropedge/.style={black},
+raindrop/.pic={
+    code={\tikzset{scale=1.25}
+    \fill (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;
+ \draw[black] (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;}},
+ledge/.style={rounded corners, thick, black!50, -{Straight Barb[left]},
+shorten >=.5pt, shorten <=.5pt},
+redge/.style={rounded corners, thick, black!50, -{Straight Barb[right]},
+shorten >=.5pt, shorten <=.5pt}, aim/.style={fill=black!10,minimum
+size=0,inner sep=0.1mm},
+comment/.style={text width=2.5cm,align=center},
+bedge/.style={rounded corners, thick, black!50, -{Straight Barb[right]},
+shorten >=.5pt, shorten <=.5pt}, aim/.style={fill=black!10,minimum
+size=0,inner sep=0.1mm},
+comedge/.style={black!50,thin,inner sep=0},
+anc/.style={minimum size=0, inner sep=0pt},
+aimmod/.style={module,draw=DarkBlue,fill=DarkBlue!5}
+]
+
+%% Modules
+\node[aimmod,text width=4.5cm,minimum height=2.5cm] (aim31) at (0,0)
+{{\bf\large Estimation of scarcity metrics in specified regions} \\ HABMs,
+HCI access, and availability};
+
+\node[aimmod,text width=4.5cm,minimum
+height=2.5cm,anchor=north,yshift=-.5cm]
+(aim32) at (aim31.south) {{\bf\large Discovering vulnerable regions w.r.t.
+healthcare metrics\\} Lower bounds on travel distance, upper bounds on
+\#providers and capacities};
+
+\node[module,text width=4.5cm,minimum
+height=1cm,anchor=south,yshift=.5cm,draw=Red,fill=Red!5]
+(aim1) at (aim31.north) {{\bf\large Learning healthcare access behaviors\\}};
+
+\node[module,text width=4.5cm,minimum
+height=1cm,anchor=north,yshift=-.5cm,draw=Red,fill=Red!5]
+(aim2) at (aim32.south) {{\bf\large Changes in distribution of providers\\}};
+
+\node[aim,anchor=south west] (lab31) at (aim31.north west) {Aim 3.1};
+\node[aim,anchor=south east] at (aim32.north east) {Aim 3.2};
+\node[aim,anchor=south west] at (aim1.north west) {Aim 1};
+\node[aim,anchor=south east] at (aim2.north east) {Aim 2};
+
+\draw[redge,->,Red] (aim1) -- (aim31);
+\draw[redge,->,Red] (aim2) -- (aim32);
+\draw[redge,->] (aim31) -- (aim32);
+\draw[redge,->,Red] (aim1.west) -- +(-.5,0) |- ($(aim32.west)+(0,1cm)$);
+\draw[redge,->,Red] (aim2.east) -- +(.5,0) |- ($(aim31.east)+(0,-1cm)$);
+%%
+\draw[Red,line width=2.5mm,opacity=.8] 
+(4.7,3.4) node[anchor=south,yshift=-.2cm,opacity=1] {\includegraphics[scale=.3]{computer.png}} --
+++(0,-9.4) node[anchor=east,text=black,xshift=0cm,yshift=0cm,rotate=90,text
+width=1.8cm, align=center] {{\bf Dashboard}};
+%%
+\node[module,draw=DarkYellow,fill=DarkYellow!5,rotate=90,text
+width=4.7cm,minimum height=0cm] at (7,.8) (phc) {Public health and
+clinician team};
+
+\node[module,draw=Blue,fill=Blue!5,rotate=90,text
+width=2.6cm,minimum height=0cm,anchor=east,xshift=-.5cm] at (phc.west)
+(gp) {General public};
+
+\node[fit=(aim31)(aim32)(lab31),rectangle,draw,thin,black!50,rounded
+corners,inner sep=4pt] (fit) {};
+
+%%
+\node[anc,yshift=.4cm] (anc1) at (phc.north) {};
+\draw[redge,Red] (anc1) -- (fit.east|-anc1);
+\node[anc,yshift=-.2cm] (anc2) at (fit.east|-anc1) {};
+\draw[redge,Red] (anc2) -- (anc1|-anc2);
+
+%%
+\node[anc,yshift=.1cm] (anc1) at (gp.north) {};
+\draw[redge,Red] (anc1) -- (fit.east|-anc1);
+\node[anc,yshift=-.2cm] (anc2) at (fit.east|-anc1) {};
+\draw[redge,Red] (anc2) -- (anc1|-anc2);
+%%
+\node[anc] (anc) at (4.8,0) {};
+\node[fill=white,minimum size=0,inner sep=1pt] at (anc|-anc1)
+{\includegraphics[scale=.04]{privacy.png}};
+
+%%
+%% \node[comment,rotate=90,text width=4.5cm] at (5.8,-2.2) {New and improved
+%% vulnerability and scarcity regions};
+\node[comment,rotate=90,text width=4.5cm] at (5.8,-2.2) {Improved
+vulnerability and scarcity mappings using the new metrics};
+
+\end{tikzpicture}
+\end{document}
+

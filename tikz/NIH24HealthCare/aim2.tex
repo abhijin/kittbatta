@@ -1,0 +1,155 @@
+%% raindrop, oxford
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz,border=2]{standalone}
+%% \usepackage[sfdefault]{noto}
+% FONTS
+\usepackage{lmodern} % enhanced version of computer modern
+\usepackage[T1]{fontenc} % for hyphenated characters and textsc in section title
+\usepackage{microtype} % some compression
+\usetikzlibrary{decorations.pathreplacing,shadows,arrows,arrows.meta,shapes,positioning,calc,backgrounds,fit,automata,shadows,patterns.meta}
+\usepackage{xparse}
+\usepackage{ifthen}
+\newcommand{\loc}[1]{\underline{#1}} 
+%\usepackage{xifthen}
+\ExplSyntaxOn
+\NewDocumentCommand { \xifnum } { }
+    {
+        \fp_compare:nTF
+    }
+\ExplSyntaxOff
+
+\usepackage{comment}
+
+\tikzset{cross/.style={cross out, draw, 
+         minimum size=2*(#1-\pgflinewidth), 
+         inner sep=0pt, outer sep=0pt}}
+\begin{document}
+
+
+
+%% oxford (see tiddly)
+\definecolor{Blue}{HTML}{59adb7}
+\definecolor{Red}{HTML}{ca4224}
+\definecolor{DarkYellow}{HTML}{e8b043}
+\definecolor{DarkBlue}{HTML}{2a5484}
+\definecolor{DarkerBlue}{HTML}{091436}
+\definecolor{Orange}{HTML}{eb6933}
+\definecolor{LightBlue}{HTML}{69d0dd}
+
+\newcommand{\raindrop}[5]{
+    \draw[#1] (#2,#3) pic {raindrop};
+    \node[shift={(0,-2.5)},font=\small,text width=1cm,align=center] at (#2,#3) {#4};
+    \node[shift={(0,-.5)}] (#5) at (#2,#3) {};
+}
+
+\begin{tikzpicture}[scale=.7,every node/.style={minimum size=1cm},on grid,
+block/.style ={rectangle, draw=black, thick, text width=3mm, align=center,
+rounded corners, minimum height=10mm, minimum width = 7mm},
+module/.style={rectangle, line width=.5mm, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,draw,inner sep=1.5mm},
+app/.style={circle, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,inner sep=0mm},
+raindropedge/.style={black},
+raindrop/.pic={
+    code={\tikzset{scale=1.25}
+    \fill (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;
+ \draw[black] (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;}},
+ledge/.style={rounded corners, thick, black!50, -{Straight Barb[left]},
+shorten >=.5pt, shorten <=.5pt},
+redge/.style={rounded corners, thick, black!50, -{Straight Barb[right]},
+shorten >=.5pt, shorten <=.5pt}, aim/.style={fill=black!10,minimum
+size=0,inner sep=0.1mm},
+comment/.style={text width=2.5cm,align=center},
+bedge/.style={rounded corners, thick, black!50, -{Straight Barb[right]},
+shorten >=.5pt, shorten <=.5pt}, aim/.style={fill=black!10,minimum
+size=0,inner sep=0.1mm},
+anc/.style={minimum size=0, inner sep=0pt},
+comedge/.style={black!50,thin,inner sep=0},
+aimmod/.style={module,draw=DarkBlue,fill=DarkBlue!5}
+]
+
+%% Modules
+\node[aimmod,text width=4.5cm,minimum height=2.5cm] (aim21) at (0,0)
+{{\bf\large Analyzing changes in geospatial provider distribution \\ (Local
+changes)}\\
+Number of providers~$\mathbf{N}^{(\mathcal{C})}$ and
+number of patients treated $\textsc{Cap}^{(\mathcal{C})}$};
+
+\node[aimmod,text width=4.5cm,minimum height=2.7cm,anchor=west,xshift=1cm]
+(aim22) at (aim21.east) {{\bf\large Network analysis and Cascading effects\\(Global changes)}\\
+Structural and dynamical analysis of $G_{\texttt{HCI}}$};
+
+\node[module,draw=Orange,fill=Orange!5,text width=4cm,minimum
+height=0cm,yshift=1cm,anchor=south,dashed] (data) at
+($(aim21.north)!.5!(aim22.north)$) {{\bf \large Data}\\ HABM APCD; HC Inf
+APCD; Medicare; GIS};
+\node[xshift=.5cm,yshift=-.5cm] (net) at (data.east)
+{\includegraphics[scale=.3]{bibsonomy.png}};
+\node[anchor=west] at (net.east)
+{\includegraphics[scale=.3]{patient_information.png}};
+\node[xshift=-.5cm,yshift=-.5cm] (dem) at (data.west)
+{\includegraphics[scale=.3]{demographic.png}};
+\node[anchor=east] at (dem.west)
+{\includegraphics[scale=.3]{patient_information.png}};
+
+\node[aim,anchor=south west] (lab21) at (aim21.north west) {Aim 2.1};
+\node[aim,anchor=south east] at (aim22.north east) {Aim 2.2};
+
+\node[comment,anchor=north,text width=3cm,yshift=-.4cm,xshift=-1cm]
+(aim21c) at (aim21.south) {Temporal mining, spatio-temporal scan
+statistics, multi-task learning};
+
+\node[comment,anchor=north,text width=3cm,xshift=1cm] (aim22c) at
+(aim22|-aim21c.north) {Graph mining, spatial interaction models, graph neural
+networks};
+
+\draw[Red,line width=2.5mm,opacity=.8] 
+(-1.5,-6.3) node[xshift=-.5cm] {\includegraphics[scale=.3]{computer.png}}
+-- ++(10,0) node[anchor=west,text=black,yshift=0cm,xshift=0cm,text
+    width=1.8cm,inner sep=0pt, align=center] {{\bf Dashboard}};
+
+\node[module,draw=DarkYellow,fill=DarkYellow!5,text width=5cm,minimum
+height=0cm,yshift=-5.5cm,xshift=.5cm] at (aim21) (phc) {Public health and
+clinician team};
+
+\node[module,draw=Blue,fill=Blue!5,text
+width=2.1cm,minimum height=0cm,anchor=west,xshift=.5cm] at (phc.east)
+(gp) {General public};
+
+\node[comment,text width=2.5cm,minimum height=0cm,yshift=-2.7cm] at
+($(aim21)!.5!(aim22)$) (exp) {Expert feedback; counterfactual scenario analysis};
+
+\node[fit=(aim21)(aim22)(aim21c)(aim22c)(lab21),rectangle,draw,thin,black!50,rounded
+corners] (fit) {};
+
+\draw[redge,->] (aim21) -- (aim22);
+\draw[redge,->,Orange] ($(data.south)+(-1,0)$) -- ++(0,-.5) -| (aim21);
+\draw[redge,->,Orange] ($(data.south)+(1,0)$) -- ++(0,-.5) -| (aim22);
+%%
+\draw[comedge] (aim21.south-|aim21c) -- (aim21c.north) -- (aim21c.north west) -- +(0,-.2cm);
+\draw[comedge] (aim21c.north) -- (aim21c.north east) -- +(0,-.2cm);
+%%
+\draw[comedge] (aim22.south-|aim22c) -- (aim22c.north) -- (aim22c.north west) -- +(0,-.2cm);
+\draw[comedge] (aim22c.north) -- (aim22c.north east) -- +(0,-.2cm);
+%%
+\node[anc] (anc1) at ($(phc.north)+(-.1,0)$) {};
+\draw[ledge,Red] (anc1) -- (fit.south-|anc1);
+\node[anc,xshift=.1cm] (anc2) at (fit.south-|anc1) {};
+\draw[ledge,Red] (anc2) -- (anc1-|anc2);
+%%
+\node[anc] (anc1) at ($(gp.north)+(-.1,0)$) {};
+\draw[ledge,Red] (anc1) -- (fit.south-|anc1);
+\node[anc,xshift=.1cm] (anc2) at (fit.south-|anc1) {};
+\draw[ledge,Red] (anc2) -- (anc1-|anc2);
+%%
+\node[fill=white,minimum size=0,inner sep=1pt,yshift=1cm] at (gp)
+{\includegraphics[scale=.03]{privacy.png}};
+%%
+\draw[comedge] ($(phc.north)+(1,0)$) -- +(0,.5) -| (exp.south) --
+(exp.south west) -- +(0,.2);
+\draw[comedge] (exp.south) -- (exp.south east) -- +(0,.2);
+\end{tikzpicture}
+\end{document}
+

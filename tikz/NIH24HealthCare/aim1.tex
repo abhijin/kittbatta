@@ -1,0 +1,164 @@
+%% raindrop, oxford
+%icons
+\PassOptionsToPackage{usenames,dvipsnames}{xcolor}
+\documentclass[tikz,border=2]{standalone}
+%% \usepackage[sfdefault]{noto}
+% FONTS
+\usepackage{lmodern} % enhanced version of computer modern
+\usepackage[T1]{fontenc} % for hyphenated characters and textsc in section title
+\usepackage{microtype} % some compression
+\usetikzlibrary{decorations.pathreplacing,shadows,arrows,arrows.meta,shapes,positioning,calc,backgrounds,fit,automata,shadows,patterns.meta}
+\usepackage{xparse}
+\usepackage{ifthen}
+\newcommand{\loc}[1]{\underline{#1}} 
+%\usepackage{xifthen}
+\ExplSyntaxOn
+\NewDocumentCommand { \xifnum } { }
+    {
+        \fp_compare:nTF
+    }
+\ExplSyntaxOff
+
+\usepackage{comment}
+
+\tikzset{cross/.style={cross out, draw, 
+         minimum size=2*(#1-\pgflinewidth), 
+         inner sep=0pt, outer sep=0pt}}
+\begin{document}
+
+
+
+%% oxford (see tiddly)
+\definecolor{Blue}{HTML}{59adb7}
+\definecolor{Red}{HTML}{ca4224}
+\definecolor{DarkYellow}{HTML}{e8b043}
+\definecolor{DarkBlue}{HTML}{2a5484}
+\definecolor{DarkerBlue}{HTML}{091436}
+\definecolor{Orange}{HTML}{eb6933}
+\definecolor{LightBlue}{HTML}{69d0dd}
+
+\newcommand{\raindrop}[5]{
+    \draw[#1] (#2,#3) pic {raindrop};
+    \node[shift={(0,-2.5)},font=\small,text width=1cm,align=center] at (#2,#3) {#4};
+    \node[shift={(0,-.5)}] (#5) at (#2,#3) {};
+}
+
+\newcommand{\reg}{\mathcal{R}}
+\newcommand{\county}{\mathcal{C}}
+\newcommand{\pred}{\mathbf{h}}
+
+\begin{tikzpicture}[scale=.7,every node/.style={minimum size=1cm},on grid,
+block/.style ={rectangle, draw=black, thick, text width=3mm, align=center,
+rounded corners, minimum height=10mm, minimum width = 7mm},
+module/.style={rectangle, line width=.5mm, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,draw,inner sep=1.5mm},
+app/.style={circle, font=\small, rounded corners, minimum
+height=2cm, text width=2.2cm, align=center,inner sep=0mm},
+desc/.style={rectangle, align=center,font=\small},
+raindropedge/.style={black},
+raindrop/.pic={
+    code={\tikzset{scale=1.25}
+    \fill (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;
+ \draw[black] (0,0)  .. controls ++(0,-1) and ++(0,1) .. (1,-2) arc (360:180:1)
+ .. controls ++(0,1) and ++(0,-1) .. (0,0) -- cycle;}},
+ledge/.style={rounded corners, thick, black!50, -{Straight Barb[left]},
+shorten >=.5pt, shorten <=.5pt},
+redge/.style={rounded corners, thick, black!50, -{Straight Barb[right]},
+shorten >=.5pt, shorten <=.5pt}, aim/.style={fill=black!10,minimum
+size=0,inner sep=0.1mm},
+bedge/.style={rounded corners, thick, black!50, -{Straight Barb[right]},
+shorten >=.5pt, shorten <=.5pt}, aim/.style={fill=black!10,minimum
+size=0,inner sep=0.1mm},
+anc/.style={minimum size=0, inner sep=0pt},
+comment/.style={text width=2.5cm,align=center},
+comedge/.style={black!50,thin,inner sep=0},
+aimmod/.style={module,draw=DarkBlue,fill=DarkBlue!5}
+]
+
+%% Modules
+\node[aimmod,text width=4cm,minimum height=2cm] (aim11) at (0,0)
+{{\bf\large Spatio-temporal analysis of HABMs and disparities}\\ 
+\#visits, distance traveled, disparities, and fairness};
+
+\node[aimmod,text width=4cm,minimum height=2cm,xshift=1cm,anchor=west]
+(aim12) at (aim11.east) {{\bf\large Predictions of HABMs}\\ General
+$\pred(T+1)$ and speciality-specific $\pred(T+1,F')$};
+
+\node[aimmod,text width=3.3cm,minimum
+height=2cm,xshift=0cm,yshift=-1cm,anchor=north] (aim13) at
+($(aim11.south)!.5!(aim12.south)$) {{\bf\large Incorporating privacy}\\
+Regions with DP guarantees $\mathcal{R}'_{priv}$};
+
+\node[module,draw=Orange,fill=Orange!5,text width=4cm,minimum
+height=0cm,yshift=1cm,anchor=south,dashed] (data) at
+($(aim11.north)!.5!(aim12.north)$) {{\bf \large Data}\\ HABM APCD; HC Inf
+APCD; Medicare; GIS};
+\node[xshift=.5cm,yshift=-.5cm] (net) at (data.east)
+{\includegraphics[scale=.3]{bibsonomy.png}};
+\node[anchor=west] at (net.east)
+{\includegraphics[scale=.3]{patient_information.png}};
+\node[xshift=0cm,yshift=.4cm] (dem) at (net.north)
+{\includegraphics[scale=.3]{demographic.png}};
+
+\node[aim,anchor=south east] (lab11) at (aim11.north east) {Aim 1.1};
+\node[aim,anchor=south east] at (aim12.north east) {Aim 1.2};
+\node[aim,anchor=south] at (aim13.north) {Aim 1.3};
+
+\draw[redge,->] (aim11) -- (aim12);
+\draw[redge,->,Orange] ($(data.south)+(-1,0)$) -- ++(0,-.5) -| (aim11);
+\draw[redge,->,Orange] ($(data.south)+(1,0)$) -- ++(0,-.5) -| (aim12);
+\node[anc] (anc) at ($(aim11.south)+(2,0)$) {};
+\draw[ledge,->] (anc) -- (anc|-aim13.north);
+\node[anc] (anc) at ($(aim12.south)+(-2,0)$) {};
+\draw[ledge,->] (anc) -- (anc|-aim13.north);
+%%
+\node[comment,anchor=north,text width=2.5cm,yshift=-.4cm,xshift=-1cm]
+(aim11c) at (aim11.south) {Graph mining, clustering analysis,
+spatial-interaction models};
+
+\node[comment,anchor=north,text width=3cm,xshift=1cm] (aim12c) at
+(aim12|-aim11c.north) {Graph neural networks, multi-task learning};
+
+%%
+\draw[comedge] (aim11.south-|aim11c) -- (aim11c.north) -- (aim11c.north west) -- +(0,-.2cm);
+\draw[comedge] (aim11c.north) -- (aim11c.north east) -- +(0,-.2cm);
+%%
+\draw[comedge] (aim12.south-|aim12c) -- (aim12c.north) -- (aim12c.north west) -- +(0,-.2cm);
+\draw[comedge] (aim12c.north) -- (aim12c.north east) -- +(0,-.2cm);
+
+\node[fit=(data)(aim11)(aim12)(aim13)(aim11c)(aim12c),rectangle,draw,thin,black!50,rounded
+corners] (fit) {};
+
+\draw[Red,line width=2.5mm,opacity=.8] 
+(12.4,1) node[anchor=south,yshift=-.2cm,opacity=1]
+{\includegraphics[scale=.3]{computer.png}}
+node[anchor=west,text=black,xshift=0cm,yshift=.6cm,rotate=90,text
+width=1.8cm, align=center] {{\bf Dashboard}}--
+++(0,-7);
+
+\node[module,draw=DarkYellow,fill=DarkYellow!5,rotate=90,text
+width=2.6cm,minimum height=0cm] at (14.2,1) (phc) {Public health and
+clinician team};
+
+\node[module,draw=Blue,fill=Blue!5,rotate=90,text
+width=2.6cm,minimum height=0cm,anchor=east,xshift=-.5cm] at (phc.west)
+(gp) {General public};
+
+%%
+\node[anc,yshift=-.5cm] (anc1) at (phc.north) {};
+\draw[redge,Red] (anc1) -- (fit.east|-anc1);
+\node[anc,yshift=-.2cm] (anc2) at (fit.east|-anc1) {};
+\draw[redge,Red] (anc2) -- (anc1|-anc2);
+%%
+\node[anc,yshift=.1cm] (anc1) at (aim13.east) {};
+\draw[ledge,Red] (anc1) -- (gp.north|-anc1);
+\node[anc,yshift=-.2cm] (anc2) at (gp.north|-anc1) {};
+\draw[ledge,Red] (anc2) -- (anc1|-anc2);
+%%
+\node[anc] (anc) at (12.4,0) {};
+\node[fill=white,minimum size=0,inner sep=1pt] at (anc|-aim13)
+{\includegraphics[scale=.04]{privacy.png}};
+\end{tikzpicture}
+\end{document}
+
