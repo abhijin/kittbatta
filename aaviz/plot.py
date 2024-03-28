@@ -2,6 +2,17 @@ DESC='''plot functions
 By AA
 '''
 
+# A note on arguments
+##  sp = subplot_args
+##  pf = plot_args
+##  ag = axes_grid_args
+##  la = label_args
+##  fs = fontsize_args
+##  xt = xtick_args
+##  yt = ytick_args
+##  lg = legend_args
+
+
 from cycler import cycler
 from itertools import product
 import logging
@@ -35,6 +46,7 @@ AXIS_HEAT = ['sns.heatmap']
 AXIS_HIST = ['sns.barplot', 'sns.histplot']
 AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
 AXIS_NONE = ['gpd.plot', 'gpd.boundary.plot']
+NON_SNS = ['hlines', 'vlines', 'text']
 
 NON_FUNC_PARAMS = ['fig', 'subplot', 'title', 'xlabel', 'ylabel', 'data']
 HATCH = ['++', 'xx', '\\', '.', 'o', '|', '*']
@@ -287,12 +299,14 @@ def subplot_func(**kwargs):
         elif funcname in AXIS_NONE:
             argvals = {}
         else:
-            raise(f'The plot "{func_name}" is not supported.')
+            raise(f'The plot "{funcname}" is not supported.')
 
         for k,v in argvals.items():
             if k not in plot_args.keys():
                 plot_args[k] = v
 
+        func = eval(funcname)
+    elif funcname in NON_SNS:
         func = eval(funcname)
     else:
         raise ValueError(f'Unsupported function type {kwargs["func"]}.')
@@ -359,6 +373,10 @@ def subplot_axes_grid(**kwargs):
                 axis_type = 'boxy'
         else:
             axis_type = 'boxy'
+    elif kwargs['func'] == 'hlines':
+        axis_type = 'hlines'
+    elif kwargs['func'] == 'text':
+        axis_type = 'ignore'
     else:
         raise KeyError('Unable to assign axis_type. Check if plot is supported.')
     ax = kwargs['ax']
@@ -410,10 +428,14 @@ def subplot_axes_grid(**kwargs):
         ax.tick_params(axis='x', length=0)
         ax.set_xticks(ax.get_xticks(), minor=False)
         ax.tick_params(axis='x', colors=AXES_COLOR)
+    elif axis_type == 'hlines':
+        ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
     elif axis_type == 'none':
         ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
         ax.set_xticks([])
         ax.set_yticks([])
+    elif axis_type == 'ignore':
+        pass
     else:
         raise ValueError(f'Unsupported grid type "{axis_type}".')
     ax.set_axisbelow(True)
@@ -583,12 +605,16 @@ def get_style(k, i):
         j += 1
 
 # Mandatory dictionary fields: x, y, text for each list element
-def text(ax=None, text=None, **kwargs):
-    if type(text) == pd.DataFrame:
-        text = text.to_dict('records')
-
-    for t in text:
-        ax.text(t['x'], t['y'], t['text'], **kwargs)
+def text(ax=None, data=None, x='x', y='y', textcol='text', 
+         fontsize='normalsize', **kwargs):
+    if type(data) == pd.DataFrame:
+        textlist = data.to_dict('records')
+    
+    for t in textlist:
+        ax.text(t[x], t[y], t[textcol], 
+                fontsize=FONT_TABLE[DEFAULT_FONTS['fontsize']][fontsize],
+                **kwargs)
+    return
 
 def vlines(ax=None, lines=None, **kwargs):
     if type(lines) == pd.DataFrame:
@@ -596,6 +622,23 @@ def vlines(ax=None, lines=None, **kwargs):
 
     for l in lines:
         ax.vlines(l['x'], l['ymin'], l['ymax'], **kwargs)
+
+def hlines(ax=None, data=None, y='y', xmin='xmin', xmax='xmax', **kwargs):
+    if type(data) == pd.DataFrame:
+        lines = data.to_dict('records')
+
+    if 'palette' in kwargs.keys():
+        palette = kwargs['palette']
+        del kwargs['palette']
+
+    i = 0
+    for l in lines:
+        if 'color' in l.keys():
+            kwargs['color'] = palette[l['color']]
+        ax.hlines(l[y], l[xmin], l[xmax], **kwargs)
+
+    return ax
+
 
 def main():
     # parser
