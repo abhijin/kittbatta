@@ -1,5 +1,14 @@
 # Changelog
 
+## v1.2
+* tests for plot
+* changes to how grid and axes are managed.
+
+## v1.1
+* hlines
+
+## v1.0
+
 ## v0.9.0
 * Hatching for boxplot, legend
 

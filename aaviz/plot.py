@@ -46,7 +46,7 @@ AXIS_HEAT = ['sns.heatmap']
 AXIS_HIST = ['sns.barplot', 'sns.histplot']
 AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
 AXIS_NONE = ['gpd.plot', 'gpd.boundary.plot']
-NON_SNS = ['hlines', 'vlines', 'text']
+NON_SNS = ['hlines', 'vlines', 'text', 'lines', 'arrow']
 
 NON_FUNC_PARAMS = ['fig', 'subplot', 'title', 'xlabel', 'ylabel', 'data']
 HATCH = ['++', 'xx', '\\', '.', 'o', '|', '*']
@@ -98,6 +98,7 @@ MARKERS=['.','o','v','^','s']
 pd.options.display.float_format = '{:.10g}'.format
 
 # The helper functions are arranged in the order in which they should be called
+# See argvals for all possible arguments.
 def initiate_figure(**kwargs):
     argvals = {
             'mode': 'figure',
@@ -350,94 +351,147 @@ def subplot_hatch(**kwargs):
 
     return ax
 
+
+# Set axes and grid
+# axis_type is the main argument. If it is not defined, the axis_type is set
+# by the plot function type. If a plot function is not considered, then a 
+# default value is used.
+# To minimize arguments passed, we use an encoding for axis_type.
+# axy|gxy|mxy
+# a: axis, g: grid, m: minor
 def subplot_axes_grid(**kwargs):
+    ax = kwargs['ax']
+    axis_type = 'axy:gxy:mxy'
     if 'axis_type' in kwargs.keys():
         axis_type = kwargs['axis_type']
     elif kwargs['func'] in AXIS_NONE:
-        axis_type = 'none'
+        axis_type = 'a:g:m'
     elif kwargs['func'] in AXIS_HEAT:
-        axis_type = 'heat'
+        axis_type = 'a:gxy:m'
     elif kwargs['func'] in AXIS_NORMAL:
-        axis_type = 'normal'
+        axis_type = 'axy:gxy:mxy'
     elif kwargs['func'] in AXIS_HIST:
         if 'orient' in kwargs['plot_args']:
             if kwargs['plot_args']['orient'] == 'h':
-                axis_type = 'histx'
+                axis_type = 'ay:gy:m'
+            else:
+                axis_type = 'ax:gx:m'
         else:
-            axis_type = 'histy'
+            axis_type = 'ay:gy:m'
     elif kwargs['func'] in AXIS_BOX:
         if 'orient' in kwargs['plot_args']:
             if kwargs['plot_args']['orient'] == 'h':
-                axis_type = 'boxx'
+                axis_type = 'ay:gy:m'
             else:
-                axis_type = 'boxy'
+                axis_type = 'ax:gx:m'
         else:
-            axis_type = 'boxy'
-    elif kwargs['func'] == 'hlines':
-        axis_type = 'hlines'
-    elif kwargs['func'] == 'text':
-        axis_type = 'ignore'
-    else:
-        raise KeyError('Unable to assign axis_type. Check if plot is supported.')
-    ax = kwargs['ax']
-    if axis_type == 'normal':
-        ax.spines['right'].set_visible(False)
-        ax.spines['top'].set_visible(False)
-        ax.spines['bottom'].set_color(AXES_COLOR)
-        ax.spines['left'].set_color(AXES_COLOR)
+            axis_type = 'ax:gx:m'
+    elif kwargs['func'] in ['hlines', 'lines', 'arrow', 'text']:
+        axis_type = 'a:g:m'
+    ## elif axis_type == 'boxy':
+    ##     ax.grid(axis='y', color=GRID_COLOR, which='major', 
+    ##             linewidth=MAJOR_TICK_LINEWIDTH)
+    ##     ax.spines[['left', 'bottom', 'right', 'top']].set_visible(False)
+    ##     ax.spines['bottom'].set_color(AXES_COLOR)
+    ##     ax.tick_params(axis='y', length=0)
+    ##     ax.tick_params(axis='x', length=0)
+    ##     ax.set_yticks(ax.get_yticks(), minor=False)
+    ##     ax.tick_params(axis='y', colors=AXES_COLOR)
+    ## elif axis_type == 'boxx':
+    ##     ax.grid(axis='x', color=GRID_COLOR, which='major', 
+    ##             linewidth=MAJOR_TICK_LINEWIDTH)
+    ##     ax.spines[['left', 'bottom', 'right', 'top']].set_visible(False)
+    ##     ax.spines['left'].set_color(AXES_COLOR)
+    ##     ax.tick_params(axis='y', length=0)
+    ##     ax.tick_params(axis='x', length=0)
+    ##     ax.set_xticks(ax.get_xticks(), minor=False)
+    ##     ax.tick_params(axis='x', colors=AXES_COLOR)
+    ## elif axis_type == 'histy':
+    ##     ax.grid(axis='y', color=GRID_COLOR, which='major', 
+    ##             linewidth=MAJOR_TICK_LINEWIDTH)
+    ##     ax.spines[['left', 'right', 'top']].set_visible(False)
+    ##     ax.spines['bottom'].set_color(AXES_COLOR)
+    ##     ax.tick_params(axis='y', length=0)
+    ##     ax.set_yticks(ax.get_yticks(), minor=False)
+    ##     ax.tick_params(axis='y', colors=AXES_COLOR)
+    ## elif axis_type == 'histx':
+    ##     ax.grid(axis='x', color=GRID_COLOR, which='major', 
+    ##             linewidth=MAJOR_TICK_LINEWIDTH)
+    ##     ax.spines[['bottom', 'right', 'top']].set_visible(False)
+    ##     ax.spines['left'].set_color(AXES_COLOR)
+    ##     ax.tick_params(axis='x', length=0)
+    ##     ax.set_xticks(ax.get_xticks(), minor=False)
+    ##     ax.tick_params(axis='x', colors=AXES_COLOR)
+    ## elif axis_type == 'lines':
+    ##     ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
+    ## elif axis_type == 'none':
+    ##     ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
+    ##     ax.set_xticks([])
+    ##     ax.set_yticks([])
+    ## elif axis_type == 'ignore':
+    ##     pass
+    ## else:
+    ##     raise ValueError(f'Unsupported grid type "{axis_type}".')
+
+    if axis_type == 'ignore':
+        return
+
+    seg = axis_type.split(':')
+    err = 'Wrong encoding of axis type: required "axy:gxy:mxy".'
+    axis_x = True
+    axis_y = True
+    grid_x = True
+    grid_y = True
+    minor_x = True
+    minor_y = True
+
+    for a in seg:
+        if len(a) > 3 or a[0] not in ['a', 'g', 'm']:
+            raise ValueError(err)
+        if a[0] == 'a':
+            if 'x' not in a: axis_x = False
+            if 'y' not in a: axis_y = False
+        if a[0] == 'g':
+            if 'x' not in a: grid_x = False
+            if 'y' not in a: grid_y = False
+        if a[0] == 'm':
+            if 'x' not in a: minor_x = False
+            if 'y' not in a: minor_y = False
+
+    # Default values
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_color(AXES_COLOR)
+    ax.spines['left'].set_color(AXES_COLOR)
+
+    if not axis_x:
+        ax.spines['bottom'].set_visible(False)
+    if not axis_y:
+        ax.spines['left'].set_visible(False)
+
+    if grid_y and grid_x:
         ax.grid(color=GRID_COLOR, which='major', linewidth=1)
+    elif grid_y and not grid_x:
+        ax.grid(axis='x', color=GRID_COLOR, which='major', 
+                linewidth=MAJOR_TICK_LINEWIDTH)
+    elif grid_x and not grid_y:
+        ax.grid(axis='y', color=GRID_COLOR, which='major', 
+                linewidth=MAJOR_TICK_LINEWIDTH)
+    else:
+        pass
+
+    # AA: pending
+    if minor_x or minor_y:
         ax.grid(True,color='#dddddd',which='minor',
                 linewidth=MINOR_TICK_LINEWIDTH)
         ax.xaxis.set_minor_locator(AutoMinorLocator(2))
         ax.yaxis.set_minor_locator(AutoMinorLocator(2))
-    elif axis_type == 'heat':
-        ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
-        ax.tick_params(axis='y', length=0)
+
+    if not axis_x:
         ax.tick_params(axis='x', length=0)
-    elif axis_type == 'boxy':
-        ax.grid(axis='y', color=GRID_COLOR, which='major', 
-                linewidth=MAJOR_TICK_LINEWIDTH)
-        ax.spines[['left', 'bottom', 'right', 'top']].set_visible(False)
-        ax.spines['bottom'].set_color(AXES_COLOR)
+    if not axis_y:
         ax.tick_params(axis='y', length=0)
-        ax.tick_params(axis='x', length=0)
-        ax.set_yticks(ax.get_yticks(), minor=False)
-        ax.tick_params(axis='y', colors=AXES_COLOR)
-    elif axis_type == 'boxx':
-        ax.grid(axis='x', color=GRID_COLOR, which='major', 
-                linewidth=MAJOR_TICK_LINEWIDTH)
-        ax.spines[['left', 'bottom', 'right', 'top']].set_visible(False)
-        ax.spines['left'].set_color(AXES_COLOR)
-        ax.tick_params(axis='y', length=0)
-        ax.tick_params(axis='x', length=0)
-        ax.set_xticks(ax.get_xticks(), minor=False)
-        ax.tick_params(axis='x', colors=AXES_COLOR)
-    elif axis_type == 'histy':
-        ax.grid(axis='y', color=GRID_COLOR, which='major', 
-                linewidth=MAJOR_TICK_LINEWIDTH)
-        ax.spines[['left', 'right', 'top']].set_visible(False)
-        ax.spines['bottom'].set_color(AXES_COLOR)
-        ax.tick_params(axis='y', length=0)
-        ax.set_yticks(ax.get_yticks(), minor=False)
-        ax.tick_params(axis='y', colors=AXES_COLOR)
-    elif axis_type == 'histx':
-        ax.grid(axis='x', color=GRID_COLOR, which='major', 
-                linewidth=MAJOR_TICK_LINEWIDTH)
-        ax.spines[['bottom', 'right', 'top']].set_visible(False)
-        ax.spines['left'].set_color(AXES_COLOR)
-        ax.tick_params(axis='x', length=0)
-        ax.set_xticks(ax.get_xticks(), minor=False)
-        ax.tick_params(axis='x', colors=AXES_COLOR)
-    elif axis_type == 'hlines':
-        ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
-    elif axis_type == 'none':
-        ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
-        ax.set_xticks([])
-        ax.set_yticks([])
-    elif axis_type == 'ignore':
-        pass
-    else:
-        raise ValueError(f'Unsupported grid type "{axis_type}".')
+
     ax.set_axisbelow(True)
     ax.tick_params(color=AXES_COLOR, labelcolor=TICKS_COLOR, which='both')
 
@@ -639,6 +693,49 @@ def hlines(ax=None, data=None, y='y', xmin='xmin', xmax='xmax', **kwargs):
 
     return ax
 
+def lines(ax=None, data=None, 
+          sx='source_x', sy='source_y',
+          tx='target_x', ty='target_y', 
+          **kwargs):
+    if type(data) == pd.DataFrame:
+        lines = data.to_dict('records')
+
+    if 'palette' in kwargs.keys():
+        palette = kwargs['palette']
+        del kwargs['palette']
+
+    i = 0
+    for l in lines:
+        if 'color' in l.keys():
+            try:
+                kwargs['color'] = palette[l['color']]
+            except:
+                pass
+        ax.plot([l[sx], l[tx]], [l[sy], l[ty]], **kwargs)
+
+    return ax
+
+def arrow(ax=None, data=None, 
+          sx='source_x', sy='source_y',
+          tx='target_x', ty='target_y', 
+          **kwargs):
+    if type(data) == pd.DataFrame:
+        lines = data.to_dict('records')
+
+    if 'palette' in kwargs.keys():
+        palette = kwargs['palette']
+        del kwargs['palette']
+
+    i = 0
+    for l in lines:
+        if 'color' in l.keys():
+            try:
+                kwargs['color'] = palette[l['color']]
+            except:
+                pass
+        ax.arrow(l[sx], l[sy], l[tx]-l[sx], l[ty]-l[sy], head_width=.3, **kwargs)
+
+    return ax
 
 def main():
     # parser
