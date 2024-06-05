@@ -371,68 +371,16 @@ def subplot_axes_grid(**kwargs):
         axis_type = 'a:gxy:m'
     elif kwargs['func'] in AXIS_NORMAL:
         axis_type = 'axy:gxy:mxy'
-    elif kwargs['func'] in AXIS_HIST:
+    elif kwargs['func'] in AXIS_HIST or kwargs['func'] in AXIS_BOX:
         if 'orient' in kwargs['plot_args']:
             if kwargs['plot_args']['orient'] == 'h':
-                axis_type = 'a:gy:m'
-            else:
                 axis_type = 'a:gx:m'
+            else:
+                axis_type = 'a:gy:m'
         else:
             axis_type = 'a:gy:m'
-    elif kwargs['func'] in AXIS_BOX:
-        if 'orient' in kwargs['plot_args']:
-            if kwargs['plot_args']['orient'] == 'h':
-                axis_type = 'a:gy:m'
-            else:
-                axis_type = 'a:gx:m'
-        else:
-            axis_type = 'a:gx:m'
     elif kwargs['func'] in ['hlines', 'lines', 'arrow', 'text']:
         axis_type = 'a:g:m'
-    ## elif axis_type == 'boxy':
-    ##     ax.grid(axis='y', color=GRID_COLOR, which='major', 
-    ##             linewidth=MAJOR_TICK_LINEWIDTH)
-    ##     ax.spines[['left', 'bottom', 'right', 'top']].set_visible(False)
-    ##     ax.spines['bottom'].set_color(AXES_COLOR)
-    ##     ax.tick_params(axis='y', length=0)
-    ##     ax.tick_params(axis='x', length=0)
-    ##     ax.set_yticks(ax.get_yticks(), minor=False)
-    ##     ax.tick_params(axis='y', colors=AXES_COLOR)
-    ## elif axis_type == 'boxx':
-    ##     ax.grid(axis='x', color=GRID_COLOR, which='major', 
-    ##             linewidth=MAJOR_TICK_LINEWIDTH)
-    ##     ax.spines[['left', 'bottom', 'right', 'top']].set_visible(False)
-    ##     ax.spines['left'].set_color(AXES_COLOR)
-    ##     ax.tick_params(axis='y', length=0)
-    ##     ax.tick_params(axis='x', length=0)
-    ##     ax.set_xticks(ax.get_xticks(), minor=False)
-    ##     ax.tick_params(axis='x', colors=AXES_COLOR)
-    ## elif axis_type == 'histy':
-    ##     ax.grid(axis='y', color=GRID_COLOR, which='major', 
-    ##             linewidth=MAJOR_TICK_LINEWIDTH)
-    ##     ax.spines[['left', 'right', 'top']].set_visible(False)
-    ##     ax.spines['bottom'].set_color(AXES_COLOR)
-    ##     ax.tick_params(axis='y', length=0)
-    ##     ax.set_yticks(ax.get_yticks(), minor=False)
-    ##     ax.tick_params(axis='y', colors=AXES_COLOR)
-    ## elif axis_type == 'histx':
-    ##     ax.grid(axis='x', color=GRID_COLOR, which='major', 
-    ##             linewidth=MAJOR_TICK_LINEWIDTH)
-    ##     ax.spines[['bottom', 'right', 'top']].set_visible(False)
-    ##     ax.spines['left'].set_color(AXES_COLOR)
-    ##     ax.tick_params(axis='x', length=0)
-    ##     ax.set_xticks(ax.get_xticks(), minor=False)
-    ##     ax.tick_params(axis='x', colors=AXES_COLOR)
-    ## elif axis_type == 'lines':
-    ##     ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
-    ## elif axis_type == 'none':
-    ##     ax.spines[['bottom', 'right', 'top', 'left']].set_visible(False)
-    ##     ax.set_xticks([])
-    ##     ax.set_yticks([])
-    ## elif axis_type == 'ignore':
-    ##     pass
-    ## else:
-    ##     raise ValueError(f'Unsupported grid type "{axis_type}".')
 
     if axis_type == 'ignore':
         return
@@ -473,10 +421,10 @@ def subplot_axes_grid(**kwargs):
     if grid_y and grid_x:
         ax.grid(color=GRID_COLOR, which='major', linewidth=1)
     elif grid_y and not grid_x:
-        ax.grid(axis='x', color=GRID_COLOR, which='major', 
+        ax.grid(axis='y', color=GRID_COLOR, which='major', 
                 linewidth=MAJOR_TICK_LINEWIDTH)
     elif grid_x and not grid_y:
-        ax.grid(axis='y', color=GRID_COLOR, which='major', 
+        ax.grid(axis='x', color=GRID_COLOR, which='major', 
                 linewidth=MAJOR_TICK_LINEWIDTH)
     else:
         pass

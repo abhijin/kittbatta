@@ -59,7 +59,8 @@ def main():
     id = 5; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=iris, 
                       pf_orient='h', pf_x='sepal_length', pf_y='species',
-                      la_title='Barplot horizontal',
+                      pf_color=plot.get_style('color',1),
+                      la_title='Barplot horizontal with custom color',
                       yt_labelrotation=-65, la_ylabel='')
     dfs = pd.melt(iris,id_vars=['species'], var_name='characteristic', value_name='value')
 
@@ -73,8 +74,8 @@ def main():
                       hatch=True,
                       la_title='\\parbox{8cm}{\\center Barplot horizontal with hue and hatchet}',
                       yt_pad=5, la_ylabel='')
-    plt.savefig('test.pdf', bbox_inches='tight')
-    plt.savefig('test.svg', bbox_inches='tight')
+    plot.savefig('test.pdf')
+    plot.savefig('test.svg')
 
 if __name__ == '__main__':
     main()
