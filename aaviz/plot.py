@@ -374,19 +374,19 @@ def subplot_axes_grid(**kwargs):
     elif kwargs['func'] in AXIS_HIST:
         if 'orient' in kwargs['plot_args']:
             if kwargs['plot_args']['orient'] == 'h':
-                axis_type = 'ay:gy:m'
+                axis_type = 'a:gy:m'
             else:
-                axis_type = 'ax:gx:m'
+                axis_type = 'a:gx:m'
         else:
-            axis_type = 'ay:gy:m'
+            axis_type = 'a:gy:m'
     elif kwargs['func'] in AXIS_BOX:
         if 'orient' in kwargs['plot_args']:
             if kwargs['plot_args']['orient'] == 'h':
-                axis_type = 'ay:gy:m'
+                axis_type = 'a:gy:m'
             else:
-                axis_type = 'ax:gx:m'
+                axis_type = 'a:gx:m'
         else:
-            axis_type = 'ax:gx:m'
+            axis_type = 'a:gx:m'
     elif kwargs['func'] in ['hlines', 'lines', 'arrow', 'text']:
         axis_type = 'a:g:m'
     ## elif axis_type == 'boxy':

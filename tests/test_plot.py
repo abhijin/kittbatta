@@ -36,43 +36,43 @@ def main():
                       la_title='Boxplot horizontal',
                       yt_rotation=-65, la_ylabel='')
     dfs = pd.melt(iris,id_vars=['species'], var_name='characteristic', value_name='value')
-    id = 3; x = (id-1)//num_cols; y = (id-1) % num_rows
 
     ####
+    id = 3; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.boxplot', data=dfs, 
                       pf_orient='h', 
                       pf_hue='characteristic', 
                       pf_y='species', pf_x='value',
                       ag_xmin=0,
                       hatch=True,
-                      la_title='Boxplot horizontal with hue \\\\ and hatchet',
-                      yt_pad=20, la_ylabel='')
-    id = 4; x = (id-1)//num_cols; y = (id-1) % num_rows
+                      la_title='\\parbox{8cm}{\\center Boxplot horizontal with hue and hatchet}',
+                      yt_pad=5, la_ylabel='')
 
     ####
+    id = 4; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=iris, 
                       pf_x='species', pf_y='sepal_length',
                       la_title='Barplot vertical',
                       xt_rotation=25, la_xlabel='')
-    id = 5; x = (id-1)//num_cols; y = (id-1) % num_rows
 
     ####
+    id = 5; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=iris, 
                       pf_orient='h', pf_x='sepal_length', pf_y='species',
                       la_title='Barplot horizontal',
-                      yt_rotation=-65, la_ylabel='')
+                      yt_labelrotation=-65, la_ylabel='')
     dfs = pd.melt(iris,id_vars=['species'], var_name='characteristic', value_name='value')
-    id = 6; x = (id-1)//num_cols; y = (id-1) % num_rows
 
     ####
+    id = 6; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=dfs, 
                       pf_orient='h', 
                       pf_hue='characteristic', 
                       pf_y='species', pf_x='value',
                       ag_xmin=0,
                       hatch=True,
-                      la_title='Barplot horizontal with hue and hatchet',
-                      yt_pad=20, la_ylabel='')
+                      la_title='\\parbox{8cm}{\\center Barplot horizontal with hue and hatchet}',
+                      yt_pad=5, la_ylabel='')
     plt.savefig('test.pdf', bbox_inches='tight')
     plt.savefig('test.svg', bbox_inches='tight')
 
