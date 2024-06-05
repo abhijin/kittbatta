@@ -8,8 +8,12 @@ import geopandas as gpd
 from pdb import set_trace
 import pkg_resources
 
-def load(data):
+DATA = ['usa_tract_shapes', 'usa_county_shapes']
 
+def list_data():
+    print(f'Datasets:\n{"\n\t".join(DATA)}')
+
+def load(data):
     if data == 'usa_tract_shapes':
         stream = pkg_resources.resource_stream(__name__, 
                 'datasets/usa/cb_2018_53_tract_500k.shp')

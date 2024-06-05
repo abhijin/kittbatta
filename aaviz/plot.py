@@ -215,9 +215,10 @@ def subplot(**kwargs):
     fontsizes = subplot_fonts(ax=ax, func=func, **fontsize_args)
     
     if xtick_args:
-        ax.set_xticklabels(ax.get_xticklabels(), **xtick_args)
+        # ax.set_xticklabels(ax.get_xticklabels(), **xtick_args)
+        ax.tick_params(axis='x', **xtick_args)
     if ytick_args:
-        ax.set_yticklabels(ax.get_yticklabels(), **ytick_args)
+        ax.tick_params(axis='y', **ytick_args)
 
     set_legend(ax, legend_args, FONT_TABLE[fontsizes['fontsize']], 
             fontsize_args)
