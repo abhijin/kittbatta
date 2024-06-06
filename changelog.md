@@ -1,5 +1,10 @@
 # Changelog
 
+## v1.3
+* tests updated with barplots
+* bug in axis disabling rectified
+* text: added string passing
+
 ## v1.2
 * tests for plot
 * changes to how grid and axes are managed.

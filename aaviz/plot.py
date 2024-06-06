@@ -34,6 +34,7 @@ except:
 
 COLORS = {
         'mathematica': ['#5e82b5','#e09c24','#8fb030','#eb634f','#8778b3','#c46e1a','#5c9ec7','#fdbf6f'],
+        'tableau10': ['#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f','#edc948','#b07aa1','#ff9da7','#9c755f','#bab0ac'],
         'grand_budapest': ['#5b1a18','#fd6467','#f1bb7b','#d67236'],
         'red_blue': ['#0060ad', '#dd181f'],
         'datanovia': ["#FFDB6D", "#C4961A", "#F4EDCA", "#D16103", "#C3D7A4", 
@@ -109,6 +110,7 @@ def initiate_figure(**kwargs):
             'gs_hspace': 0.2,
             'gs_nrows': 1,
             'gs_ncols': 1,
+            'color': 'mathematica', 
             'st_y': 0.9,
             'st_fontsize': 'large'
             }
@@ -120,6 +122,10 @@ def initiate_figure(**kwargs):
     # AA: need to be able to modify this too at some point
     for k,v in RC_PARAMS.items():
         rcParams[k] = v
+
+    # Setting color
+    if 'color' in kwargs.keys():
+        rcParams['axes.prop_cycle'] = cycler(color=COLORS[kwargs['color']])
 
     # Setting default font sizes
     fs_args = {k[3:]: v for k,v in argvals.items() if k[0:3] == 'fs_'}
@@ -437,9 +443,9 @@ def subplot_axes_grid(**kwargs):
         ax.yaxis.set_minor_locator(AutoMinorLocator(2))
 
     if not axis_x:
-        ax.tick_params(axis='x', length=0)
+        ax.tick_params(axis='x', which='both', length=0)
     if not axis_y:
-        ax.tick_params(axis='y', length=0)
+        ax.tick_params(axis='y', which='both', length=0)
 
     ax.set_axisbelow(True)
     ax.tick_params(color=AXES_COLOR, labelcolor=TICKS_COLOR, which='both')
@@ -611,12 +617,14 @@ def get_style(k, i):
 def text(ax=None, data=None, x='x', y='y', textcol='text', 
          fontsize='normalsize', **kwargs):
     if type(data) == pd.DataFrame:
-        textlist = data.to_dict('records')
-    
-    for t in textlist:
-        ax.text(t[x], t[y], t[textcol], 
-                fontsize=FONT_TABLE[DEFAULT_FONTS['fontsize']][fontsize],
-                **kwargs)
+        for t in tdata.to_dict('records'):
+            ax.text(t[x], t[y], t[textcol], 
+                    fontsize=FONT_TABLE[DEFAULT_FONTS['fontsize']][fontsize],
+                    **kwargs)
+    elif type(data) is str:
+            ax.text(x, y, data, 
+                    fontsize=FONT_TABLE[DEFAULT_FONTS['fontsize']][fontsize],
+                    **kwargs)
     return
 
 def vlines(ax=None, lines=None, **kwargs):

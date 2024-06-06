@@ -20,7 +20,8 @@ def main():
     num_rows = ceil(sqrt(num_plots))
     fig, gs = plot.initiate_figure(x=5*num_cols, y=4*num_rows, 
                                    gs_nrows=num_rows, gs_ncols=num_cols,
-                                   gs_wspace=.3, gs_hspace=.4)
+                                   gs_wspace=.3, gs_hspace=.4,
+                                   color='tableau10')
 
     ####
     id = 1; x = (id-1)//num_rows; y = (id-1) % num_cols
@@ -52,7 +53,8 @@ def main():
     id = 4; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=iris, 
                       pf_x='species', pf_y='sepal_length',
-                      la_title='Barplot vertical',
+                      la_title='Barplot vertical with logscale',
+                      sp_yscale='log',
                       xt_rotation=25, la_xlabel='')
 
     ####
