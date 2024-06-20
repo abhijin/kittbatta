@@ -46,7 +46,7 @@ AXIS_NORMAL = ['sns.lineplot']
 AXIS_HEAT = ['sns.heatmap']
 AXIS_HIST = ['sns.barplot', 'sns.histplot']
 AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
-AXIS_NONE = ['gpd.plot', 'gpd.boundary.plot']
+AXIS_CHOROPLETH = ['gpd.plot', 'gpd.boundary.plot']
 NON_SNS = ['hlines', 'vlines', 'text', 'lines', 'arrow']
 
 NON_FUNC_PARAMS = ['fig', 'subplot', 'title', 'xlabel', 'ylabel', 'data']
@@ -64,7 +64,8 @@ RC_PARAMS = {
         'ytick.labelsize': 'small',
         'text.usetex': True,
         'text.latex.preamble': '',
-        'axes.prop_cycle': cycler(color=COLORS['mathematica']) 
+        'axes.prop_cycle': cycler(color=COLORS['mathematica']),
+        'axes.formatter.limits': [-5,6] # important for scientific notation
         }
 
 DEFAULT_FONTS = {
@@ -126,6 +127,10 @@ def initiate_figure(**kwargs):
     # Setting color
     if 'color' in kwargs.keys():
         rcParams['axes.prop_cycle'] = cycler(color=COLORS[kwargs['color']])
+
+    # Setting scientific notation limits
+    if 'scilimits' in kwargs.keys():
+        rcParams['axes.formatter.limits'] = kwargs['scilimits']
 
     # Setting default font sizes
     fs_args = {k[3:]: v for k,v in argvals.items() if k[0:3] == 'fs_'}
@@ -219,7 +224,7 @@ def subplot(**kwargs):
             subplot_args=subplot_args, **axes_grid_args)
     subplot_labels(ax=ax, **label_args)
     fontsizes = subplot_fonts(ax=ax, func=func, **fontsize_args)
-    
+
     if xtick_args:
         # ax.set_xticklabels(ax.get_xticklabels(), **xtick_args)
         ax.tick_params(axis='x', **xtick_args)
@@ -304,7 +309,7 @@ def subplot_func(**kwargs):
             argvals = {}
         elif funcname in AXIS_HEAT:
             argvals = {}
-        elif funcname in AXIS_NONE:
+        elif funcname in AXIS_CHOROPLETH:
             argvals = {}
         else:
             raise(f'The plot "{funcname}" is not supported.')
@@ -371,7 +376,7 @@ def subplot_axes_grid(**kwargs):
     axis_type = 'axy:gxy:mxy'
     if 'axis_type' in kwargs.keys():
         axis_type = kwargs['axis_type']
-    elif kwargs['func'] in AXIS_NONE:
+    elif kwargs['func'] in AXIS_CHOROPLETH:
         axis_type = 'a:g:m'
     elif kwargs['func'] in AXIS_HEAT:
         axis_type = 'a:gxy:m'
@@ -447,6 +452,10 @@ def subplot_axes_grid(**kwargs):
     if not axis_y:
         ax.tick_params(axis='y', which='both', length=0)
 
+    if kwargs['func'] in AXIS_CHOROPLETH:
+        ax.set_xticks([])
+        ax.set_yticks([])
+
     ax.set_axisbelow(True)
     ax.tick_params(color=AXES_COLOR, labelcolor=TICKS_COLOR, which='both')
 
@@ -474,6 +483,25 @@ def subplot_axes_grid(**kwargs):
         ymax = kwargs['ymax']
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
+
+    # Scientific notation
+    xscilimits = [-5, 6]
+    yscilimits = [-5, 6]
+    if 'xformat' in kwargs.keys():
+        if 'xscilimits' in kwargs.keys():
+            xscilimits = kwargs['xscilimits']
+
+        ax.ticklabel_format(axis='x', 
+                            style=kwargs['xformat'], 
+                            scilimits=xscilimits)
+
+    if 'yformat' in kwargs.keys():
+        if 'yscilimits' in kwargs.keys():
+            yscilimits = kwargs['yscilimits']
+
+        ax.ticklabel_format(axis='y', 
+                            style=kwargs['xformat'], 
+                            scilimits=xscilimits)
 
     subplot_args = kwargs['subplot_args'] 
     if 'sharex' in subplot_args.keys():

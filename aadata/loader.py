@@ -8,7 +8,7 @@ import geopandas as gpd
 from pdb import set_trace
 import pkg_resources
 
-DATA = ['usa_tract_shapes', 'usa_county_shapes']
+DATA = ['usa_tract_shapes', 'usa_county_shapes', 'usa_state_shapes']
 
 def list_data():
     print(f'Datasets:\n{"\n\t".join(DATA)}')

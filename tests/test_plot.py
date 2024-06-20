@@ -4,6 +4,7 @@ Tests for aaviz.plot function
 By: AA
 '''
 
+from aadata import loader
 from aaviz import plot
 from math import sqrt, ceil, floor
 import matplotlib.pyplot as plt
@@ -15,7 +16,7 @@ def main():
     iris = sns.load_dataset('iris')
     geyser = sns.load_dataset('geyser')
     
-    num_plots = 6
+    num_plots = 7
     num_cols = ceil(sqrt(num_plots))
     num_rows = ceil(sqrt(num_plots))
     fig, gs = plot.initiate_figure(x=5*num_cols, y=4*num_rows, 
@@ -76,6 +77,24 @@ def main():
                       hatch=True,
                       la_title='\\parbox{8cm}{\\center Barplot horizontal with hue and hatchet}',
                       yt_pad=5, la_ylabel='')
+
+    ####
+    id = 7; x = (id-1)//num_cols; y = (id-1) % num_rows
+    counties = loader.load('usa_county_shapes')
+    counties = counties[counties.statefp=='51']
+    counties['intensity'] = list(range(counties.shape[0]))
+    ax = plot.subplot(fig=fig, grid=gs[x,y], func='gpd.plot', data=counties, 
+                      pf_column='intensity',
+                      pf_legend=True, pf_legend_kwds={'shrink': 0.28}
+                      )
+
+    ####
+    id = 8; x = (id-1)//num_cols; y = (id-1) % num_rows
+    ax = plot.subplot(fig=fig, grid=gs[x,y], func='gpd.boundary.plot', 
+                      pf_facecolor='white', pf_edgecolor='black',
+                      data=counties, 
+                      )
+
     plot.savefig('test.pdf')
     plot.savefig('test.svg')
 
