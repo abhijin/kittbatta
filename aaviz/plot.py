@@ -1,4 +1,4 @@
-DESC='''plot functions
+jjDESC='''plot functions
 By AA
 '''
 
@@ -41,8 +41,9 @@ COLORS = {
             "#52854C", "#4E84C4", "#293352"]
         }
 SNS_AXIS_PLOTS = ['sns.lineplot', 'sns.barplot', 'sns.histplot', 'sns.ecdfplot',
-        'sns.boxplot', 'sns.violinplot', 'sns.heatmap']
-AXIS_NORMAL = ['sns.lineplot']
+        'sns.boxplot', 'sns.violinplot', 'sns.heatmap', 'sns.scatterplot',
+                  'contour']
+AXIS_NORMAL = ['sns.lineplot', 'sns.scatterplot', 'contour']
 AXIS_HEAT = ['sns.heatmap']
 AXIS_HIST = ['sns.barplot', 'sns.histplot']
 AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
@@ -127,6 +128,7 @@ def initiate_figure(**kwargs):
     # Setting color
     if 'color' in kwargs.keys():
         rcParams['axes.prop_cycle'] = cycler(color=COLORS[kwargs['color']])
+        sns.set_palette(COLORS[kwargs['color']])
 
     # Setting scientific notation limits
     if 'scilimits' in kwargs.keys():
@@ -177,7 +179,10 @@ def subplot(**kwargs):
     for k in kwargs.keys():
         if k in ['fig', 'ax', 'func', 'data', 'text', 'hatch', 'sharey', 'sharex', 'grid']:
             continue
-        pat = search('[^_]*_', k)[0]
+        try:
+            pat = search('[^_]*_', k)[0]
+        except TypeError:
+            raise ValueError(f'"{k}": Likely forgot a prefix.')
         if pat not in ['sp_', 'pf_', 'ag_', 'la_', 'fs_', 'xt_', 'yt_', 'lg_', 'tx_']:
             raise ValueError(f'Unsupported input class "{k}".')
     subplot_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'sp_'}
@@ -243,6 +248,12 @@ def set_legend(ax, legend_args, fonts_table, fontsize_args):
         legend_args.pop('visible')
     except KeyError:
         legend_visible = True
+
+    try:
+        if not legend_args['title']:
+            ax.get_legend().set_title('')
+    except:
+        pass
 
     # set fonts
     legend_fonts = {}
@@ -510,6 +521,17 @@ def subplot_axes_grid(**kwargs):
         plt.setp(ax.get_yticklabels(), visible=False)
 
     return
+
+def contour(ax=None, **kwargs):
+    x = kwargs['x']
+    y = kwargs['y']
+    z = kwargs['z']
+
+    del kwargs['x'], kwargs['y'], kwargs['z']
+
+    contour = ax.contour(x, y, z, **kwargs)
+    return
+
 
 def subplot_labels(**kwargs):
     ax = kwargs['ax']

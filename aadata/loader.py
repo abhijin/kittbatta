@@ -28,5 +28,12 @@ def load(data):
         gdf.columns = gdf.columns.str.lower()
         gdf.name = gdf.name.str.lower()
         return gdf
+    elif data == 'usa_state_shapes':
+        stream = pkg_resources.resource_stream(__name__, 
+                'datasets/usa/cb_2018_us_state_500k.shp')
+        gdf = gpd.read_file(stream.name)
+        gdf.columns = gdf.columns.str.lower()
+        gdf.name = gdf.name.str.lower()
+        return gdf
     else:
         raise ValueError(f'{data} not in package.')

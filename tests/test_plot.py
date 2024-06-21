@@ -8,6 +8,7 @@ from aadata import loader
 from aaviz import plot
 from math import sqrt, ceil, floor
 import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 from pdb import set_trace
 import seaborn as sns
@@ -16,7 +17,7 @@ def main():
     iris = sns.load_dataset('iris')
     geyser = sns.load_dataset('geyser')
     
-    num_plots = 7
+    num_plots = 10
     num_cols = ceil(sqrt(num_plots))
     num_rows = ceil(sqrt(num_plots))
     fig, gs = plot.initiate_figure(x=5*num_cols, y=4*num_rows, 
@@ -93,6 +94,24 @@ def main():
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='gpd.boundary.plot', 
                       pf_facecolor='white', pf_edgecolor='black',
                       data=counties, 
+                      )
+
+    ####
+    id = 9; x = (id-1)//num_cols; y = (id-1) % num_rows
+    ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.scatterplot', 
+                      pf_x='sepal_length', pf_y='sepal_width',
+                      pf_hue='species', data=iris, 
+                      )
+
+    ####
+    id = 10; x = (id-1)//num_cols; y = (id-1) % num_rows
+    X = np.linspace(0, 10, 100)
+    Y = np.linspace(0, 10, 100)
+    X, Y = np.meshgrid(X, Y)
+    Z = np.sin(X) * np.cos(Y)
+    ax = plot.subplot(fig=fig, grid=gs[x,y], func='contour', 
+                      pf_x=X, pf_y=Y, pf_z=Z,
+                      pf_cmap='cividis'
                       )
 
     plot.savefig('test.pdf')
