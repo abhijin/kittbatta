@@ -17,7 +17,7 @@ def main():
     iris = sns.load_dataset('iris')
     geyser = sns.load_dataset('geyser')
     
-    num_plots = 10
+    num_plots = 12
     num_cols = ceil(sqrt(num_plots))
     num_rows = ceil(sqrt(num_plots))
     fig, gs = plot.initiate_figure(x=5*num_cols, y=4*num_rows, 
@@ -103,16 +103,48 @@ def main():
                       pf_hue='species', data=iris, 
                       )
 
+    ## ####
+    ## id = 10; x = (id-1)//num_cols; y = (id-1) % num_rows
+    ## X = np.linspace(0, 10, 100)
+    ## Y = np.linspace(0, 10, 100)
+    ## X, Y = np.meshgrid(X, Y)
+    ## Z = np.sin(X) * np.cos(Y)
+    ## ax = plot.subplot(fig=fig, grid=gs[x,y], func='contour', 
+    ##                   pf_x=X, pf_y=Y, pf_z=Z, pf_mode='meshgrid',
+    ##                   pf_cmap='cividis'
+    ##                   )
+
     ####
     id = 10; x = (id-1)//num_cols; y = (id-1) % num_rows
-    X = np.linspace(0, 10, 100)
-    Y = np.linspace(0, 10, 100)
-    X, Y = np.meshgrid(X, Y)
-    Z = np.sin(X) * np.cos(Y)
+    data = pd.DataFrame({
+        'x': [1,2,3,4],
+        'y': [1,2,3,6],
+        'z': [1,3,1,3]
+        })
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='contour', 
-                      pf_x=X, pf_y=Y, pf_z=Z,
-                      pf_cmap='cividis'
+                      data=data,
+                      pf_mode='lines',
+                      pf_x='x', pf_y='y', pf_z='z',
+                      pf_cmap='cividis',
+                      cb_drawedges=True,
+                      cb_spacing='proportional',
+                      cb_labelsize='footnotesize'
                       )
+
+    ####
+    id = 11; x = (id-1)//num_cols; y = (id-1) % num_rows
+    ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.histplot', data=iris, 
+                      pf_x='species',
+                      la_title='histplot vertical',
+                      xt_rotation=25, la_xlabel='')
+
+    ####
+    id = 12; x = (id-1)//num_cols; y = (id-1) % num_rows
+    ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.countplot', data=iris, 
+                      pf_x='species',
+                      pf_order=['setosa', 'versicolor', 'virginica', 'test'],
+                      la_title='countplot vertical with zero counts',
+                      xt_rotation=25, la_xlabel='')
 
     plot.savefig('test.pdf')
     plot.savefig('test.svg')

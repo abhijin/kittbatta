@@ -12,7 +12,6 @@ By AA
 ##  yt = ytick_args
 ##  lg = legend_args
 
-
 from cycler import cycler
 from itertools import product
 import logging
@@ -23,6 +22,7 @@ import numpy as np
 import pandas as pd
 from pdb import set_trace
 from re import sub, search, match
+from scipy.interpolate import griddata
 import seaborn as sns
 try:
     import geopandas as gpd
@@ -40,12 +40,12 @@ COLORS = {
         'datanovia': ["#FFDB6D", "#C4961A", "#F4EDCA", "#D16103", "#C3D7A4", 
             "#52854C", "#4E84C4", "#293352"]
         }
-SNS_AXIS_PLOTS = ['sns.lineplot', 'sns.barplot', 'sns.histplot', 'sns.ecdfplot',
+SNS_AXIS_PLOTS = ['sns.lineplot', 'sns.barplot', 'sns.histplot', 'sns.countplot', 'sns.ecdfplot',
         'sns.boxplot', 'sns.violinplot', 'sns.heatmap', 'sns.scatterplot',
                   'contour']
 AXIS_NORMAL = ['sns.lineplot', 'sns.scatterplot', 'contour']
 AXIS_HEAT = ['sns.heatmap']
-AXIS_HIST = ['sns.barplot', 'sns.histplot']
+AXIS_HIST = ['sns.barplot', 'sns.histplot', 'sns.countplot']
 AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
 AXIS_CHOROPLETH = ['gpd.plot', 'gpd.boundary.plot']
 NON_SNS = ['hlines', 'vlines', 'text', 'lines', 'arrow']
@@ -183,7 +183,7 @@ def subplot(**kwargs):
             pat = search('[^_]*_', k)[0]
         except TypeError:
             raise ValueError(f'"{k}": Likely forgot a prefix.')
-        if pat not in ['sp_', 'pf_', 'ag_', 'la_', 'fs_', 'xt_', 'yt_', 'lg_', 'tx_']:
+        if pat not in ['sp_', 'pf_', 'ag_', 'la_', 'fs_', 'xt_', 'yt_', 'lg_', 'tx_', 'cb_']:
             raise ValueError(f'Unsupported input class "{k}".')
     subplot_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'sp_'}
     plot_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'pf_'}
@@ -193,6 +193,7 @@ def subplot(**kwargs):
     xtick_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'xt_'}
     ytick_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'yt_'}
     legend_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'lg_'}
+    colorbar_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'cb_'}
 
     fig = kwargs['fig']
     func = kwargs['func']
@@ -216,7 +217,7 @@ def subplot(**kwargs):
         print('WARNING: "data" field absent.')
     funcobj = subplot_func(plot_args=plot_args, **kwargs)
 
-    funcobj(ax=ax, **plot_args)
+    func_res = funcobj(ax=ax, **plot_args)
 
     # Hatching
     try:
@@ -231,7 +232,9 @@ def subplot(**kwargs):
     fontsizes = subplot_fonts(ax=ax, func=func, **fontsize_args)
 
     if xtick_args:
-        # ax.set_xticklabels(ax.get_xticklabels(), **xtick_args)
+        if 'setticks' in xtick_args.keys():
+            ax.set_xticks(ax.get_xticks(), labels=xtick_args['setticks'])
+            del xtick_args['setticks']
         ax.tick_params(axis='x', **xtick_args)
     if ytick_args:
         ax.tick_params(axis='y', **ytick_args)
@@ -239,6 +242,8 @@ def subplot(**kwargs):
     set_legend(ax, legend_args, FONT_TABLE[fontsizes['fontsize']], 
             fontsize_args)
 
+    if colorbar_args:
+        colorbar(func_res, ax, FONT_TABLE[fontsizes['fontsize']], colorbar_args)
     return ax
 
 def set_legend(ax, legend_args, fonts_table, fontsize_args):
@@ -306,7 +311,7 @@ def subplot_func(**kwargs):
         plot_args.pop('data')
         func = eval(f'kwargs["data"].plot')
     elif funcname in SNS_AXIS_PLOTS:
-        if funcname in ['sns.barplot', 'sns.histplot']:
+        if funcname in ['sns.barplot', 'sns.histplot', 'sns.countplot']:
             argvals = {
                     'alpha': 1,
                     'edgecolor': 'white'
@@ -355,11 +360,8 @@ def subplot_hatch(**kwargs):
 
         for patch in pp:
             col = patch.get_facecolor()
-            try:
-                hue = hues[hues == col].dropna().index[0]
-                patch.set_hatch(HATCH[hue])
-            except:
-                set_trace()
+            hue = hues[hues == col].dropna().index[0]
+            patch.set_hatch(HATCH[hue])
             edgecol = patch.get_edgecolor() # assumes same edgecolor for all
 
         # Update legend
@@ -523,15 +525,62 @@ def subplot_axes_grid(**kwargs):
     return
 
 def contour(ax=None, **kwargs):
-    x = kwargs['x']
-    y = kwargs['y']
-    z = kwargs['z']
+    data = kwargs['data']
 
-    del kwargs['x'], kwargs['y'], kwargs['z']
+    xcol = kwargs['x']
+    ycol = kwargs['y']
+    zcol = kwargs['z']
 
-    contour = ax.contour(x, y, z, **kwargs)
+    data = data.sort_values(by=[xcol, ycol])
+
+    xmin = data[xcol].min()
+    xmax = data[xcol].max()
+    ymin = data[ycol].min()
+    ymax = data[ycol].max()
+
+    grid_x, grid_y = np.mgrid[xmin:xmax:100j, ymin:ymax:100j]
+    grid_z = griddata((data[xcol].values, data[ycol].values), 
+                      data[zcol].values, 
+                      (grid_x, grid_y), method='nearest')
+
+    if not 'mode' in kwargs.keys():
+        kwargs['mode'] = 'lines'
+        func = ax.contour
+    elif kwargs['mode'] == 'lines':
+        func = ax.contour
+    elif kwargs['mode'] == 'filled':
+        func = ax.contour
+    else:
+        raise(f'contour: Unsupported mode {kwargs["mode"]}.')
+        
+    kwargs_ = kwargs.copy()
+    for ele in ['x', 'y', 'z', 'data', 'mode']:
+        del kwargs_[ele]
+
+    contour = func(grid_x, grid_y, grid_z, **kwargs_)
+
+    return contour
+
+def colorbar(funcres, ax, fontsizes, cb_args):
+    if 'orientation' not in cb_args.keys():
+        cb_args['orientation'] = 'vertical'
+    if 'shrink' not in cb_args.keys():
+        cb_args['shrink'] = 0.8
+
+    cbar_obj_args = {'width': 0, 'length': 0}
+    for ele in ['labelsize']:
+        if ele in cb_args.keys():
+            if ele == 'labelsize':
+                cbar_obj_args[ele] = fontsizes[cb_args[ele]]
+            else:
+                cbar_obj_args[ele] = cb_args[ele]
+            del cb_args[ele]
+    cbar = plt.colorbar(funcres, ax=ax, **cb_args)
+    cbar.outline.set_edgecolor('white')
+
+    cbar.ax.tick_params(**cbar_obj_args)
+
     return
-
 
 def subplot_labels(**kwargs):
     ax = kwargs['ax']
@@ -743,6 +792,7 @@ def arrow(ax=None, data=None,
         ax.arrow(l[sx], l[sy], l[tx]-l[sx], l[ty]-l[sy], head_width=.3, **kwargs)
 
     return ax
+
 
 def main():
     # parser
