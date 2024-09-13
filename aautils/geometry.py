@@ -1,4 +1,8 @@
-import contextily as ctx
+try:
+    import contextily as ctx
+except:
+    print('Warning: Could not import contextily')
+
 import geopandas as gpd
 import logging
 import numpy as np
