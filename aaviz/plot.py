@@ -113,7 +113,7 @@ def initiate_figure(**kwargs):
             'gs_nrows': 1,
             'gs_ncols': 1,
             'color': 'mathematica', 
-            'st_y': 0.9,
+            'st_y': 0.95,
             'st_fontsize': 'large'
             }
 
@@ -203,10 +203,18 @@ def subplot(**kwargs):
         ax = kwargs['ax']
     else:
         axis_list = fig.axes
-        if 'sharex' in subplot_args.keys():
-            subplot_args['sharex'] = axis_list[subplot_args['sharex']]
-        if 'sharey' in subplot_args.keys():
-            subplot_args['sharey'] = axis_list[subplot_args['sharey']]
+        try:
+            if 'sharex' in subplot_args.keys():
+                subplot_args['sharex'] = axis_list[subplot_args['sharex']]
+            if 'sharey' in subplot_args.keys():
+                subplot_args['sharey'] = axis_list[subplot_args['sharey']]
+        except IndexError:
+            print('Ignoring "sharex/sharey" ...')
+            for s in ['sharex', 'sharey']:
+                try:
+                    del subplot_args[s]
+                except:
+                    pass
         ax = fig.add_subplot(kwargs['grid'], **subplot_args)
         kwargs['ax'] = ax
 
@@ -257,6 +265,8 @@ def set_legend(ax, legend_args, fonts_table, fontsize_args):
     try:
         if not legend_args['title']:
             ax.get_legend().set_title('')
+        else:
+            ax.get_legend().set_title(legend_args['title'])
     except:
         pass
 
@@ -276,6 +286,12 @@ def set_legend(ax, legend_args, fonts_table, fontsize_args):
                     title_fontsize=fonts_table[legend_fonts['legend_title']])
         else:
             ax.legend().set_visible(False)
+    else: 
+        try:
+            for text in ax.get_legend().get_texts():
+                text.set_fontsize(fonts_table[legend_fonts['legend_title']])
+        except:
+            pass
 
 def set_legend_invisible(ax):
     ax.saved_legend_handles = ax.get_legend_handles_labels()
@@ -316,6 +332,15 @@ def subplot_func(**kwargs):
                     'alpha': 1,
                     'edgecolor': 'white'
                     }
+            if funcname == 'sns.histplot':
+                try:
+                    if plot_args['element'] == 'step':
+                        argvals = {'alpha': 1}
+                except KeyError:
+                    pass
+
+
+
         elif funcname in AXIS_BOX:
             argvals = {
                     'boxprops': {'edgecolor': 'white'},
