@@ -1,5 +1,9 @@
 # Changelog
 
+## v1.4
+* some modifications regarding legend
+* GLW functionality in geometry
+
 ## v1.3
 * tests updated with barplots
 * bug in axis disabling rectified

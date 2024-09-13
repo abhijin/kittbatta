@@ -4,6 +4,7 @@ Loading datasets.
 By: AA
 '''
 
+import pandas as pd
 import geopandas as gpd
 from pdb import set_trace
 import pkg_resources

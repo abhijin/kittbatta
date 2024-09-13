@@ -48,7 +48,8 @@ def main():
                       pf_y='species', pf_x='value',
                       ag_xmin=0,
                       hatch=True,
-                      la_title='\\parbox{8cm}{\\center Boxplot horizontal with hue and hatchet}',
+                      lg_title='char',
+                      la_title='\\parbox{8cm}{\\center Boxplot horizontal with hue and hatchet; legend title}',
                       yt_pad=5, la_ylabel='')
 
     ####

@@ -1,4 +1,9 @@
-import contextily as ctx
+try:
+    import contextily as ctx
+except ModuleNotFoundError as err:
+    print(err)
+    print('Skipping this step ...')
+
 import geopandas as gpd
 import logging
 import numpy as np
@@ -243,7 +248,7 @@ def haversine(x1=None, y1=None, x2=None, y2=None, units='kilometers'):
     else:
         raise ValueError(f'Unsupported unit {units}')
 
-def coords_to_geom(x, y, from_crs=None, to_crs=None):
+def coords_to_geom(x, y, from_crs=DEFAULT_CRS, to_crs=DEFAULT_CRS):
     gdf = gpd.GeoDataFrame(geometry=[Point(xy) for xy in zip(x, y)])
     gdf = gdf.set_crs(from_crs)
     gdf = gdf.to_crs(to_crs)
@@ -297,5 +302,42 @@ def check_for_errors(nodes, edges, localities, locality_edges, hierarchy_tree):
     if (dfa != 2).sum():
         raise Exception('Level 0 edges not bidirectional.')
 
+def lonlat_to_glw(lon, lat):
+    return list(zip((12*lon + 2160.504).round(), 
+        (1080.500009 - 12.000004*lat).round()))
+
+def glw_to_lonlat(x, y):
+    return list(zip((x - 2160.504)/12, -(y - 1080.500009)/12.000004))
+
+def centroid_to_cell(lat, lon, arc_minutes=5):
+    # size in minutes
+    # Convert grid size from arc minutes to degrees
+    degrees = arc_minutes / 60.0
+    
+    # Calculate the SW corner (lower-left) of the grid cell
+    lat_sw = lat - (degrees / 2)
+    lon_sw = lon - (degrees / 2)
+    
+    # Calculate the other corners
+    lat_se = lat_sw
+    lon_se = lon_sw + degrees
+    
+    lat_nw = lat_sw + degrees
+    lon_nw = lon_sw
+    
+    lat_ne = lat_nw
+    lon_ne = lon_se
+    
+    # Create a Polygon from the corners
+    polygon = []
+    for i in range(len(lon_sw)):
+        polygon.append(Polygon([
+            (lon_sw[i], lat_sw[i]),  # SW corner
+            (lon_se[i], lat_se[i]),  # SE corner
+            (lon_ne[i], lat_ne[i]),  # NE corner
+            (lon_nw[i], lat_nw[i]),  # NW corner
+            (lon_sw[i], lat_sw[i])   # Closing the polygon
+        ]))
+    return polygon
 
 
