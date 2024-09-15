@@ -10,7 +10,7 @@ from pdb import set_trace
 import pkg_resources
 
 DATA = ['usa_tract_shapes', 'usa_county_shapes', 'usa_state_shapes',
-        'usa_states', 'usa_counties']
+        'usa_states', 'usa_counties', 'usa_cities']
 
 def list_data():
     print(f'Datasets:\n{"\n\t".join(DATA)}')
@@ -45,6 +45,11 @@ def load(data):
     elif data == 'usa_counties':
         stream = pkg_resources.resource_stream(__name__, 
                 'datasets/usa/counties.csv.zip')
+        df = pd.read_csv(stream.name)
+        return df
+    elif data == 'usa_cities':
+        stream = pkg_resources.resource_stream(__name__, 
+                'datasets/usa/uscities.csv.zip')
         df = pd.read_csv(stream.name)
         return df
     else:
