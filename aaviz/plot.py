@@ -741,7 +741,7 @@ def get_style(k, i):
 def text(ax=None, data=None, x='x', y='y', textcol='text', 
          fontsize='normalsize', **kwargs):
     if type(data) == pd.DataFrame:
-        for t in tdata.to_dict('records'):
+        for t in data.to_dict('records'):
             ax.text(t[x], t[y], t[textcol], 
                     fontsize=FONT_TABLE[DEFAULT_FONTS['fontsize']][fontsize],
                     **kwargs)

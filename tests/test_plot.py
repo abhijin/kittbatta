@@ -17,7 +17,7 @@ def main():
     iris = sns.load_dataset('iris')
     geyser = sns.load_dataset('geyser')
     
-    num_plots = 12
+    num_plots = 13
     num_cols = ceil(sqrt(num_plots))
     num_rows = ceil(sqrt(num_plots))
     fig, gs = plot.initiate_figure(x=5*num_cols, y=4*num_rows, 
@@ -56,9 +56,15 @@ def main():
     id = 4; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=iris, 
                       pf_x='species', pf_y='sepal_length',
-                      la_title='Barplot vertical with logscale',
+                      la_title='\\parbox{8cm}{\\center Barplot vertical with logscale and text on top of the bar}',
                       sp_yscale='log',
                       xt_rotation=25, la_xlabel='')
+    max_sepal = iris[['sepal_length', 'species']
+                     ].groupby('species').max().reset_index()
+    max_sepal['text'] = max_sepal.sepal_length.astype(str)
+    max_sepal['x'] = np.arange(max_sepal.shape[0])
+    plot.text(ax=ax, data=max_sepal, x='species', y='sepal_length', 
+              textcol='sepal_length')
 
     ####
     id = 5; x = (id-1)//num_cols; y = (id-1) % num_rows
