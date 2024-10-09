@@ -32,8 +32,15 @@ def main():
                       la_title='Boxplot vertical',
                       xt_rotation=25, la_xlabel='')
 
+    id = 2; x = (id-1)//num_rows; y = (id-1) % num_cols
+    ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.boxplot', data=iris, 
+                      sp_sharey=0,
+                      pf_x='species', pf_y='sepal_length',
+                      pf_color=plot.get_style('color',1),
+                      la_title='sharey',
+                      xt_rotation=25, la_xlabel='')
     ####
-    id = 2; x = (id-1)//num_cols; y = (id-1) % num_rows
+    id = 3; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.boxplot', data=iris, 
                       pf_orient='h', pf_x='sepal_length', pf_y='species',
                       la_title='Boxplot horizontal',
@@ -41,7 +48,7 @@ def main():
     dfs = pd.melt(iris,id_vars=['species'], var_name='characteristic', value_name='value')
 
     ####
-    id = 3; x = (id-1)//num_cols; y = (id-1) % num_rows
+    id = 4; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.boxplot', data=dfs, 
                       pf_orient='h', 
                       pf_hue='characteristic', 
@@ -53,7 +60,7 @@ def main():
                       yt_pad=5, la_ylabel='')
 
     ####
-    id = 4; x = (id-1)//num_cols; y = (id-1) % num_rows
+    id = 5; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=iris, 
                       pf_x='species', pf_y='sepal_length',
                       la_title='\\parbox{8cm}{\\center Barplot vertical with logscale and text on top of the bar}',
@@ -67,7 +74,7 @@ def main():
               textcol='sepal_length')
 
     ####
-    id = 5; x = (id-1)//num_cols; y = (id-1) % num_rows
+    id = 6; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=iris, 
                       pf_orient='h', pf_x='sepal_length', pf_y='species',
                       pf_color=plot.get_style('color',1),
@@ -76,7 +83,7 @@ def main():
     dfs = pd.melt(iris,id_vars=['species'], var_name='characteristic', value_name='value')
 
     ####
-    id = 6; x = (id-1)//num_cols; y = (id-1) % num_rows
+    id = 7; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=dfs, 
                       pf_orient='h', 
                       pf_hue='characteristic', 
@@ -87,7 +94,7 @@ def main():
                       yt_pad=5, la_ylabel='')
 
     ####
-    id = 7; x = (id-1)//num_cols; y = (id-1) % num_rows
+    id = 8; x = (id-1)//num_cols; y = (id-1) % num_rows
     counties = loader.load('usa_county_shapes')
     counties = counties[counties.statefp=='51']
     counties['intensity'] = list(range(counties.shape[0]))
@@ -97,14 +104,14 @@ def main():
                       )
 
     ####
-    id = 8; x = (id-1)//num_cols; y = (id-1) % num_rows
+    id = 9; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='gpd.boundary.plot', 
                       pf_facecolor='white', pf_edgecolor='black',
                       data=counties, 
                       )
 
     ####
-    id = 9; x = (id-1)//num_cols; y = (id-1) % num_rows
+    id = 10; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.scatterplot', 
                       pf_x='sepal_length', pf_y='sepal_width',
                       pf_hue='species', data=iris, 
@@ -122,7 +129,7 @@ def main():
     ##                   )
 
     ####
-    id = 10; x = (id-1)//num_cols; y = (id-1) % num_rows
+    id = 11; x = (id-1)//num_cols; y = (id-1) % num_rows
     data = pd.DataFrame({
         'x': [1,2,3,4],
         'y': [1,2,3,6],
@@ -139,14 +146,14 @@ def main():
                       )
 
     ####
-    id = 11; x = (id-1)//num_cols; y = (id-1) % num_rows
+    id = 12; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.histplot', data=iris, 
                       pf_x='species',
                       la_title='histplot vertical',
                       xt_rotation=25, la_xlabel='')
 
     ####
-    id = 12; x = (id-1)//num_cols; y = (id-1) % num_rows
+    id = 13; x = (id-1)//num_cols; y = (id-1) % num_rows
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.countplot', data=iris, 
                       pf_x='species',
                       pf_order=['setosa', 'versicolor', 'virginica', 'test'],
