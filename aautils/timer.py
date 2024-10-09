@@ -25,6 +25,8 @@ class timer:
             self.time_segments[segment] = self.diff
 
     def display(self, t, segment=''):
+        if not segment:
+            segment = 'Time: '
         if self.quiet:
             return
         if self.unit == 'minutes':
@@ -36,8 +38,12 @@ class timer:
 
     def update_and_display(self, segment=None):
         self.update(segment=segment)
-        self.display(self.diff, 'Time:')
+        self.display(self.diff, segment=segment)
 
     def display_total_time(self):
         self.display(time()-self.start, 'Total time:')
 
+    def summary(self):
+        for x,y in self.time_segments.items():
+            self.display(y, segment=x)
+        self.display(time()-self.start, 'Total time:')

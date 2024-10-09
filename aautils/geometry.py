@@ -3,7 +3,6 @@ try:
 except ModuleNotFoundError as err:
     print(err)
     print('Skipping this step ...')
-
 import geopandas as gpd
 import logging
 import numpy as np
