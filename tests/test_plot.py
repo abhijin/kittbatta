@@ -13,26 +13,41 @@ import pandas as pd
 from pdb import set_trace
 import seaborn as sns
 
+class NewPlot:
+    def __init__(self, num_plots):
+        self.pid = 0
+        self.num_cols = ceil(sqrt(num_plots))
+        self.num_rows = ceil(sqrt(num_plots))
+        self.num_plots = num_plots
+
+    def rows_cols(self):
+        return self.num_rows, self.num_cols
+
+    def new(self):
+        self.pid += 1
+        if self.pid >= self.num_plots:
+            raise ValueError('Number of plots exceeds specified number.')
+        return (self.pid-1)//self.num_rows, (self.pid-1) % self.num_cols
+
 def main():
     iris = sns.load_dataset('iris')
     geyser = sns.load_dataset('geyser')
     
-    num_plots = 13
-    num_cols = ceil(sqrt(num_plots))
-    num_rows = ceil(sqrt(num_plots))
+    newplot = NewPlot(16)
+    num_rows, num_cols = newplot.rows_cols()
     fig, gs = plot.initiate_figure(x=5*num_cols, y=4*num_rows, 
                                    gs_nrows=num_rows, gs_ncols=num_cols,
                                    gs_wspace=.3, gs_hspace=.4,
                                    color='tableau10')
 
     ####
-    id = 1; x = (id-1)//num_rows; y = (id-1) % num_cols
+    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.boxplot', data=iris, 
                       pf_x='species', pf_y='sepal_length',
                       la_title='Boxplot vertical',
                       xt_rotation=25, la_xlabel='')
 
-    id = 2; x = (id-1)//num_rows; y = (id-1) % num_cols
+    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.boxplot', data=iris, 
                       sp_sharey=0,
                       pf_x='species', pf_y='sepal_length',
@@ -40,7 +55,7 @@ def main():
                       la_title='sharey',
                       xt_rotation=25, la_xlabel='')
     ####
-    id = 3; x = (id-1)//num_cols; y = (id-1) % num_rows
+    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.boxplot', data=iris, 
                       pf_orient='h', pf_x='sepal_length', pf_y='species',
                       la_title='Boxplot horizontal',
@@ -48,7 +63,7 @@ def main():
     dfs = pd.melt(iris,id_vars=['species'], var_name='characteristic', value_name='value')
 
     ####
-    id = 4; x = (id-1)//num_cols; y = (id-1) % num_rows
+    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.boxplot', data=dfs, 
                       pf_orient='h', 
                       pf_hue='characteristic', 
@@ -60,7 +75,7 @@ def main():
                       yt_pad=5, la_ylabel='')
 
     ####
-    id = 5; x = (id-1)//num_cols; y = (id-1) % num_rows
+    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=iris, 
                       pf_x='species', pf_y='sepal_length',
                       la_title='\\parbox{8cm}{\\center Barplot vertical with logscale and text on top of the bar}',
@@ -74,7 +89,7 @@ def main():
               textcol='sepal_length')
 
     ####
-    id = 6; x = (id-1)//num_cols; y = (id-1) % num_rows
+    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=iris, 
                       pf_orient='h', pf_x='sepal_length', pf_y='species',
                       pf_color=plot.get_style('color',1),
@@ -83,7 +98,7 @@ def main():
     dfs = pd.melt(iris,id_vars=['species'], var_name='characteristic', value_name='value')
 
     ####
-    id = 7; x = (id-1)//num_cols; y = (id-1) % num_rows
+    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.barplot', data=dfs, 
                       pf_orient='h', 
                       pf_hue='characteristic', 
@@ -94,7 +109,7 @@ def main():
                       yt_pad=5, la_ylabel='')
 
     ####
-    id = 8; x = (id-1)//num_cols; y = (id-1) % num_rows
+    x,y = newplot.new()
     counties = loader.load('usa_county_shapes')
     counties = counties[counties.statefp=='51']
     counties['intensity'] = list(range(counties.shape[0]))
@@ -104,21 +119,21 @@ def main():
                       )
 
     ####
-    id = 9; x = (id-1)//num_cols; y = (id-1) % num_rows
+    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='gpd.boundary.plot', 
                       pf_facecolor='white', pf_edgecolor='black',
                       data=counties, 
                       )
 
     ####
-    id = 10; x = (id-1)//num_cols; y = (id-1) % num_rows
+    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.scatterplot', 
                       pf_x='sepal_length', pf_y='sepal_width',
                       pf_hue='species', data=iris, 
                       )
 
     ## ####
-    ## id = 10; x = (id-1)//num_cols; y = (id-1) % num_rows
+    ## x,y = newplot.new()
     ## X = np.linspace(0, 10, 100)
     ## Y = np.linspace(0, 10, 100)
     ## X, Y = np.meshgrid(X, Y)
@@ -129,7 +144,7 @@ def main():
     ##                   )
 
     ####
-    id = 11; x = (id-1)//num_cols; y = (id-1) % num_rows
+    x,y = newplot.new()
     data = pd.DataFrame({
         'x': [1,2,3,4],
         'y': [1,2,3,6],
@@ -146,18 +161,26 @@ def main():
                       )
 
     ####
-    id = 12; x = (id-1)//num_cols; y = (id-1) % num_rows
+    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.histplot', data=iris, 
                       pf_x='species',
                       la_title='histplot vertical',
                       xt_rotation=25, la_xlabel='')
 
     ####
-    id = 13; x = (id-1)//num_cols; y = (id-1) % num_rows
+    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.countplot', data=iris, 
                       pf_x='species',
                       pf_order=['setosa', 'versicolor', 'virginica', 'test'],
                       la_title='countplot vertical with zero counts',
+                      xt_rotation=25, la_xlabel='')
+
+    ####
+    x,y = newplot.new()
+    ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.histplot', data=iris, 
+                      pf_x='species',
+                      pf_stat='percent',
+                      la_title='histplot vertical percent',
                       xt_rotation=25, la_xlabel='')
 
     plot.savefig('test.pdf')
