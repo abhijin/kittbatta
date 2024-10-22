@@ -230,10 +230,17 @@ def get_moore_neighbor(matrix, cell_id, moore_range):
     return neighbors #, weights
 
 # https://community.esri.com/t5/coordinate-reference-systems-blog/distance-on-a-sphere-the-haversine-formula/ba-p/902128
-def haversine(x1=None, y1=None, x2=None, y2=None, units='kilometers'):
-    dx = np.radians(x2 - x1) 
-    dy = np.radians(y2 - y1)
-    a = np.sin(dx/2)**2 + np.cos(x1) * np.cos(x2) * np.sin(dy/2)**2
+def haversine(lon1=None, lat1=None, lon2=None, lat2=None, units='kilometers'):
+    # Convert latitude and longitude from degrees to radians
+    lat1 = np.radians(lat1)
+    lon1 = np.radians(lon1)
+    lat2 = np.radians(lat2)
+    lon2 = np.radians(lon2)
+
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+
+    a = np.sin(dlat/2)**2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon/2)**2
 
     c = 2 * np.arctan2(np.sqrt(a),np.sqrt(1-a)) 
     dist = EARTH_RADIUS * c
@@ -306,7 +313,8 @@ def lonlat_to_glw(lon, lat):
         (1080.500009 - 12.000004*lat).round()))
 
 def glw_to_lonlat(x, y):
-    return list(zip((x - 2160.504)/12, -(y - 1080.500009)/12.000004))
+    # just used slope, intercept for lat and lon separately
+    return list(zip((x - 2160.5)/12, -(y - 1080.5)/12))
 
 def centroid_to_cell(lat, lon, arc_minutes=5):
     # size in minutes

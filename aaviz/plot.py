@@ -40,10 +40,10 @@ COLORS = {
         'datanovia': ["#FFDB6D", "#C4961A", "#F4EDCA", "#D16103", "#C3D7A4", 
             "#52854C", "#4E84C4", "#293352"]
         }
-SNS_AXIS_PLOTS = ['sns.lineplot', 'sns.barplot', 'sns.histplot', 'sns.countplot', 'sns.ecdfplot',
-        'sns.boxplot', 'sns.violinplot', 'sns.heatmap', 'sns.scatterplot',
-                  'contour']
-AXIS_NORMAL = ['sns.lineplot', 'sns.scatterplot', 'contour']
+SNS_AXIS_PLOTS = ['sns.lineplot', 'sns.barplot', 'sns.histplot', 'sns.countplot', 
+                  'sns.ecdfplot', 'sns.boxplot', 'sns.violinplot', 'sns.heatmap', 
+                  'sns.scatterplot', 'contour']
+AXIS_NORMAL = ['sns.lineplot', 'sns.ecdfplot', 'sns.scatterplot', 'contour']
 AXIS_HEAT = ['sns.heatmap']
 AXIS_HIST = ['sns.barplot', 'sns.histplot', 'sns.countplot']
 AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
@@ -215,7 +215,15 @@ def subplot(**kwargs):
                     del subplot_args[s]
                 except:
                     pass
-        ax = fig.add_subplot(kwargs['grid'], **subplot_args)
+
+        # Some custom fields need to be removed before creating ax. They will
+        # be added back.
+        subplot_args_ = {}
+        for k in subplot_args.keys():
+            if k in ['xlim', 'ylim']:
+                continue
+            subplot_args_[k] = subplot_args[k]
+        ax = fig.add_subplot(kwargs['grid'], **subplot_args_)
         kwargs['ax'] = ax
 
     # Decide function
@@ -511,14 +519,19 @@ def subplot_axes_grid(**kwargs):
     # Axes limits
     xmin, xmax = ax.get_xlim()
     ymin, ymax = ax.get_ylim()
-    if 'xmin' in kwargs.keys():
-        xmin = kwargs['xmin']
-    if 'xmax' in kwargs.keys():
-        xmax = kwargs['xmax']
-    if 'ymin' in kwargs.keys():
-        ymin = kwargs['ymin']
-    if 'ymax' in kwargs.keys():
-        ymax = kwargs['ymax']
+    subplot_args = kwargs['subplot_args']
+    if 'xlim' in subplot_args.keys():
+        xmin_,xmax_ = subplot_args['xlim']
+        if xmin_ != 'default':
+            xmin = xmin_
+        if xmax_ != 'default':
+            xmax = xmax_
+    if 'ylim' in subplot_args.keys():
+        ymin_,ymax_ = subplot_args['ylim']
+        if ymin_ != 'default':
+            ymin = ymin_
+        if ymax_ != 'default':
+            ymax = ymax_
     ax.set_xlim(xmin, xmax)
     ax.set_ylim(ymin, ymax)
 
