@@ -162,13 +162,6 @@ def main():
 
     ####
     x,y = newplot.new()
-    ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.histplot', data=iris, 
-                      pf_x='species',
-                      la_title='histplot vertical',
-                      xt_rotation=25, la_xlabel='')
-
-    ####
-    x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.countplot', data=iris, 
                       pf_x='species',
                       pf_order=['setosa', 'versicolor', 'virginica', 'test'],
@@ -179,8 +172,15 @@ def main():
     x,y = newplot.new()
     ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.histplot', data=iris, 
                       pf_x='species',
+                      la_title='histplot vertical',
+                      xt_rotation=25, la_xlabel='')
+
+    ####
+    x,y = newplot.new()
+    ax = plot.subplot(fig=fig, grid=gs[x,y], func='sns.histplot', data=iris, 
+                      pf_x='species',
                       pf_stat='percent',
-                      la_title='histplot vertical percent',
+                      la_title='histplot vertical stat=percent',
                       xt_rotation=25, la_xlabel='')
 
     plot.savefig('test.pdf')
