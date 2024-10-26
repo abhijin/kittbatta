@@ -309,8 +309,8 @@ def check_for_errors(nodes, edges, localities, locality_edges, hierarchy_tree):
         raise Exception('Level 0 edges not bidirectional.')
 
 def lonlat_to_glw(lon, lat):
-    return list(zip((12*lon + 2160.504).round(), 
-        (1080.500009 - 12.000004*lat).round()))
+    return list(zip((12*lon + 2160.5).round(), 
+        (1080.5- 12*lat).round()))
 
 def glw_to_lonlat(x, y):
     # just used slope, intercept for lat and lon separately
