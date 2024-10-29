@@ -249,7 +249,11 @@ def subplot(**kwargs):
 
     if xtick_args:
         if 'setticks' in xtick_args.keys():
-            ax.set_xticks(ax.get_xticks(), labels=xtick_args['setticks'])
+            try:
+                ax.set_xticks(ax.get_xticks(), labels=xtick_args['setticks'])
+                print('Warning: renaming xtick labels did not work.')
+            except:
+                ax.set_xticks(xtick_args['setticks'])
             del xtick_args['setticks']
         ax.tick_params(axis='x', **xtick_args)
     if ytick_args:
@@ -417,6 +421,7 @@ def subplot_hatch(**kwargs):
 # To minimize arguments passed, we use an encoding for axis_type.
 # axy|gxy|mxy
 # a: axis, g: grid, m: minor
+# ag_axis_type='axy:gxy:m'
 def subplot_axes_grid(**kwargs):
     ax = kwargs['ax']
     axis_type = 'axy:gxy:mxy'
