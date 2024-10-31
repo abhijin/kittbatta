@@ -100,6 +100,29 @@ MARKERS=['.','o','v','^','s']
 
 pd.options.display.float_format = '{:.10g}'.format
 
+class RasterPlot:
+    def __init__(self, rows=None, cols=None, total=None):
+        self.pid = 0
+        if total:
+            self.num_cols = int(np.ceil(np.sqrt(total)))
+            self.num_rows = int(np.ceil(np.sqrt(total)))
+            self.num_plots = total
+        elif rows and cols:
+            self.num_cols = cols
+            self.num_rows = rows
+            self.num_plots = cols * rows
+        else:
+            print('Either explicitly provide (rows=* and cols=*) or (total=*)')
+
+    def rows_cols(self):
+        return self.num_rows, self.num_cols
+
+    def new(self):
+        self.pid += 1
+        if self.pid > self.num_plots:
+            raise ValueError('Number of plots exceeds specified number.')
+        return (self.pid-1) // self.num_cols, (self.pid-1) % self.num_cols
+
 # The helper functions are arranged in the order in which they should be called
 # See argvals for all possible arguments.
 def initiate_figure(**kwargs):
