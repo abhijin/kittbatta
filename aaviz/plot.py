@@ -1,4 +1,4 @@
-jjDESC='''plot functions
+DESC='''plot functions
 By AA
 '''
 
@@ -38,7 +38,9 @@ COLORS = {
         'grand_budapest': ['#5b1a18','#fd6467','#f1bb7b','#d67236'],
         'red_blue': ['#0060ad', '#dd181f'],
         'datanovia': ["#FFDB6D", "#C4961A", "#F4EDCA", "#D16103", "#C3D7A4", 
-            "#52854C", "#4E84C4", "#293352"]
+            "#52854C", "#4E84C4", "#293352"],
+        'cbYlOrRd': ['#ffffcc','#ffeda0','#fed976','#feb24c','#fd8d3c','#fc4e2a',
+                     '#e31a1c','#b10026']
         }
 SNS_AXIS_PLOTS = ['sns.lineplot', 'sns.barplot', 'sns.histplot', 'sns.countplot', 
                   'sns.ecdfplot', 'sns.boxplot', 'sns.violinplot', 'sns.heatmap', 
@@ -48,7 +50,8 @@ AXIS_HEAT = ['sns.heatmap']
 AXIS_HIST = ['sns.barplot', 'sns.histplot', 'sns.countplot']
 AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
 AXIS_CHOROPLETH = ['gpd.plot', 'gpd.boundary.plot']
-NON_SNS = ['hlines', 'vlines', 'text', 'lines', 'arrow']
+AXIS_NONE = ['pie']
+NON_SNS = ['hlines', 'vlines', 'text', 'lines', 'arrow', 'pie']
 
 NON_FUNC_PARAMS = ['fig', 'subplot', 'title', 'xlabel', 'ylabel', 'data']
 HATCH = ['++', 'xx', '\\', '.', 'o', '|', '*']
@@ -450,7 +453,7 @@ def subplot_axes_grid(**kwargs):
     axis_type = 'axy:gxy:mxy'
     if 'axis_type' in kwargs.keys():
         axis_type = kwargs['axis_type']
-    elif kwargs['func'] in AXIS_CHOROPLETH:
+    elif kwargs['func'] in AXIS_CHOROPLETH + AXIS_NONE:
         axis_type = 'a:g:m'
     elif kwargs['func'] in AXIS_HEAT:
         axis_type = 'a:gxy:m'
@@ -526,7 +529,7 @@ def subplot_axes_grid(**kwargs):
     if not axis_y:
         ax.tick_params(axis='y', which='both', length=0)
 
-    if kwargs['func'] in AXIS_CHOROPLETH:
+    if kwargs['func'] in AXIS_CHOROPLETH + AXIS_NONE:
         ax.set_xticks([])
         ax.set_yticks([])
 
@@ -859,6 +862,28 @@ def arrow(ax=None, data=None,
 
     return ax
 
+def pie(ax=None, **kwargs):
+    counts = kwargs['data']
+    if 'inside_display' not in kwargs.keys():
+        inside_display = '%1.1f%%'
+    elif kwargs['inside_display'] == 'perc':
+        inside_display = '%1.1f%%'
+    elif kwargs['inside_display'] == 'count':
+        inside_display = lambda pct: autopct_counts(pct, counts)
+
+    try:
+        del kwargs['inside_display']
+    except:
+        pass
+
+    ax.pie(counts, **kwargs, autopct=inside_display)
+
+    return ax
+
+def autopct_counts(pct, counts):
+    total = counts.sum()
+    count = int(round(pct * total / 100.0))
+    return f"{count}"
 
 def main():
     # parser
