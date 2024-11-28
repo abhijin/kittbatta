@@ -1,5 +1,13 @@
 DESC='''
-Helper functions
+Timer function
+
+How to use:
+    tt = timer(unit=...)
+    ...
+    tt.update_and_display(segment='Reading data')
+    ...
+    tt.display_total_time()
+    tt.summary()
 
 AA
 '''

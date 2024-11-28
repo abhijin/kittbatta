@@ -4,6 +4,7 @@ Some tools for displays (for now).
 By: AA
 '''
 
+# print function name
 def pf(func):
     def wrapper(*args, **kwargs):
         print('--------------------------------------------------')
