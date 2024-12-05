@@ -42,12 +42,12 @@ COLORS = {
         'cbYlOrRd': ['#ffffcc','#ffeda0','#fed976','#feb24c','#fd8d3c','#fc4e2a',
                      '#e31a1c','#b10026']
         }
-SNS_AXIS_PLOTS = ['sns.lineplot', 'sns.barplot', 'sns.histplot', 'sns.countplot', 
+SNS_AXIS_PLOTS = ['sns.lineplot', 'sns.barplot', 'sns.histplot','sns.kdeplot',  'sns.countplot', 
                   'sns.ecdfplot', 'sns.boxplot', 'sns.violinplot', 'sns.heatmap', 
                   'sns.scatterplot', 'contour']
 AXIS_NORMAL = ['sns.lineplot', 'sns.ecdfplot', 'sns.scatterplot', 'contour']
 AXIS_HEAT = ['sns.heatmap']
-AXIS_HIST = ['sns.barplot', 'sns.histplot', 'sns.countplot']
+AXIS_HIST = ['sns.barplot', 'sns.histplot','sns.kdeplot',  'sns.countplot']
 AXIS_BOX = ['sns.boxplot', 'sns.violinplot']
 AXIS_CHOROPLETH = ['gpd.plot', 'gpd.boundary.plot']
 AXIS_NONE = ['pie']
@@ -115,7 +115,7 @@ class RasterPlot:
             self.num_rows = rows
             self.num_plots = cols * rows
         else:
-            print('Either explicitly provide (rows=* and cols=*) or (total=*)')
+            raise ValueError('Either explicitly provide (rows=* and cols=*) or (total=*)')
 
     def rows_cols(self):
         return self.num_rows, self.num_cols
@@ -174,9 +174,12 @@ def initiate_figure(**kwargs):
             gs = fig.add_gridspec(subplot_args['nrows'], subplot_args['ncols'])
             gs.update(wspace=subplot_args['wspace'], 
                     hspace=subplot_args['hspace']) # set the spacing between axes.
-
-            if 'suptitle' in kwargs.keys():
-                suptitle_args = {k[3:]: v for k,v in argvals.items() if k[0:3] == 'st_'}
+            # AA: Under construction
+            # Idea is to organize it exactly like subplots for uniformity
+            label_args = {k[3:]: v for k,v in kwargs.items() if k[0:3] == 'la_'}
+            if 'title' in label_args.keys():
+                suptitle_args = {k[3:]: v for k,v in argvals.items() 
+                                 if k[0:3] == 'la_'}
                 suptitle_args['fontsize'] = FONT_TABLE[DEFAULT_FONTS[
                     'fontsize']][suptitle_args['fontsize']]
                 fig.suptitle(kwargs['suptitle'], **suptitle_args)
@@ -390,8 +393,10 @@ def subplot_func(**kwargs):
             argvals = {}
         elif funcname in AXIS_CHOROPLETH:
             argvals = {}
+        elif funcname == 'sns.kdeplot':
+            argvals = {}
         else:
-            raise(f'The plot "{funcname}" is not supported.')
+            raise ValueError(f'The plot "{funcname}" is not supported.')
 
         for k,v in argvals.items():
             if k not in plot_args.keys():
@@ -839,6 +844,14 @@ def lines(ax=None, data=None,
         ax.plot([l[sx], l[tx]], [l[sy], l[ty]], **kwargs)
 
     return ax
+
+def table(df, out):
+    # Create a table plot
+    fig, ax = plt.subplots(figsize=(6, 2))  # Adjust the size
+    ax.axis('tight')
+    ax.axis('off')
+    table = ax.table(cellText=df.values, colLabels=df.columns, cellLoc='center', loc='center')
+    plt.savefig("table_image.png", bbox_inches='tight', dpi=300)
 
 def arrow(ax=None, data=None, 
           sx='source_x', sy='source_y',

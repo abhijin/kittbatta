@@ -18,7 +18,7 @@ def main():
     iris = sns.load_dataset('iris')
     geyser = sns.load_dataset('geyser')
     
-    newplot = plot.RasterPlot(16)
+    newplot = plot.RasterPlot(total=16)
     num_rows, num_cols = newplot.rows_cols()
     fig, gs = plot.initiate_figure(x=5*num_cols, y=4*num_rows, 
                                    gs_nrows=num_rows, gs_ncols=num_cols,
@@ -167,6 +167,13 @@ def main():
                       pf_stat='percent',
                       la_title='histplot vertical stat=percent',
                       xt_rotation=25, la_xlabel='')
+
+    ####
+    r,c = newplot.new()
+    ax = plot.subplot(fig=fig, grid=gs[r,c], func='sns.kdeplot', data=iris, 
+                      pf_x='petal_width', pf_fill=True,
+                      la_title='kdeplot',
+                      la_xlabel='Petal width')
 
     plot.savefig('test.pdf')
     plot.savefig('test.svg')
