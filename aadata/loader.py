@@ -15,7 +15,7 @@ DATA = ['usa_tract_shapes', 'usa_county_shapes', 'usa_state_shapes',
 def list_data():
     print(f'Datasets:\n{"\n\t".join(DATA)}')
 
-def load(data):
+def load(data, contiguous_us=False):
     if data == 'usa_tract_shapes':
         stream = pkg_resources.resource_stream(__name__, 
                 'datasets/usa/cb_2018_53_tract_500k.shp')
@@ -29,6 +29,11 @@ def load(data):
         gdf = gpd.read_file(stream.name)
         gdf.columns = gdf.columns.str.lower()
         gdf.name = gdf.name.str.lower()
+        gdf = gdf.astype({'statefp': 'int', 'countyfp': 'int'})
+
+        if contiguous_us:
+            gdf = gdf[~gdf.statefp.isin([2, 15, 72, 66, 69, 78, 60])]
+        
         return gdf
     elif data == 'usa_state_shapes':
         stream = pkg_resources.resource_stream(__name__, 
@@ -36,6 +41,10 @@ def load(data):
         gdf = gpd.read_file(stream.name)
         gdf.columns = gdf.columns.str.lower()
         gdf.name = gdf.name.str.lower()
+        gdf = gdf.astype({'statefp': 'int', 'countyfp': 'int'})
+
+        if contiguous_us:
+            gdf = gdf[~gdf.statefp.isin([2, 15, 72, 66, 69, 78, 60])]
         return gdf
     elif data == 'usa_states':
         stream = pkg_resources.resource_stream(__name__, 
