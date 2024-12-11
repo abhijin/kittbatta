@@ -12,6 +12,8 @@ By AA
 ##  yt = ytick_args
 ##  lg = legend_args
 
+##  fg = fig_args # for oneplot
+
 from cycler import cycler
 from itertools import product
 import logging
@@ -34,7 +36,7 @@ except:
 
 COLORS = {
         'mathematica': ['#5e82b5','#e09c24','#8fb030','#eb634f','#8778b3','#c46e1a','#5c9ec7','#fdbf6f'],
-        'tableau10': ['#4e79a7','#f28e2b','#e15759','#76b7b2','#59a14f','#edc948','#b07aa1','#ff9da7','#9c755f','#bab0ac'],
+        'tableau10': ['#5778a4','#e49444','#d1615d','#85b6b2','#6a9f58','#e7ca60','#a87c9f','#f1a2a9','#967662','#b8b0ac'],
         'grand_budapest': ['#5b1a18','#fd6467','#f1bb7b','#d67236'],
         'red_blue': ['#0060ad', '#dd181f'],
         'datanovia': ["#FFDB6D", "#C4961A", "#F4EDCA", "#D16103", "#C3D7A4", 
@@ -103,28 +105,18 @@ MARKERS=['.','o','v','^','s']
 
 pd.options.display.float_format = '{:.10g}'.format
 
-class RasterPlot:
-    def __init__(self, rows=None, cols=None, total=None):
-        self.pid = 0
-        if total:
-            self.num_cols = int(np.ceil(np.sqrt(total)))
-            self.num_rows = int(np.ceil(np.sqrt(total)))
-            self.num_plots = total
-        elif rows and cols:
-            self.num_cols = cols
-            self.num_rows = rows
-            self.num_plots = cols * rows
+# A wrapper for single plot
+def oneplot(**kwargs):
+    fig_args = {}
+    plot_args = {}
+    for k,v in kwargs.items():
+        if k[0:3] == 'fg_':
+            fig_args[k[3:]] = v
         else:
-            raise ValueError('Either explicitly provide (rows=* and cols=*) or (total=*)')
-
-    def rows_cols(self):
-        return self.num_rows, self.num_cols
-
-    def new(self):
-        self.pid += 1
-        if self.pid > self.num_plots:
-            raise ValueError('Number of plots exceeds specified number.')
-        return (self.pid-1) // self.num_cols, (self.pid-1) % self.num_cols
+            plot_args[k] = v
+    fig, gs = initiate_figure(**fig_args)
+    ax = subplot(fig=fig, grid=gs[0,0], **plot_args) 
+    return ax
 
 # The helper functions are arranged in the order in which they should be called
 # See argvals for all possible arguments.
@@ -138,7 +130,7 @@ def initiate_figure(**kwargs):
             'gs_hspace': 0.2,
             'gs_nrows': 1,
             'gs_ncols': 1,
-            'color': 'mathematica', 
+            'color': 'tableau10', 
             'st_y': 0.95,
             'st_fontsize': 'large'
             }
@@ -152,9 +144,8 @@ def initiate_figure(**kwargs):
         rcParams[k] = v
 
     # Setting color
-    if 'color' in kwargs.keys():
-        rcParams['axes.prop_cycle'] = cycler(color=COLORS[kwargs['color']])
-        sns.set_palette(COLORS[kwargs['color']])
+    rcParams['axes.prop_cycle'] = cycler(color=COLORS[argvals['color']])
+    sns.set_palette(COLORS[argvals['color']])
 
     # Setting scientific notation limits
     if 'scilimits' in kwargs.keys():
@@ -196,6 +187,29 @@ def initiate_figure(**kwargs):
                 return fig, ax
     elif mode == 'facetgrid':
         return  # currently, nothing to return
+
+class RasterPlot:
+    def __init__(self, rows=None, cols=None, total=None):
+        self.pid = 0
+        if total:
+            self.num_cols = int(np.ceil(np.sqrt(total)))
+            self.num_rows = int(np.ceil(np.sqrt(total)))
+            self.num_plots = total
+        elif rows and cols:
+            self.num_cols = cols
+            self.num_rows = rows
+            self.num_plots = cols * rows
+        else:
+            raise ValueError('Either explicitly provide (rows=* and cols=*) or (total=*)')
+
+    def rows_cols(self):
+        return self.num_rows, self.num_cols
+
+    def new(self):
+        self.pid += 1
+        if self.pid > self.num_plots:
+            raise ValueError('Number of plots exceeds specified number.')
+        return (self.pid-1) // self.num_cols, (self.pid-1) % self.num_cols
 
 def subplot(**kwargs):
 
